@@ -327,7 +327,11 @@ function competitionKey(name="") {
   if (n.includes("serie a")) return "seriea";
   if (n.includes("la liga") || n.includes("laliga") || n.includes("primera division")) return "laliga";
   if (n.includes("ligue 1")) return "ligue1";
+  if (n.includes("coppa italia")) return "coppa_italia";
+  if (n.includes("copa del rey")) return "copa_del_rey";
   if (n.includes("fa cup")) return "facup";
+  if (n.includes("efl cup") || n.includes("carabao cup") || n.includes("league cup")) return "carabao";
+  if (n.includes("dfb pokal") || n.includes("dfb-pokal")) return "dfbpokal";
   if (n.includes("nations league")) return "nations";
   return "other";
 }
@@ -341,7 +345,7 @@ function buildSportsReport(matches, period="daily", days=1) {
     grouped.get(key).items.push(p);
   }
 
-  const priority = ["champions","australianopen","rolandgarros","wimbledon","usopen","europa","conference","premier","bundesliga","seriea","laliga","ligue1","facup","nations","other"];
+  const priority = ["champions","australianopen","rolandgarros","wimbledon","usopen","europa","conference","premier","bundesliga","seriea","laliga","ligue1","facup","carabao","copa_del_rey","coppa_italia","dfbpokal","nations","other"];
   const sections = [...grouped.values()]
     .sort((a,b)=>priority.indexOf(a.key)-priority.indexOf(b.key))
     .map(section => ({
