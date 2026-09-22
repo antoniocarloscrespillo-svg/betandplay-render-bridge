@@ -17,6 +17,57 @@ const __dirname = path.dirname(__filename);
 const cache = new Map();
 const wikiImageCache = new Map();
 
+const TEAM_VISUAL_ALIASES = {
+  "real madrid":"Real Madrid CF",
+  "barcelona":"FC Barcelona",
+  "fc barcelona":"FC Barcelona",
+  "atletico madrid":"Atlético Madrid",
+  "atlético madrid":"Atlético Madrid",
+  "liverpool":"Liverpool FC",
+  "arsenal":"Arsenal FC",
+  "manchester city":"Manchester City FC",
+  "manchester united":"Manchester United FC",
+  "chelsea":"Chelsea FC",
+  "tottenham":"Tottenham Hotspur FC",
+  "tottenham hotspur":"Tottenham Hotspur FC",
+  "bayern munich":"FC Bayern Munich",
+  "bayern münchen":"FC Bayern Munich",
+  "borussia dortmund":"Borussia Dortmund",
+  "inter milan":"Inter Milan",
+  "internazionale":"Inter Milan",
+  "ac milan":"AC Milan",
+  "juventus":"Juventus FC",
+  "paris saint-germain":"Paris Saint-Germain FC",
+  "psg":"Paris Saint-Germain FC"
+};
+
+const COMPETITION_VISUAL_ALIASES = {
+  "uefa champions league":"UEFA Champions League",
+  "champions league":"UEFA Champions League",
+  "uefa europa league":"UEFA Europa League",
+  "europa league":"UEFA Europa League",
+  "uefa conference league":"UEFA Conference League",
+  "premier league":"Premier League",
+  "bundesliga":"Bundesliga",
+  "serie a":"Serie A",
+  "laliga":"La Liga",
+  "la liga":"La Liga",
+  "ligue 1":"Ligue 1",
+  "fa cup":"FA Cup",
+  "efl cup":"EFL Cup",
+  "carabao cup":"EFL Cup",
+  "copa del rey":"Copa del Rey",
+  "coppa italia":"Coppa Italia",
+  "dfb-pokal":"DFB-Pokal",
+  "dfb pokal":"DFB-Pokal",
+  "uefa nations league":"UEFA Nations League",
+  "australian open":"Australian Open",
+  "roland garros":"French Open",
+  "french open":"French Open",
+  "wimbledon":"Wimbledon Championships",
+  "us open":"US Open tennis"
+};
+
 const BIG_ENTITIES = {
   soccer: [
     "real madrid","barcelona","atletico madrid","liverpool","arsenal","manchester city",
@@ -129,6 +180,49 @@ function matchesTournament(match, tournamentKey) {
   return aliases.some(alias => name.includes(alias));
 }
 
+function visualAlias(label, kind="team") {
+  const key=String(label||"").toLowerCase().trim();
+  return kind==="competition"
+    ? (COMPETITION_VISUAL_ALIASES[key] || label)
+    : (TEAM_VISUAL_ALIASES[key] || label);
+}
+
+async function commonsLogoThumbnail(label, kind="team") {
+  const canonical=visualAlias(label,kind);
+  const key=("commons|"+kind+"|"+canonical).toLowerCase();
+  const hit=wikiImageCache.get(key);
+  if(hit && Date.now()-hit.createdAt < 24*60*60*1000) return hit.url;
+
+  try {
+    const url=new URL("https://commons.wikimedia.org/w/api.php");
+    url.searchParams.set("action","query");
+    url.searchParams.set("format","json");
+    url.searchParams.set("formatversion","2");
+    url.searchParams.set("generator","search");
+    url.searchParams.set("gsrnamespace","6");
+    url.searchParams.set("gsrlimit","6");
+    url.searchParams.set("gsrsearch",canonical+" logo");
+    url.searchParams.set("prop","imageinfo");
+    url.searchParams.set("iiprop","url");
+    url.searchParams.set("iiurlwidth","180");
+
+    const response=await fetch(url,{
+      headers:{Accept:"application/json","User-Agent":"BetandplayContentHub/2.0 (sports dashboard)"}
+    });
+    if(!response.ok) return "";
+
+    const body=await response.json();
+    const pages=Array.isArray(body?.query?.pages) ? body.query.pages : [];
+    const logoPage=pages.find(p=>/logo|crest|badge|emblem/i.test(String(p?.title||""))) || pages[0];
+    const info=logoPage?.imageinfo?.[0];
+    const thumb=info?.thumburl || info?.url || "";
+    wikiImageCache.set(key,{createdAt:Date.now(),url:thumb});
+    return thumb;
+  } catch {
+    return "";
+  }
+}
+
 async function wikipediaThumbnail(label, context="") {
   const key=(label+"|"+context).toLowerCase();
   const hit=wikiImageCache.get(key);
@@ -162,6 +256,14 @@ async function wikipediaThumbnail(label, context="") {
   } catch {
     return "";
   }
+}
+
+async function resolveEntityVisual(label, kind="team", context="") {
+  const logo=await commonsLogoThumbnail(label,kind);
+  if(logo) return logo;
+
+  const canonical=visualAlias(label,kind);
+  return wikipediaThumbnail(canonical,context);
 }
 
 async function fetchJson(url) {
@@ -851,14 +953,14 @@ async function enrichBigEventsWithWikipedia(events) {
     const event=events.find(e=>(e.teamNames||[]).includes(name));
     const sport=(event?.sportKey||"").toLowerCase();
     const context=sport==="soccer" ? "football club" : sport==="basketball" ? "basketball team" : sport==="tennis" ? "tennis player" : "";
-    teamMap.set(name,await wikipediaThumbnail(name,context));
+    teamMap.set(name,await resolveEntityVisual(name,"team",context));
   }));
 
   await Promise.all(uniqueCompetitions.map(async name=>{
     const event=events.find(e=>e.competition===name);
     const sport=(event?.sportKey||"").toLowerCase();
     const context=sport==="soccer" ? "football competition" : sport==="basketball" ? "basketball competition" : sport==="tennis" ? "tennis tournament" : "";
-    competitionMap.set(name,await wikipediaThumbnail(name,context));
+    competitionMap.set(name,await resolveEntityVisual(name,"competition",context));
   }));
 
   return events.map(e=>({
