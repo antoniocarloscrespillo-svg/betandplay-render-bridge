@@ -15,6 +15,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const cache = new Map();
+const wikiImageCache = new Map();
 
 const BIG_ENTITIES = {
   soccer: [
@@ -126,6 +127,41 @@ function matchesTournament(match, tournamentKey) {
   const aliases = TOURNAMENT_ALIASES[tournamentKey] || [];
   const name = String(match?.tournament?.name || "").toLowerCase();
   return aliases.some(alias => name.includes(alias));
+}
+
+async function wikipediaThumbnail(label, context="") {
+  const key=(label+"|"+context).toLowerCase();
+  const hit=wikiImageCache.get(key);
+  if(hit && Date.now()-hit.createdAt < 24*60*60*1000) return hit.url;
+
+  try {
+    const url=new URL("https://en.wikipedia.org/w/api.php");
+    url.searchParams.set("action","query");
+    url.searchParams.set("format","json");
+    url.searchParams.set("formatversion","2");
+    url.searchParams.set("generator","search");
+    url.searchParams.set("gsrsearch",[label,context].filter(Boolean).join(" "));
+    url.searchParams.set("gsrlimit","1");
+    url.searchParams.set("prop","pageimages");
+    url.searchParams.set("piprop","thumbnail");
+    url.searchParams.set("pithumbsize","160");
+    url.searchParams.set("pilicense","any");
+
+    const response=await fetch(url,{
+      headers:{
+        Accept:"application/json",
+        "User-Agent":"BetandplayContentHub/2.0 (sports dashboard)"
+      }
+    });
+    if(!response.ok) return "";
+    const body=await response.json();
+    const page=body?.query?.pages?.[0];
+    const thumb=page?.thumbnail?.source || "";
+    wikiImageCache.set(key,{createdAt:Date.now(),url:thumb});
+    return thumb;
+  } catch {
+    return "";
+  }
 }
 
 async function fetchJson(url) {
@@ -804,6 +840,34 @@ async function getBigEvents(days=30) {
     .map(toBigEvent);
 }
 
+async function enrichBigEventsWithWikipedia(events) {
+  const uniqueTeams=[...new Set(events.flatMap(e=>e.teamNames||[]).filter(Boolean))];
+  const uniqueCompetitions=[...new Set(events.map(e=>e.competition).filter(Boolean))];
+
+  const teamMap=new Map();
+  const competitionMap=new Map();
+
+  await Promise.all(uniqueTeams.map(async name=>{
+    const event=events.find(e=>(e.teamNames||[]).includes(name));
+    const sport=(event?.sportKey||"").toLowerCase();
+    const context=sport==="soccer" ? "football club" : sport==="basketball" ? "basketball team" : sport==="tennis" ? "tennis player" : "";
+    teamMap.set(name,await wikipediaThumbnail(name,context));
+  }));
+
+  await Promise.all(uniqueCompetitions.map(async name=>{
+    const event=events.find(e=>e.competition===name);
+    const sport=(event?.sportKey||"").toLowerCase();
+    const context=sport==="soccer" ? "football competition" : sport==="basketball" ? "basketball competition" : sport==="tennis" ? "tennis tournament" : "";
+    competitionMap.set(name,await wikipediaThumbnail(name,context));
+  }));
+
+  return events.map(e=>({
+    ...e,
+    teamLogos:(e.teamNames||[]).map(name=>({name,url:teamMap.get(name)||""})),
+    competitionLogo:competitionMap.get(e.competition)||""
+  }));
+}
+
 function findBigEventById(events, matchId) {
   return (events || []).find(e=>String(e.id)===String(matchId));
 }
@@ -825,8 +889,9 @@ app.get("/health", (_req, res) => {
 app.get("/api/big-events", async (_req, res) => {
   try {
     const events = await getBigEvents(30);
+    const enriched = await enrichBigEventsWithWikipedia(events);
     res.set("Cache-Control","no-store");
-    res.json({ok:true,events});
+    res.json({ok:true,events:enriched});
   } catch (error) {
     res.status(error?.status || 502).json({ok:false,error:String(error?.message || error)});
   }
