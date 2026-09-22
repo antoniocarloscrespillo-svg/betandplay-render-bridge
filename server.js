@@ -277,7 +277,7 @@ header{display:flex;gap:20px;align-items:flex-end;justify-content:space-between;
 .stat{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:16px;padding:14px}
 .stat b{display:block;font-size:23px;margin-top:4px}.stat span{color:var(--muted);font-size:12px}
 .toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}
-button,.filter{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:12px;padding:10px 13px;font-weight:700;cursor:pointer}
+button,.filter,select{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:12px;padding:10px 13px;font-weight:700;cursor:pointer}
 .filter.active{background:linear-gradient(135deg,var(--accent),var(--accent2));border-color:transparent}
 .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
 .card{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:20px;padding:18px;box-shadow:0 12px 30px rgba(0,0,0,.22);transition:.2s}
@@ -311,7 +311,20 @@ button,.filter{border:1px solid var(--line);background:var(--panel);color:var(--
   <button class="filter" data-filter="tennis">Tennis</button>
   <button class="filter" data-filter="cricket">Cricket</button>
   <button class="filter" data-filter="other">Other</button>
-  <button id="generateBtn" class="primary">✨ GENERATE 3 POSTS</button>
+  <select id="contentType">
+    <option value="match">Match spotlight</option>
+    <option value="tournament">Tournament preview</option>
+    <option value="acca">Tournament ACCA</option>
+    <option value="picks">Today's picks</option>
+    <option value="weekend">Weekend preview</option>
+    <option value="surprise">Surprise me</option>
+  </select>
+  <select id="contentCount">
+    <option value="1">1 post</option>
+    <option value="3" selected>3 posts</option>
+    <option value="5">5 posts</option>
+  </select>
+  <button id="generateBtn" class="primary">✨ GENERATE CONTENT</button>
   <button id="refreshBtn">↻ Refresh</button>
 </div>
 
@@ -420,7 +433,8 @@ document.getElementById("generateBtn").onclick=async()=>{
       body:JSON.stringify({
         start:now.toISOString(),
         end:end.toISOString(),
-        count:3,
+        count:Number(document.getElementById("contentCount").value||3),
+        contentType:document.getElementById("contentType").value,
         excludeGermany:true
       })
     });
@@ -466,11 +480,77 @@ app.post("/api/content/generate", async (req, res) => {
     ? req.body.end
     : new Date(Date.now()+24*60*60*1000).toISOString();
   const count = Number(req.body?.count || 3);
+  const contentType = typeof req.body?.contentType === "string" ? req.body.contentType : "match";
   const excludeGermany = req.body?.excludeGermany !== false;
 
   try {
-    const posts = await generatePosts({start,end,count,excludeGermany});
-    res.json({ok:true,posts,exclude_germany:excludeGermany});
+    const sourcePosts = await generatePosts({start,end,count:Math.max(count,5),excludeGermany});
+    let posts = sourcePosts.slice(0,count);
+
+    if (contentType === "tournament" || contentType === "weekend") {
+      const byCompetition = new Map();
+      for (const p of sourcePosts) {
+        if (!byCompetition.has(p.competition)) byCompetition.set(p.competition,[]);
+        byCompetition.get(p.competition).push(p);
+      }
+      posts = [...byCompetition.entries()].slice(0,count).map(([competition,items],index)=>({
+        ...items[0],
+        id:"generated-"+contentType+"-"+index+"-"+Date.now(),
+        title:competition + (contentType === "weekend" ? " — Weekend Preview" : " — Tournament Preview"),
+        odds:items.flatMap(x=>x.odds.slice(0,1)).slice(0,4),
+        copy:"🔥 "+competition.toUpperCase()+(contentType === "weekend" ? " — WEEKEND PREVIEW" : " IS COMING!")+"\n\n"+
+          items.slice(0,4).map(x=>"⚽ "+x.title+(x.time ? " · "+x.time : "")).join("\n")+
+          "\n\nBig fixtures are coming up. Check the latest Betandplay markets and build your picks! 🔥",
+        content_type:contentType
+      }));
+    }
+
+    if (contentType === "acca") {
+      const byCompetition = new Map();
+      for (const p of sourcePosts) {
+        if (!byCompetition.has(p.competition)) byCompetition.set(p.competition,[]);
+        byCompetition.get(p.competition).push(p);
+      }
+      const groups = [...byCompetition.entries()].filter(([,items])=>items.length>=2);
+      const selected = groups.length ? groups : [["Today's Football",sourcePosts]];
+      posts = selected.slice(0,count).map(([competition,items],index)=>{
+        const legs = items.slice(0,4).map(x=>({title:x.title,pick:x.odds[0]})).filter(x=>x.pick?.value);
+        const combined = legs.reduce((total,x)=>total*Number(x.pick.value||1),1);
+        return {
+          ...items[0],
+          id:"generated-acca-"+index+"-"+Date.now(),
+          title:competition+" ACCA",
+          odds:legs.map(x=>({label:x.title+" · "+x.pick.label,value:x.pick.value})),
+          copy:"🔥 "+competition.toUpperCase()+" ACCA\n\n"+
+            legs.map(x=>"⚽ "+x.title+" — "+x.pick.label+" @ "+x.pick.value).join("\n")+
+            (legs.length>1 ? "\n\n🎯 Combined odds: "+combined.toFixed(2) : "")+
+            "\n\nWho's backing it? 🔥",
+          content_type:"acca"
+        };
+      });
+    }
+
+    if (contentType === "picks") {
+      posts = sourcePosts.slice(0,count).map((p,index)=>({
+        ...p,
+        id:"generated-picks-"+index+"-"+Date.now(),
+        title:"Today's Pick — "+p.title,
+        copy:"🎯 TODAY'S PICK\n\n"+p.title+"\n"+
+          (p.odds[0] ? "⚽ "+p.odds[0].label+" @ "+p.odds[0].value+"\n\n" : "")+
+          "One to watch on today's Betandplay board. 🔥",
+        content_type:"picks"
+      }));
+    }
+
+    if (contentType === "surprise") {
+      posts = sourcePosts.slice(0,count).map((p,index)=>({
+        ...p,
+        id:"generated-surprise-"+index+"-"+Date.now(),
+        content_type:index % 2 === 0 ? "match" : "picks"
+      }));
+    }
+
+    res.json({ok:true,posts,content_type:contentType,exclude_germany:excludeGermany});
   } catch (error) {
     res.status(error?.status || 502).json({
       ok:false,
