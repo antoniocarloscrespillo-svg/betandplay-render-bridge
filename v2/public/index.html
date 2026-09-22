@@ -69,8 +69,18 @@ linear-gradient(145deg,rgba(124,92,255,.9),rgba(39,140,255,.62) 55%,rgba(24,200,
 .day-label{font-weight:900;color:#dfe6f3}.day-events{display:flex;gap:7px;flex-wrap:wrap}
 .day-chip{font-size:11px;padding:7px 9px;border-radius:999px;background:linear-gradient(135deg,rgba(124,92,255,.16),rgba(47,140,255,.12));border:1px solid #2c3850;color:#dfe7f7}
 .report-period-badge{display:inline-flex;padding:7px 10px;border-radius:999px;background:linear-gradient(135deg,rgba(124,92,255,.18),rgba(24,200,216,.14));border:1px solid #33425c;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.8px}
-@media(max-width:820px){.generator{grid-template-columns:1fr 1fr}.grid,.report-head,.matches,.monthly-overview{grid-template-columns:1fr}.match:nth-child(odd){border-right:0}header{align-items:flex-start;flex-direction:column}.hero-title{font-size:28px}}
-@media(max-width:540px){.generator{grid-template-columns:1fr}.tabs{overflow:auto}.report-toolbar{align-items:flex-start;flex-direction:column}}
+.biggames-hero{display:grid;grid-template-columns:1.5fr .8fr;gap:16px;margin-bottom:16px}
+.biggames-banner{border:1px solid var(--line);border-radius:24px;padding:24px;background:linear-gradient(135deg,rgba(236,108,255,.22),rgba(47,140,255,.18),rgba(24,200,216,.12));min-height:180px;display:flex;flex-direction:column;justify-content:space-between}
+.biggames-banner h2{margin:0;font-size:30px}.biggames-banner p{margin:8px 0 0;color:var(--muted);max-width:680px}
+.biggames-stats{display:grid;grid-template-columns:1fr 1fr;gap:12px}.big-stat{border:1px solid var(--line);border-radius:20px;padding:18px;background:linear-gradient(145deg,#171d2a,#0e131c)}.big-stat b{display:block;font-size:28px;margin-top:6px}.big-stat span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px}
+.biggames-filters{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-bottom:18px}
+.biggames-filters select,.biggames-filters input{border:1px solid var(--line);background:#0d1219;color:var(--text);border-radius:12px;padding:11px 12px;font:inherit;font-weight:700;min-width:0}
+.big-day{margin-bottom:22px}.big-day-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}.big-day-title h3{margin:0;font-size:18px}
+.big-competition{border:1px solid var(--line);border-radius:20px;overflow:hidden;background:#0f141d;margin-bottom:12px}.big-competition-head{display:flex;justify-content:space-between;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line);background:linear-gradient(90deg,rgba(123,92,255,.12),rgba(47,140,255,.07))}
+.big-event-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+.big-event{padding:16px;border-bottom:1px solid #1e2633}.big-event:nth-child(odd){border-right:1px solid #1e2633}.big-event-name{font-weight:900;font-size:17px}.big-event-meta{font-size:12px;color:var(--muted);margin:6px 0 10px}.big-event-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.markets-box{display:none;margin-top:10px;padding:12px;border-radius:12px;background:#0a0f15;border:1px solid var(--line)}.markets-box.open{display:block}.variant-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:12px}.variant-card{border:1px solid var(--line);border-radius:14px;padding:12px;background:#0b1018}.variant-card h4{margin:0 0 8px}
+@media(max-width:820px){.generator{grid-template-columns:1fr 1fr}.grid,.report-head,.matches,.monthly-overview,.biggames-hero,.big-event-list,.variant-grid{grid-template-columns:1fr}.biggames-filters{grid-template-columns:1fr 1fr}.big-event:nth-child(odd){border-right:0}.match:nth-child(odd){border-right:0}header{align-items:flex-start;flex-direction:column}.hero-title{font-size:28px}}
+@media(max-width:540px){.generator{grid-template-columns:1fr}.biggames-filters{grid-template-columns:1fr}.tabs{overflow:auto}.report-toolbar{align-items:flex-start;flex-direction:column}}
 </style>
 </head>
 <body>
@@ -86,6 +96,7 @@ linear-gradient(145deg,rgba(124,92,255,.9),rgba(39,140,255,.62) 55%,rgba(24,200,
 <div class="tabs">
   <button class="tab active" data-tab="studio">Content Studio</button>
   <button class="tab" data-tab="report">Reports</button>
+  <button class="tab" data-tab="biggames">Big Games</button>
 </div>
 
 <section id="studio" class="panel active">
@@ -135,6 +146,34 @@ linear-gradient(145deg,rgba(124,92,255,.9),rgba(39,140,255,.62) 55%,rgba(24,200,
   </div>
   <div id="reportRoot"><div class="empty">Choose a report period.</div></div>
 </section>
+
+<section id="biggames" class="panel">
+  <div class="biggames-hero">
+    <div class="biggames-banner">
+      <div><span class="report-period-badge">30-DAY RADAR</span><h2>Upcoming Big Games</h2><p>Major teams and marquee names, organised by day and competition, with live Betandplay prices and fast content generation.</p></div>
+      <div class="hero-meta"><span class="hero-chip">Football</span><span class="hero-chip">Tennis</span><span class="hero-chip">Basketball</span></div>
+    </div>
+    <div class="biggames-stats">
+      <div class="big-stat"><span>Events</span><b id="bigEventCount">0</b></div>
+      <div class="big-stat"><span>Competitions</span><b id="bigCompetitionCount">0</b></div>
+    </div>
+  </div>
+
+  <div class="biggames-filters">
+    <select id="bigSport"><option value="all">All sports</option><option value="soccer">Football</option><option value="tennis">Tennis</option><option value="basketball">Basketball</option></select>
+    <select id="bigCompetition"><option value="all">All competitions</option></select>
+    <select id="bigTeam"><option value="all">All teams / players</option></select>
+    <select id="bigCountry"><option value="all">All countries</option></select>
+    <input id="bigDate" type="date">
+  </div>
+
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+    <button id="refreshBigGames" class="btn primary">↻ Refresh big games</button>
+    <button id="clearBigFilters" class="btn">Clear filters</button>
+  </div>
+
+  <div id="bigGamesRoot"><div class="empty">Open this tab to load upcoming big games.</div></div>
+</section>
 </div>
 
 <script>
@@ -144,7 +183,9 @@ const reportRoot=document.getElementById("reportRoot");
 const searchInput=document.getElementById("teamSearch");
 const searchBtn=document.getElementById("searchBtn");
 const searchResults=document.getElementById("searchResults");
+const bigGamesRoot=document.getElementById("bigGamesRoot");
 let currentPosts=[];
+let bigEvents=[];
 
 function esc(v){return String(v??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll(String.fromCharCode(34),"&quot;").replaceAll("'","&#39;");}
 
@@ -179,6 +220,7 @@ document.querySelectorAll(".tab").forEach(tab=>tab.onclick=()=>{
   tab.classList.add("active");
   document.getElementById(tab.dataset.tab).classList.add("active");
   if(tab.dataset.tab==="report" && !reportRoot.dataset.loaded) loadReport("daily",false);
+  if(tab.dataset.tab==="biggames" && !bigGamesRoot.dataset.loaded) loadBigGames();
 });
 
 async function searchMatches(){
@@ -347,6 +389,120 @@ function renderReport(report,period="daily"){
 
   document.getElementById("refreshReport").onclick=()=>loadReport(period,true);
 }
+
+function fmtBigDate(iso){
+  if(!iso)return "";
+  return new Intl.DateTimeFormat("en-GB",{timeZone:"Europe/Malta",weekday:"short",day:"2-digit",month:"short"}).format(new Date(iso));
+}
+
+function dateInputValue(iso){
+  if(!iso)return "";
+  return new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/Malta",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date(iso));
+}
+
+function uniqueSorted(values){return [...new Set(values.filter(Boolean))].sort((a,b)=>String(a).localeCompare(String(b)));}
+
+function populateBigFilters(){
+  const competition=document.getElementById("bigCompetition"), team=document.getElementById("bigTeam"), country=document.getElementById("bigCountry");
+  const current={competition:competition.value,team:team.value,country:country.value};
+  competition.innerHTML='<option value="all">All competitions</option>'+uniqueSorted(bigEvents.map(e=>e.competition)).map(v=>'<option>'+esc(v)+'</option>').join("");
+  team.innerHTML='<option value="all">All teams / players</option>'+uniqueSorted(bigEvents.flatMap(e=>e.teamNames||[])).map(v=>'<option>'+esc(v)+'</option>').join("");
+  country.innerHTML='<option value="all">All countries</option>'+uniqueSorted(bigEvents.map(e=>e.country)).map(v=>'<option>'+esc(v)+'</option>').join("");
+  if([...competition.options].some(o=>o.value===current.competition))competition.value=current.competition;
+  if([...team.options].some(o=>o.value===current.team))team.value=current.team;
+  if([...country.options].some(o=>o.value===current.country))country.value=current.country;
+}
+
+function filteredBigEvents(){
+  const sport=document.getElementById("bigSport").value;
+  const competition=document.getElementById("bigCompetition").value;
+  const team=document.getElementById("bigTeam").value;
+  const country=document.getElementById("bigCountry").value;
+  const date=document.getElementById("bigDate").value;
+  return bigEvents.filter(e=>
+    (sport==="all" || (e.sportKey||"").toLowerCase()===sport) &&
+    (competition==="all" || e.competition===competition) &&
+    (team==="all" || (e.teamNames||[]).includes(team)) &&
+    (country==="all" || e.country===country) &&
+    (!date || dateInputValue(e.startTime)===date)
+  );
+}
+
+function renderBigGames(){
+  const events=filteredBigEvents();
+  document.getElementById("bigEventCount").textContent=events.length;
+  document.getElementById("bigCompetitionCount").textContent=new Set(events.map(e=>e.competition)).size;
+  if(!events.length){bigGamesRoot.innerHTML='<div class="empty">No big games match these filters.</div>';return;}
+
+  const byDay=new Map();
+  for(const e of events){
+    const key=dateInputValue(e.startTime)||"unknown";
+    if(!byDay.has(key,))byDay.set(key,[]);
+    byDay.get(key).push(e);
+  }
+
+  bigGamesRoot.innerHTML=[...byDay.entries()].sort((a,b)=>a[0].localeCompare(b[0])).map(([date,items])=>{
+    const comps=new Map();
+    for(const e of items){if(!comps.has(e.competition))comps.set(e.competition,[]);comps.get(e.competition).push(e);}
+    const compHtml=[...comps.entries()].map(([comp,list])=>
+      '<div class="big-competition"><div class="big-competition-head"><strong>'+esc(comp)+'</strong><span class="pill">'+list.length+' events</span></div><div class="big-event-list">'+
+      list.map(e=>{
+        const odds=(e.odds||[]).slice(0,4).map(o=>'<span class="mini">'+esc(o.label)+' <b>'+esc(o.value)+'</b></span>').join("");
+        return '<div class="big-event">'+
+          '<div class="big-event-name">'+esc(e.title)+'</div>'+
+          '<div class="big-event-meta">'+esc(e.time)+' · '+esc(e.sport||"Sport")+(e.country?' · '+esc(e.country):'')+'</div>'+
+          '<div class="mini-odds">'+odds+'</div>'+
+          '<div class="big-event-actions"><button class="btn primary bigGenerate" data-id="'+esc(e.id)+'">Generate 3 posts</button><button class="btn bigMarkets" data-id="'+esc(e.id)+'">More markets</button></div>'+
+          '<div id="markets-'+esc(e.id)+'" class="markets-box"></div>'+
+          '<div id="variants-'+esc(e.id)+'"></div>'+
+        '</div>';
+      }).join("")+'</div></div>'
+    ).join("");
+    return '<section class="big-day"><div class="big-day-title"><h3>'+esc(fmtBigDate(items[0]?.startTime))+'</h3><span class="pill">'+items.length+' events</span></div>'+compHtml+'</section>';
+  }).join("");
+
+  document.querySelectorAll(".bigMarkets").forEach(btn=>btn.onclick=async()=>{
+    const box=document.getElementById("markets-"+btn.dataset.id);
+    if(box.dataset.loaded){box.classList.toggle("open");return;}
+    btn.textContent="Loading…";btn.disabled=true;
+    try{
+      const r=await fetch("/api/match-markets/"+encodeURIComponent(btn.dataset.id),{cache:"no-store"});
+      const d=await r.json();if(!r.ok)throw new Error(d.error||"markets_failed");
+      box.innerHTML=(d.options||[]).length?(d.options||[]).map(o=>'<div class="copy-bullet">• '+esc(o.market)+': '+esc(o.label)+' @ <strong>'+esc(o.value)+'</strong></div>').join(""):'No additional markets available.';
+      box.dataset.loaded="1";box.classList.add("open");
+    }catch(e){box.innerHTML='Could not load markets: '+esc(e.message);box.classList.add("open");}
+    finally{btn.textContent="More markets";btn.disabled=false;}
+  });
+
+  document.querySelectorAll(".bigGenerate").forEach(btn=>btn.onclick=async()=>{
+    const root=document.getElementById("variants-"+btn.dataset.id);
+    btn.textContent="Generating…";btn.disabled=true;
+    try{
+      const r=await fetch("/api/generate-variants",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({matchId:btn.dataset.id})});
+      const d=await r.json();if(!r.ok)throw new Error(d.error||"generation_failed");
+      root.innerHTML='<div class="variant-grid">'+(d.variants||[]).map((v,i)=>'<div class="variant-card"><h4>Option '+(i+1)+'</h4><div class="copy">'+renderCopyHtml(v.copy||"")+'</div><button class="btn primary copyVariant" data-copytext="'+encodeURIComponent(v.copy||"")+'" style="margin-top:10px">Copy post</button></div>').join("")+'</div>';
+      root.querySelectorAll(".copyVariant").forEach(el=>el.onclick=async()=>{await navigator.clipboard.writeText(decodeURIComponent(el.dataset.copytext||""));const old=el.textContent;el.textContent="Copied ✓";setTimeout(()=>el.textContent=old,1200);});
+    }catch(e){root.innerHTML='<div class="empty">Could not generate posts: '+esc(e.message)+'</div>';}
+    finally{btn.textContent="Generate 3 posts";btn.disabled=false;}
+  });
+}
+
+async function loadBigGames(){
+  bigGamesRoot.dataset.loaded="1";
+  bigGamesRoot.innerHTML='<div class="empty">Loading upcoming big games from Betandplay…</div>';
+  try{
+    const r=await fetch("/api/big-events",{cache:"no-store"});
+    const d=await r.json();if(!r.ok)throw new Error(d.error||"big_games_failed");
+    bigEvents=d.events||[];
+    populateBigFilters();renderBigGames();
+  }catch(e){bigGamesRoot.innerHTML='<div class="empty">Could not load big games: '+esc(e.message)+'</div>';}
+}
+
+["bigSport","bigCompetition","bigTeam","bigCountry","bigDate"].forEach(id=>document.getElementById(id)?.addEventListener("change",renderBigGames));
+document.getElementById("refreshBigGames").onclick=()=>{bigGamesRoot.dataset.loaded="";loadBigGames();};
+document.getElementById("clearBigFilters").onclick=()=>{
+  document.getElementById("bigSport").value="all";document.getElementById("bigCompetition").value="all";document.getElementById("bigTeam").value="all";document.getElementById("bigCountry").value="all";document.getElementById("bigDate").value="";renderBigGames();
+};
 
 document.querySelectorAll(".reportPeriod").forEach(btn=>btn.onclick=()=>loadReport(btn.dataset.period,false));
 </script>
