@@ -2,10 +2,15 @@ import express from "express";
 
 const app = express();
 app.disable("x-powered-by");
+app.use(express.json({ limit: "32kb" }));
 
 const PORT = Number(process.env.PORT || 10000);
 const UPSTREAM = "https://www.betandplay.com/sportsbook/api/v2";
 const REQUEST_TIMEOUT_MS = Number(process.env.REQUEST_TIMEOUT_MS || 15000);
+
+const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || "";
+const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || "";
+const POST_SECRET = process.env.POST_SECRET || "";
 
 const allowedMatchParams = new Set([
   "id",
@@ -32,17 +37,14 @@ const allowedMarketParams = new Set(["group_key", "market_id", "page", "limit"])
 
 function copyAllowedParams(source, allowed) {
   const out = new URLSearchParams();
-
   for (const [key, raw] of Object.entries(source)) {
     if (!allowed.has(key)) continue;
-
     const values = Array.isArray(raw) ? raw : [raw];
     for (const value of values) {
       if (value === undefined || value === null || value === "") continue;
       out.append(key, String(value));
     }
   }
-
   return out;
 }
 
@@ -96,10 +98,7 @@ async function fetchUpstream(path, searchParams) {
 
 function normalizeOddsPayload(payload) {
   if (!payload || typeof payload !== "object") return payload;
-
-  if (Array.isArray(payload)) {
-    return payload.map(normalizeOddsPayload);
-  }
+  if (Array.isArray(payload)) return payload.map(normalizeOddsPayload);
 
   const out = {};
   for (const [key, value] of Object.entries(payload)) {
@@ -121,20 +120,66 @@ function sendUpstream(res, result, normalizeOdds = false) {
       upstream_content_type: result.contentType,
       message: "Betandplay upstream request failed",
       upstream_body:
-        typeof result.body === "string"
-          ? result.body.slice(0, 1000)
-          : result.body
+        typeof result.body === "string" ? result.body.slice(0, 1000) : result.body
     });
   }
-
   return res.json(normalizeOdds ? normalizeOddsPayload(result.body) : result.body);
+}
+
+function requirePostSecret(req, res, next) {
+  if (!POST_SECRET) {
+    return res.status(503).json({ ok: false, error: "post_secret_not_configured" });
+  }
+  const supplied = req.get("x-bridge-key") || "";
+  if (supplied !== POST_SECRET) {
+    return res.status(401).json({ ok: false, error: "unauthorized" });
+  }
+  next();
+}
+
+async function telegramApi(method, payload) {
+  if (!TELEGRAM_BOT_TOKEN) {
+    throw new Error("telegram_bot_token_not_configured");
+  }
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
+  try {
+    const response = await fetch(
+      `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/${method}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+        signal: controller.signal
+      }
+    );
+
+    const data = await response.json().catch(() => null);
+    if (!response.ok || !data?.ok) {
+      const err = new Error(data?.description || `telegram_http_${response.status}`);
+      err.status = response.status;
+      err.telegram = data;
+      throw err;
+    }
+    return data.result;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 app.get("/", (_req, res) => {
   res.json({
     service: "betandplay-render-bridge",
-    read_only: true,
-    endpoints: ["/health", "/matches", "/matches/:id/markets"]
+    read_only_sportsbook: true,
+    endpoints: [
+      "/health",
+      "/matches",
+      "/matches/:id/markets",
+      "/telegram/status",
+      "/telegram/send"
+    ]
   });
 });
 
@@ -149,6 +194,7 @@ app.get("/health", async (_req, res) => {
       upstream: "Betandplay Sportsbook",
       upstream_status: result.status,
       upstream_content_type: result.contentType,
+      telegram_configured: Boolean(TELEGRAM_BOT_TOKEN && TELEGRAM_CHAT_ID && POST_SECRET),
       checked_at: new Date().toISOString()
     });
   } catch (error) {
@@ -189,6 +235,52 @@ app.get("/matches/:id/markets", async (req, res) => {
     return res.status(502).json({
       ok: false,
       error: error?.name === "AbortError" ? "upstream_timeout" : "upstream_error",
+      message: String(error?.message || error)
+    });
+  }
+});
+
+app.get("/telegram/status", (_req, res) => {
+  res.json({
+    ok: true,
+    bot_token_configured: Boolean(TELEGRAM_BOT_TOKEN),
+    chat_id_configured: Boolean(TELEGRAM_CHAT_ID),
+    post_secret_configured: Boolean(POST_SECRET)
+  });
+});
+
+app.post("/telegram/send", requirePostSecret, async (req, res) => {
+  const text = typeof req.body?.text === "string" ? req.body.text.trim() : "";
+  const chatId = req.body?.chat_id || TELEGRAM_CHAT_ID;
+
+  if (!text) {
+    return res.status(400).json({ ok: false, error: "text_required" });
+  }
+  if (text.length > 4096) {
+    return res.status(400).json({ ok: false, error: "text_too_long" });
+  }
+  if (!chatId) {
+    return res.status(503).json({ ok: false, error: "telegram_chat_id_not_configured" });
+  }
+
+  try {
+    const result = await telegramApi("sendMessage", {
+      chat_id: chatId,
+      text,
+      parse_mode: "HTML",
+      disable_web_page_preview: true
+    });
+
+    return res.json({
+      ok: true,
+      message_id: result.message_id,
+      chat_id: result.chat?.id,
+      sent_at: new Date().toISOString()
+    });
+  } catch (error) {
+    return res.status(error?.status || 502).json({
+      ok: false,
+      error: "telegram_send_failed",
       message: String(error?.message || error)
     });
   }
