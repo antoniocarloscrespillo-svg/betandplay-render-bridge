@@ -478,6 +478,24 @@ function chooseBettingOptions(markets) {
   return options;
 }
 
+function normalizeMarketsForDrawer(markets) {
+  const groups = new Map();
+  for (const market of markets || []) {
+    const name=String(market?.name || market?.market_name || market?.label || market?.key || "Other");
+    const family=marketFamily(name);
+    const selections=(market?.outcomes || []).map(marketOutcomeToOdd).filter(Boolean).filter(x=>Number.isFinite(Number(x.value)));
+    if(!selections.length) continue;
+    const key=family==="other" ? name : family;
+    if(!groups.has(key)) groups.set(key,{key,family,name,markets:[]});
+    groups.get(key).markets.push({name,selections:selections.slice(0,12)});
+  }
+  const order=["result","goals_total","btts","double_chance","draw_no_bet","handicap","team_total","corners","cards","qualify","first_goal","half_time","second_half","clean_sheet","player_prop","correct_score"];
+  return [...groups.values()].sort((a,b)=>{
+    const ai=order.indexOf(a.family), bi=order.indexOf(b.family);
+    return (ai<0?999:ai)-(bi<0?999:bi);
+  }).slice(0,24);
+}
+
 async function fetchMatchMarkets(matchId) {
   const url = new URL(UPSTREAM + "/matches/" + encodeURIComponent(matchId) + "/markets");
   url.searchParams.set("limit","200");
@@ -1003,7 +1021,8 @@ app.get("/api/match-markets/:id", async (req,res) => {
   try {
     const markets = await fetchMatchMarkets(req.params.id);
     const options = chooseBettingOptions(markets);
-    res.json({ok:true,options});
+    const groups = normalizeMarketsForDrawer(markets);
+    res.json({ok:true,options,groups});
   } catch (error) {
     res.status(error?.status || 502).json({ok:false,error:String(error?.message || error)});
   }
