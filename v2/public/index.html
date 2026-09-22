@@ -187,13 +187,13 @@ const tomorrowKey=()=>{const d=new Date();d.setDate(d.getDate()+1);return localD
 function logo(url,name,cls){return '<span class="'+cls+'">'+(url?'<img src="'+esc(url)+'" alt="" loading="lazy" onerror="this.remove();this.parentElement.textContent=\''+esc(initials(name))+'\'">':esc(initials(name)))+'</span>'}
 function teamLogo(e,name){const x=(e.teamLogos||[]).find(a=>a.name===name);return logo(x?.url,name,"team-logo")}
 function competitionLogo(e){return logo(e.competitionLogo,e.competition,"comp-logo")}
-function setView(id){$$(".navbtn").forEach(x=>x.classList.toggle("active",x.dataset.view===id));$$(".view").forEach(x=>x.classList.toggle("active",x.id===id));if(id==="biggames"&&!state.events.length)loadEvents()}
-$(".navbtn").forEach(b=>b.onclick=()=>setView(b.dataset.view));
+function setView(id){$$$(".navbtn").forEach(x=>x.classList.toggle("active",x.dataset.view===id));$$(".view").forEach(x=>x.classList.toggle("active",x.id===id));if(id==="biggames"&&!state.events.length)loadEvents()}
+$$(".navbtn").forEach(b=>b.onclick=()=>setView(b.dataset.view));
 const heroSportBound=true;
-$("[data-hero-sport]").forEach(b=>b.onclick=()=>{
+$$("[data-hero-sport]").forEach(b=>b.onclick=()=>{
   const sport=b.dataset.heroSport;
   $("#sportFilter").value=sport;
-  $("[data-hero-sport]").forEach(x=>x.classList.toggle("active",x===b));
+  $$("[data-hero-sport]").forEach(x=>x.classList.toggle("active",x===b));
   render();
 });
 
@@ -218,7 +218,7 @@ function activeChips(){
  if($("#countryFilter").value!=="all")a.push({label:$("#countryFilter").value,type:"country"});
  if($("#search").value.trim())a.push({label:"Search: "+$("#search").value.trim(),type:"search"});
  $("#activeFilters").innerHTML=a.map(x=>'<span class="activechip">'+esc(x.label)+'<button data-clear="'+x.type+'" aria-label="Clear '+esc(x.label)+'">×</button></span>').join("");
- $("[data-clear]").forEach(b=>b.onclick=()=>{
+ $$("[data-clear]").forEach(b=>b.onclick=()=>{
    const t=b.dataset.clear;
    if(t==="sport")$("#sportFilter").value="soccer";
    if(t==="competition")$("#competitionFilter").value="all";
@@ -264,11 +264,11 @@ async function loadEvents(){
  try{const r=await fetch("/api/big-events",{cache:"no-store"}),d=await r.json();if(!r.ok)throw new Error(d.error||"api_error");state.events=d.events||[];state.lastSuccess=new Date();localStorage.setItem("bnp_big_events_cache",JSON.stringify({at:state.lastSuccess.toISOString(),events:state.events}));$("#lastUpdated").textContent=(d.cached?"Cached · ":"")+"Updated "+new Intl.DateTimeFormat("en-GB",{timeZone:"Europe/Malta",hour:"2-digit",minute:"2-digit"}).format(state.lastSuccess)+" CEST";fillFilters();render()}
  catch(e){let stale=null;try{stale=JSON.parse(localStorage.getItem("bnp_big_events_cache")||"null")}catch{}if(stale?.events?.length){state.events=stale.events;state.lastSuccess=new Date(stale.at);fillFilters();render();$("#lastUpdated").textContent="Stale data · "+new Intl.DateTimeFormat("en-GB",{timeZone:"Europe/Malta",hour:"2-digit",minute:"2-digit"}).format(state.lastSuccess)+" CEST";$("#events").insertAdjacentHTML("afterbegin",'<div class="error" style="padding:10px 12px;margin-bottom:8px"><strong style="display:inline;margin-right:6px">Live odds unavailable.</strong> Showing cached data. <button class="btn" id="retry" style="margin-left:8px">Retry</button></div>');$("#retry").onclick=loadEvents}else{$("#events").innerHTML='<div class="error"><strong>Live odds are temporarily unavailable</strong>Could not reach the sportsbook API.<br><button class="btn primary" id="retry" style="margin-top:12px">Retry</button></div>';$("#retry").onclick=loadEvents}}
 }
-function reset(){$("#search").value="";$("#sportFilter").value="soccer";$("#competitionFilter").value="all";$("#countryFilter").value="all";state.range="today";$("[data-range]").forEach(x=>x.classList.toggle("active",x.dataset.range==="today"));$("[data-hero-sport]").forEach(x=>x.classList.toggle("active",x.dataset.heroSport==="soccer"));render()}
+function reset(){$("#search").value="";$("#sportFilter").value="soccer";$("#competitionFilter").value="all";$("#countryFilter").value="all";state.range="today";$$("[data-range]").forEach(x=>x.classList.toggle("active",x.dataset.range==="today"));$$("[data-hero-sport]").forEach(x=>x.classList.toggle("active",x.dataset.heroSport==="soccer"));render()}
 $("#resetFilters").onclick=reset;["search","sportFilter","competitionFilter","countryFilter"].forEach(id=>$("#"+id).addEventListener(id==="search"?"input":"change",()=>{
-  if(id==="sportFilter")$("[data-hero-sport]").forEach(x=>x.classList.toggle("active",x.dataset.heroSport===$("#sportFilter").value));
+  if(id==="sportFilter")$$("[data-hero-sport]").forEach(x=>x.classList.toggle("active",x.dataset.heroSport===$("#sportFilter").value));
   render();
-}));$$("[data-range]").forEach(b=>b.onclick=()=>{state.range=b.dataset.range;$$("[data-range]").forEach(x=>x.classList.toggle("active",x===b));render()});
+}));$$$("[data-range]").forEach(b=>b.onclick=()=>{state.range=b.dataset.range;$$$("[data-range]").forEach(x=>x.classList.toggle("active",x===b));render()});
 
 function eventById(id){return state.events.find(e=>String(e.id)===String(id))}
 function openDrawer(back){back.classList.add("open");back.setAttribute("aria-hidden","false")}
@@ -281,7 +281,7 @@ async function openMarkets(id){
 $(".closeDrawer").onclick=()=>closeDrawer($("#marketBack"));$("#marketBack").onclick=e=>{if(e.target===e.currentTarget)closeDrawer(e.currentTarget)};
 
 function saveRecent(e){try{const arr=JSON.parse(localStorage.getItem("bnp_recent_events")||"[]").filter(x=>String(x.id)!==String(e.id));arr.unshift({id:e.id,title:e.title,competition:e.competition,time:e.time,startTime:e.startTime,sportKey:e.sportKey,teamNames:e.teamNames||[]});localStorage.setItem("bnp_recent_events",JSON.stringify(arr.slice(0,5)))}catch{}}
-function renderRecent(){let arr=[];try{arr=JSON.parse(localStorage.getItem("bnp_recent_events")||"[]")}catch{}$("#recentWrap").style.display=arr.length?"block":"none";$("#recentList").innerHTML=arr.map(x=>'<div class="searchrow"><div><b>'+esc(x.title)+'</b><span>'+esc(x.competition)+' · '+esc(x.time||"")+'</span></div><button class="btn recentCreate" data-id="'+esc(x.id)+'">Create Content →</button></div>').join("");$(".recentCreate").forEach(b=>b.onclick=()=>{let e=eventById(b.dataset.id);if(e)openCreate(e.id)})}
+function renderRecent(){let arr=[];try{arr=JSON.parse(localStorage.getItem("bnp_recent_events")||"[]")}catch{}$("#recentWrap").style.display=arr.length?"block":"none";$("#recentList").innerHTML=arr.map(x=>'<div class="searchrow"><div><b>'+esc(x.title)+'</b><span>'+esc(x.competition)+' · '+esc(x.time||"")+'</span></div><button class="btn recentCreate" data-id="'+esc(x.id)+'">Create Content →</button></div>').join("");$$(".recentCreate").forEach(b=>b.onclick=()=>{let e=eventById(b.dataset.id);if(e)openCreate(e.id)})}
 function openCreate(id){const e=eventById(id);if(!e)return;state.selected=e;saveRecent(e);renderRecent();$("#createTitle").textContent=e.title;$("#createMeta").textContent=e.competition+" · "+dayLabel(e.startTime)+" · "+timeLabel(e.startTime)+" CEST";$("#generated").innerHTML="";openDrawer($("#createBack"))}
 $(".closeCreate").onclick=()=>closeDrawer($("#createBack"));$("#createBack").onclick=e=>{if(e.target===e.currentTarget)closeDrawer(e.currentTarget)};
 $$(".seg button").forEach(b=>b.onclick=()=>{b.parentElement.querySelectorAll("button").forEach(x=>x.classList.remove("active"));b.classList.add("active")});
@@ -294,10 +294,10 @@ $("#generateSelected").onclick=async()=>{
 };
 function bindPosts(vars){$("#collapseAll").onclick=()=>$$(".post").forEach(x=>x.classList.add("collapsed"));$("#expandAll").onclick=()=>$$(".post").forEach(x=>x.classList.remove("collapsed"));$$(".collapsePost").forEach(b=>b.onclick=()=>{const p=b.closest(".post");p.classList.toggle("collapsed");b.textContent=p.classList.contains("collapsed")?"Expand":"Collapse"});$$(".copyPost").forEach((b,i)=>b.onclick=async()=>{const body=b.closest(".post").querySelector(".postbody");await navigator.clipboard.writeText(body.textContent);const old=b.textContent;b.textContent="✓ Copied";setTimeout(()=>b.textContent=old,1200)});$$(".editPost").forEach((b,i)=>b.onclick=()=>{const p=b.closest(".post"),body=p.querySelector(".postbody");if(body.querySelector("textarea"))return;const t=document.createElement("textarea");t.className="editarea";t.value=body.textContent;body.textContent="";body.appendChild(t);t.focus();b.textContent="Done";b.onclick=()=>{body.textContent=t.value;b.textContent="Edit";bindPosts(vars)}})}
 async function studioSearch(){const q=$("#studioSearch").value.trim();if(q.length<2){$("#studioResults").innerHTML='<div class="empty"><strong>Start typing</strong>Enter at least 2 characters.</div>';return}$("#studioResults").innerHTML='<div class="skeleton"></div>';try{const r=await fetch("/api/search-matches?q="+encodeURIComponent(q),{cache:"no-store"}),d=await r.json();const m=d.matches||[];$("#studioResults").innerHTML=m.length?m.map(x=>'<div class="searchrow"><div><b>'+esc(x.title)+'</b><span>'+esc(x.competition)+' · '+esc(x.time)+'</span></div><button class="btn primary studioCreate" data-id="'+esc(x.id)+'">Create Content →</button></div>').join(""):'<div class="empty"><strong>No upcoming matches found</strong>Try another team or competition.</div>';$$(".studioCreate").forEach(b=>b.onclick=()=>{let e=eventById(b.dataset.id);if(!e){e=m.find(x=>String(x.id)===b.dataset.id);state.events.push(e)}openCreate(b.dataset.id)})}catch{$("#studioResults").innerHTML='<div class="error"><strong>Search unavailable</strong>Try again.</div>'}}
-$("#studioSearchBtn").onclick=studioSearch;$("#studioSearch").onkeydown=e=>{if(e.key==="Enter")studioSearch()};$$("[data-explore]").forEach(b=>b.onclick=()=>{setView("biggames");$("#sportFilter").value=b.dataset.explore;state.range="30";$$("[data-range]").forEach(x=>x.classList.toggle("active",x.dataset.range==="30"));render()});
+$("#studioSearchBtn").onclick=studioSearch;$("#studioSearch").onkeydown=e=>{if(e.key==="Enter")studioSearch()};$$("[data-explore]").forEach(b=>b.onclick=()=>{setView("biggames");$("#sportFilter").value=b.dataset.explore;state.range="30";$$$("[data-range]").forEach(x=>x.classList.toggle("active",x.dataset.range==="30"));render()});
 
 let keyboardIndex=-1;
-document.addEventListener("keydown",e=>{const typing=/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName);if(e.key==="Escape"){closeDrawer($("#marketBack"));closeDrawer($("#createBack"));return}if(typing)return;if(e.key==="/"){e.preventDefault();$("#search").focus();return}const rows=$(".event");if((e.key==="ArrowDown"||e.key==="ArrowUp")&&rows.length){e.preventDefault();keyboardIndex=e.key==="ArrowDown"?Math.min(rows.length-1,keyboardIndex+1):Math.max(0,keyboardIndex-1);rows[keyboardIndex].focus();state.selected=eventById(rows[keyboardIndex].dataset.event);return}if(e.key==="Enter"&&document.activeElement?.classList?.contains("event")){openCreate(document.activeElement.dataset.event);return}if(e.key.toLowerCase()==="g"&&state.selected)openCreate(state.selected.id)});
+document.addEventListener("keydown",e=>{const typing=/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName);if(e.key==="Escape"){closeDrawer($("#marketBack"));closeDrawer($("#createBack"));return}if(typing)return;if(e.key==="/"){e.preventDefault();$("#search").focus();return}const rows=$$(".event");if((e.key==="ArrowDown"||e.key==="ArrowUp")&&rows.length){e.preventDefault();keyboardIndex=e.key==="ArrowDown"?Math.min(rows.length-1,keyboardIndex+1):Math.max(0,keyboardIndex-1);rows[keyboardIndex].focus();state.selected=eventById(rows[keyboardIndex].dataset.event);return}if(e.key==="Enter"&&document.activeElement?.classList?.contains("event")){openCreate(document.activeElement.dataset.event);return}if(e.key.toLowerCase()==="g"&&state.selected)openCreate(state.selected.id)});
 renderRecent();
 loadEvents();
 </script>
