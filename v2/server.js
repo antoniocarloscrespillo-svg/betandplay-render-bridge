@@ -134,14 +134,14 @@ async function fetchJson(url) {
   }
 }
 
-async function getMatches({ start, end, tournamentKey = "all", excludeGermany = true }) {
-  const key = JSON.stringify({ start, end, tournamentKey, excludeGermany });
+async function getMatches({ start, end, tournamentKey = "all", excludeGermany = true, sportKey = "soccer" }) {
+  const key = JSON.stringify({ start, end, tournamentKey, excludeGermany, sportKey });
   const hit = cached(key);
   if (hit) return hit;
 
   const url = new URL(UPSTREAM + "/matches");
   url.searchParams.set("type", "match");
-  url.searchParams.set("sport_key", "soccer");
+  url.searchParams.set("sport_key", sportKey);
   url.searchParams.set("bettable", "true");
   url.searchParams.set("start_from", start);
   url.searchParams.set("start_to", end);
@@ -200,6 +200,9 @@ function toPost(match) {
     id: String(match.id),
     title: home + " vs " + away,
     competition,
+    sport: match?.tournament?.sport?.name || match?.sport?.name || "Sport",
+    sportKey: match?.tournament?.sport?.key || match?.sport?.key || "",
+    startTime: match?.start_time || null,
     time,
     odds
   };
@@ -337,8 +340,10 @@ function competitionKey(name="") {
 }
 
 function buildSportsReport(matches, period="daily", days=1) {
+  const cleanMatches = stripWomensEvents(matches);
   const grouped = new Map();
-  for (const match of stripWomensEvents(matches)) {
+
+  for (const match of cleanMatches) {
     const p = toPost(match);
     const key = competitionKey(p.competition);
     if (!grouped.has(key)) grouped.set(key, { key, competition: p.competition, items: [] });
@@ -346,71 +351,128 @@ function buildSportsReport(matches, period="daily", days=1) {
   }
 
   const priority = ["champions","australianopen","rolandgarros","wimbledon","usopen","europa","conference","premier","bundesliga","seriea","laliga","ligue1","facup","carabao","copa_del_rey","coppa_italia","dfbpokal","nations","other"];
+  const perCompetition = period === "monthly" ? 14 : period === "weekly" ? 9 : 6;
+
   const sections = [...grouped.values()]
-    .sort((a,b)=>priority.indexOf(a.key)-priority.indexOf(b.key))
+    .sort((a,b)=>{
+      const ai=priority.indexOf(a.key); const bi=priority.indexOf(b.key);
+      return (ai===-1?999:ai)-(bi===-1?999:bi);
+    })
     .map(section => ({
       ...section,
-      items: section.items.slice(0,6).map(item => ({
-        ...item,
-        featuredOdds: item.odds.slice(0,3)
-      }))
-    }));
+      items: section.items
+        .sort((a,b)=>new Date(a.startTime||0)-new Date(b.startTime||0))
+        .slice(0,perCompetition)
+        .map(item => ({...item, featuredOdds:item.odds.slice(0,3)}))
+    }))
+    .filter(section=>section.items.length);
 
-  const highlights = sections
-    .flatMap(s => s.items.map(i => ({...i, competition:s.competition, key:s.key})))
-    .slice(0,3);
+  const allItems = sections.flatMap(s => s.items.map(i => ({...i, competition:s.competition, key:s.key})));
+  const highlights = allItems.slice(0,5);
+
+  const dayMap = new Map();
+  for (const item of allItems) {
+    if (!item.startTime) continue;
+    const dateKey = new Intl.DateTimeFormat("en-CA", {
+      timeZone:"Europe/Malta", year:"numeric", month:"2-digit", day:"2-digit"
+    }).format(new Date(item.startTime));
+    const label = new Intl.DateTimeFormat("en-GB", {
+      timeZone:"Europe/Malta", weekday:"short", day:"2-digit", month:"short"
+    }).format(new Date(item.startTime));
+    if (!dayMap.has(dateKey)) dayMap.set(dateKey,{dateKey,label,items:[]});
+    dayMap.get(dateKey).items.push(item);
+  }
+
+  const calendarDays = [...dayMap.values()]
+    .sort((a,b)=>a.dateKey.localeCompare(b.dateKey))
+    .map(d=>({...d,items:d.items.slice(0,8)}));
+
+  const weekMap = new Map();
+  if (period === "monthly") {
+    for (const day of calendarDays) {
+      const dt = new Date(day.dateKey+"T12:00:00Z");
+      const monday = new Date(dt);
+      const dow = (monday.getUTCDay()+6)%7;
+      monday.setUTCDate(monday.getUTCDate()-dow);
+      const weekKey = monday.toISOString().slice(0,10);
+      if (!weekMap.has(weekKey)) weekMap.set(weekKey,{weekKey,days:[],events:0});
+      const w=weekMap.get(weekKey);
+      w.days.push(day);
+      w.events += day.items.length;
+    }
+  }
+
+  const calendarWeeks = [...weekMap.values()].map((w,index)=>({
+    ...w,
+    label:"Week "+(index+1),
+    range:w.days.length ? w.days[0].label+" – "+w.days[w.days.length-1].label : ""
+  }));
+
+  const sports = [...new Set(allItems.map(i=>i.sport).filter(Boolean))];
 
   return {
-    generatedAt: new Date().toISOString(),
-    dateLabel: new Intl.DateTimeFormat("en-GB", {
-      timeZone:"Europe/Malta",
-      weekday:"long",
-      day:"2-digit",
-      month:"long"
+    generatedAt:new Date().toISOString(),
+    dateLabel:new Intl.DateTimeFormat("en-GB", {
+      timeZone:"Europe/Malta", weekday:"long", day:"2-digit", month:"long"
     }).format(new Date()),
     period,
     days,
-    title: period === "monthly" ? "Monthly Sports Outlook" : period === "weekly" ? "Weekly Sports Outlook" : "Daily Sports Highlights",
-    intro: period === "monthly"
-      ? "A visual overview of the most relevant football events and competitions across the next 30 days, based on Betandplay data."
-      : period === "weekly"
-        ? "A visual overview of the most relevant football action across the next 7 days, based on Betandplay data."
-        : "A quick visual overview of the most relevant football action and current Betandplay prices.",
+    title:period==="monthly" ? "Monthly Sports Outlook" : period==="weekly" ? "Weekly Sports Outlook" : "Daily Sports Highlights",
+    intro:period==="monthly"
+      ? "A 30-day planning view of the strongest football and tennis events currently available in the Betandplay API, organised by competition and date."
+      : period==="weekly"
+        ? "A 7-day planning view of the strongest football and tennis events currently available in the Betandplay API."
+        : "A quick visual overview of the strongest football and tennis action currently available in the Betandplay API.",
     sections,
-    highlights
+    highlights,
+    calendarDays,
+    calendarWeeks,
+    totalEvents:allItems.length,
+    competitionCount:sections.length,
+    sportCount:sports.length,
+    sports
   };
 }
 
 async function getReportMatches(days) {
   const start = new Date();
+  const endLimit = new Date(start.getTime() + days * 24 * 60 * 60 * 1000);
   const chunks = [];
-  let cursor = new Date(start);
+  const sports = ["soccer","tennis"];
+  const chunkDays = days >= 30 ? 3 : days >= 7 ? 2 : 1;
 
-  while (cursor < new Date(start.getTime() + days * 24 * 60 * 60 * 1000)) {
-    const chunkEnd = new Date(Math.min(
-      cursor.getTime() + 7 * 24 * 60 * 60 * 1000,
-      start.getTime() + days * 24 * 60 * 60 * 1000
-    ));
+  for (const sportKey of sports) {
+    let cursor = new Date(start);
 
-    const batch = await getMatches({
-      start: cursor.toISOString(),
-      end: chunkEnd.toISOString(),
-      tournamentKey: "all",
-      excludeGermany: false
-    });
+    while (cursor < endLimit) {
+      const chunkEnd = new Date(Math.min(
+        cursor.getTime() + chunkDays * 24 * 60 * 60 * 1000,
+        endLimit.getTime()
+      ));
 
-    chunks.push(...batch);
-    cursor = new Date(chunkEnd.getTime() + 1000);
+      const batch = await getMatches({
+        start:cursor.toISOString(),
+        end:chunkEnd.toISOString(),
+        tournamentKey:"all",
+        excludeGermany:false,
+        sportKey
+      });
+
+      chunks.push(...batch);
+      cursor = new Date(chunkEnd.getTime() + 1000);
+    }
   }
 
   const deduped = new Map();
-  for (const match of chunks) deduped.set(String(match.id), match);
+  for (const match of stripWomensEvents(chunks)) deduped.set(String(match.id), match);
 
   return [...deduped.values()].sort((a,b)=>{
-    const pa = Number(a?.tournament?.priority || 0);
-    const pb = Number(b?.tournament?.priority || 0);
-    if (pb !== pa) return pb - pa;
-    return new Date(a?.start_time || 0) - new Date(b?.start_time || 0);
+    const ak=competitionKey(a?.tournament?.name||"");
+    const bk=competitionKey(b?.tournament?.name||"");
+    const priority=["champions","australianopen","rolandgarros","wimbledon","usopen","europa","conference","premier","bundesliga","seriea","laliga","ligue1","facup","carabao","copa_del_rey","coppa_italia","dfbpokal","nations","other"];
+    const ai=priority.indexOf(ak), bi=priority.indexOf(bk);
+    if (ai !== bi) return (ai===-1?999:ai)-(bi===-1?999:bi);
+    return new Date(a?.start_time||0)-new Date(b?.start_time||0);
   });
 }
 
@@ -436,7 +498,7 @@ app.get("/api/report", async (req, res) => {
 
   try {
     const matches = await getReportMatches(days);
-    const maxMatches = period === "monthly" ? 180 : period === "weekly" ? 120 : 60;
+    const maxMatches = period === "monthly" ? 320 : period === "weekly" ? 180 : 80;
     const report = buildSportsReport(matches.slice(0,maxMatches), period, days);
 
     report.dateLabel = period === "daily"
