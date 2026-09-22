@@ -16,6 +16,21 @@ const __dirname = path.dirname(__filename);
 
 const cache = new Map();
 
+const BIG_ENTITIES = {
+  soccer: [
+    "real madrid","barcelona","atletico madrid","liverpool","arsenal","manchester city",
+    "manchester united","chelsea","tottenham","bayern munich","bayern münchen","borussia dortmund",
+    "inter milan","internazionale","ac milan","juventus","paris saint-germain","psg"
+  ],
+  tennis: [
+    "carlos alcaraz","jannik sinner","novak djokovic","alexander zverev","daniil medvedev"
+  ],
+  basketball: [
+    "los angeles lakers","boston celtics","golden state warriors","new york knicks",
+    "milwaukee bucks","denver nuggets","dallas mavericks","phoenix suns"
+  ]
+};
+
 const TOURNAMENT_ALIASES = {
   all: [],
   champions: ["uefa champions league", "champions league"],
@@ -92,6 +107,18 @@ function isWomensEvent(match) {
   ];
 
   return femaleMarkers.some(marker => text.includes(marker));
+}
+
+function isBigEntityMatch(match, sportKey) {
+  const names = BIG_ENTITIES[sportKey] || [];
+  const haystack = [
+    match?.name,
+    match?.competitors?.home?.name,
+    match?.competitors?.away?.name,
+    ...(Array.isArray(match?.competitors) ? match.competitors.map(c=>c?.name) : [])
+  ].filter(Boolean).join(" ").toLowerCase();
+
+  return names.some(name => haystack.includes(name));
 }
 
 function matchesTournament(match, tournamentKey) {
@@ -318,6 +345,21 @@ async function fetchMatchMarkets(matchId) {
   url.searchParams.set("limit","200");
   const body = await fetchJson(url);
   return collectMarketObjects(body,[]);
+}
+
+function toBigEvent(match) {
+  const post = toPost(match);
+  const category = match?.tournament?.category || {};
+  return {
+    ...post,
+    country: category?.country_code || category?.name || "",
+    tournamentId: match?.tournament?.id || null,
+    teamNames: [
+      match?.competitors?.home?.name,
+      match?.competitors?.away?.name,
+      ...(Array.isArray(match?.competitors) ? match.competitors.map(c=>c?.name) : [])
+    ].filter(Boolean)
+  };
 }
 
 function toPost(match) {
@@ -688,6 +730,40 @@ async function getReportMatches(days) {
   });
 }
 
+async function getBigEvents(days=30) {
+  const start = new Date();
+  const endLimit = new Date(start.getTime() + days * 24 * 60 * 60 * 1000);
+  const sports = ["soccer","tennis","basketball"];
+  const chunks = [];
+
+  for (const sportKey of sports) {
+    let cursor = new Date(start);
+    while (cursor < endLimit) {
+      const chunkEnd = new Date(Math.min(cursor.getTime()+5*24*60*60*1000,endLimit.getTime()));
+      const batch = await getMatches({
+        start:cursor.toISOString(),
+        end:chunkEnd.toISOString(),
+        tournamentKey:"all",
+        excludeGermany:false,
+        sportKey
+      });
+      chunks.push(...batch.filter(m=>isBigEntityMatch(m,sportKey)));
+      cursor = new Date(chunkEnd.getTime()+1000);
+    }
+  }
+
+  const deduped = new Map();
+  for (const match of stripWomensEvents(chunks)) deduped.set(String(match.id),match);
+
+  return [...deduped.values()]
+    .sort((a,b)=>new Date(a?.start_time||0)-new Date(b?.start_time||0))
+    .map(toBigEvent);
+}
+
+function findBigEventById(events, matchId) {
+  return (events || []).find(e=>String(e.id)===String(matchId));
+}
+
 app.use(express.static(path.join(__dirname, "public"), {
   etag: true,
   maxAge: "1h"
@@ -700,6 +776,53 @@ app.get("/health", (_req, res) => {
     mode: "on-demand",
     cache_ttl_ms: CACHE_TTL_MS
   });
+});
+
+app.get("/api/big-events", async (_req, res) => {
+  try {
+    const events = await getBigEvents(30);
+    res.set("Cache-Control","no-store");
+    res.json({ok:true,events});
+  } catch (error) {
+    res.status(error?.status || 502).json({ok:false,error:String(error?.message || error)});
+  }
+});
+
+app.get("/api/match-markets/:id", async (req,res) => {
+  try {
+    const markets = await fetchMatchMarkets(req.params.id);
+    const options = chooseBettingOptions(markets);
+    res.json({ok:true,options});
+  } catch (error) {
+    res.status(error?.status || 502).json({ok:false,error:String(error?.message || error)});
+  }
+});
+
+app.post("/api/generate-variants", async (req,res) => {
+  const matchId=String(req.body?.matchId || "");
+  if(!matchId) return res.status(400).json({ok:false,error:"match_id_required"});
+
+  try {
+    const events=await getBigEvents(30);
+    const event=findBigEventById(events,matchId);
+    if(!event) return res.status(404).json({ok:false,error:"match_not_found"});
+
+    try {
+      const markets=await fetchMatchMarkets(matchId);
+      event.bettingOptions=chooseBettingOptions(markets);
+    } catch {}
+
+    const variants=[0,1,2].map(variant=>({
+      ...event,
+      contentType:"Match Spotlight",
+      variant:variant+1,
+      copy:buildRichMatchCopy(event,variant)
+    }));
+
+    res.json({ok:true,variants});
+  } catch (error) {
+    res.status(error?.status || 502).json({ok:false,error:String(error?.message || error)});
+  }
 });
 
 app.get("/api/report", async (req, res) => {
