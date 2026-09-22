@@ -284,22 +284,36 @@ function toPost(match) {
   };
 }
 
-function buildRichMatchCopy(p) {
+function buildRichMatchCopy(p, variant=0) {
   const options = Array.isArray(p.bettingOptions) ? p.bettingOptions : [];
-  const optionLines = options.slice(0,8).map(o =>
-    "• **" + o.market + ":** " + o.label + " @ **" + o.value + "**"
-  ).join("\n");
+  const main = (p.odds || []).slice(0,3);
+  const extra = options.slice(0,6);
+
+  const openings = [
+    "Tonight's one to watch: " + p.title + ". " + p.competition + " action with a few markets worth checking before kick-off. ⚽️",
+    p.title + " is on the board today — and this one has more to look at than just picking a winner. 👀",
+    "Game on: " + p.title + ". If you're building tonight's betslip, here are a few prices currently available on Betandplay. 🔥",
+    "Keeping an eye on " + p.title + " today? We've pulled out the main prices plus a few alternative markets. 🎯"
+  ];
+
+  const closes = [
+    "Straight result or goals market — what's going on your betslip? 👀",
+    "Plenty of angles here. Which market catches your eye?",
+    "Keep it simple or go looking for a different angle? 🔥",
+    "Have a pick for this one? Check the full market before kick-off."
+  ];
+
+  const mainLines = main.map(o=>"• "+o.label+" — "+o.value).join("\n");
+  const extraLines = extra.map(o=>"• "+o.market+": "+o.label+" @ "+o.value).join("\n");
 
   return (
-    headlineFor("match", p.competition) + "\n\n" +
-    "**" + p.title + "** is one of the standout fixtures on the board, with plenty of ways to get involved beyond the straight match result. ⚽️🔥\n\n" +
-    (p.time ? "⏰ **Kick-off:** " + p.time + "\n" : "") +
-    "🏆 **Competition:** " + p.competition + "\n\n" +
-    (p.odds.length ? "👀 **Main prices:**\n" + formatOdds(p.odds,4) + "\n\n" : "") +
-    (optionLines ? "🎯 **More betting options:**\n" + optionLines + "\n\n" : "") +
-    "Whether you're backing the winner, looking at goals or building something for your betslip, there are plenty of markets to explore.\n\n" +
-    "Which angle are you taking? 👀🔥\n\n" +
-    "👉 **CHECK ALL MARKETS ON BETANDPLAY**"
+    openings[variant % openings.length] + "\n\n" +
+    (p.time ? "⏰ " + p.time + "\n" : "") +
+    "🏆 " + p.competition + "\n\n" +
+    (mainLines ? "MAIN ODDS\n" + mainLines + "\n\n" : "") +
+    (extraLines ? "OTHER MARKETS\n" + extraLines + "\n\n" : "") +
+    closes[variant % closes.length] + "\n\n" +
+    "👉 CHECK ALL MARKETS ON BETANDPLAY"
   );
 }
 
@@ -323,24 +337,37 @@ function makeContent(type, posts, count) {
     return selected.map(p => ({
       ...p,
       contentType: "Match Spotlight",
-      copy: buildRichMatchCopy(p)
+      copy: buildRichMatchCopy(p, selected.indexOf(p))
     }));
   }
 
   if (type === "picks") {
     return selected.map((p,index) => {
       const pick = p.odds[index % Math.max(1,p.odds.length)] || p.odds[0];
+      const alternatives=(p.bettingOptions||[]).slice(0,4);
+      const intros=[
+        "One for the shortlist today: "+p.title+".",
+        "A market we're checking today: "+p.title+".",
+        p.title+" makes today's watchlist.",
+        "Looking for a game to add to the betslip? "+p.title+" is worth a look."
+      ];
+      const endings=[
+        "Would you take this price or look elsewhere in the market?",
+        "One to play, or one to leave alone? 👀",
+        "What's your angle on this one?",
+        "Check the full board before making your call. 🎯"
+      ];
       return {
         ...p,
-        contentType: "Today's Pick",
+        contentType:"Today's Pick",
         copy:
-          headlineFor(type, p.competition) + "\n\n" +
-          "One game worth keeping an eye on today: **" + p.title + "**. 👀\n\n" +
-          (pick ? "⚽️ **Our angle:** " + pick.label + " @ **" + pick.value + "**\n\n" : "") +
-          (p.bettingOptions?.length ? "📈 **Other options to consider:**\n" + p.bettingOptions.slice(0,5).map(o=>"• **"+o.market+":** "+o.label+" @ **"+o.value+"**").join("\n") + "\n\n" : "") +
-          (p.time ? "⏰ **Kick-off:** " + p.time + "\n\n" : "") +
-          "Plenty of ways to play this one — would you keep it simple or build around one of the alternative markets? 🔥\n\n" +
-          "👉 **CHECK ALL MARKETS**"
+          "🎯 TODAY'S PICK\n\n"+
+          intros[index%intros.length]+" 👀\n\n"+
+          (pick ? "Our pick: "+pick.label+" @ "+pick.value+"\n\n" : "")+
+          (alternatives.length ? "Also on the board:\n"+alternatives.map(o=>"• "+o.market+": "+o.label+" @ "+o.value).join("\n")+"\n\n" : "")+
+          (p.time ? "⏰ "+p.time+"\n\n" : "")+
+          endings[index%endings.length]+"\n\n"+
+          "👉 CHECK THE MARKET ON BETANDPLAY"
       };
     });
   }
