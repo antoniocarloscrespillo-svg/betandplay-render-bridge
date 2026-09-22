@@ -169,6 +169,81 @@ async function getMatches({ start, end, tournamentKey = "all", excludeGermany = 
   return filtered;
 }
 
+function collectMarketObjects(node, out=[]) {
+  if (!node || typeof node !== "object") return out;
+  if (Array.isArray(node)) {
+    for (const item of node) collectMarketObjects(item,out);
+    return out;
+  }
+
+  const outcomes = Array.isArray(node.outcomes) ? node.outcomes : null;
+  const marketName = node.name || node.market_name || node.label || node.key;
+  if (outcomes && marketName) out.push(node);
+
+  for (const value of Object.values(node)) {
+    if (value && typeof value === "object") collectMarketObjects(value,out);
+  }
+  return out;
+}
+
+function marketOutcomeToOdd(outcome) {
+  if (!outcome || outcome?.active === false) return null;
+  const raw = typeof outcome.odds === "number" ? outcome.odds
+    : typeof outcome.price === "number" ? outcome.price
+    : typeof outcome.value === "number" ? outcome.value
+    : null;
+  if (raw === null) return null;
+  const value = raw > 100 ? decimalOdd(raw) : String(raw);
+  const label = outcome.name || outcome.label || outcome.selection_name || outcome.key || "Selection";
+  return {label,value};
+}
+
+function chooseBettingOptions(markets) {
+  const preferred = [
+    /match result|1x2|moneyline|winner/i,
+    /double chance/i,
+    /both teams to score|btts/i,
+    /total goals|over\/under|goals/i,
+    /draw no bet/i,
+    /handicap/i,
+    /team total/i,
+    /to qualify/i
+  ];
+
+  const seen = new Set();
+  const options = [];
+
+  for (const rx of preferred) {
+    for (const market of markets) {
+      const marketName = String(market.name || market.market_name || market.label || market.key || "");
+      if (!rx.test(marketName)) continue;
+      const selections = (market.outcomes || []).map(marketOutcomeToOdd).filter(Boolean).slice(0,3);
+      if (!selections.length) continue;
+
+      for (const selection of selections) {
+        const key = marketName+"|"+selection.label;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        options.push({
+          market: marketName,
+          label: selection.label,
+          value: selection.value
+        });
+        if (options.length >= 8) return options;
+      }
+    }
+  }
+
+  return options;
+}
+
+async function fetchMatchMarkets(matchId) {
+  const url = new URL(UPSTREAM + "/matches/" + encodeURIComponent(matchId) + "/markets");
+  url.searchParams.set("limit","200");
+  const body = await fetchJson(url);
+  return collectMarketObjects(body,[]);
+}
+
 function toPost(match) {
   const home = match?.competitors?.home?.name || "Home";
   const away = match?.competitors?.away?.name || "Away";
@@ -204,8 +279,28 @@ function toPost(match) {
     sportKey: match?.tournament?.sport?.key || match?.sport?.key || "",
     startTime: match?.start_time || null,
     time,
-    odds
+    odds,
+    bettingOptions: []
   };
+}
+
+function buildRichMatchCopy(p) {
+  const options = Array.isArray(p.bettingOptions) ? p.bettingOptions : [];
+  const optionLines = options.slice(0,8).map(o =>
+    "• **" + o.market + ":** " + o.label + " @ **" + o.value + "**"
+  ).join("\n");
+
+  return (
+    headlineFor("match", p.competition) + "\n\n" +
+    "**" + p.title + "** is one of the standout fixtures on the board, with plenty of ways to get involved beyond the straight match result. ⚽️🔥\n\n" +
+    (p.time ? "⏰ **Kick-off:** " + p.time + "\n" : "") +
+    "🏆 **Competition:** " + p.competition + "\n\n" +
+    (p.odds.length ? "👀 **Main prices:**\n" + formatOdds(p.odds,4) + "\n\n" : "") +
+    (optionLines ? "🎯 **More betting options:**\n" + optionLines + "\n\n" : "") +
+    "Whether you're backing the winner, looking at goals or building something for your betslip, there are plenty of markets to explore.\n\n" +
+    "Which angle are you taking? 👀🔥\n\n" +
+    "👉 **CHECK ALL MARKETS ON BETANDPLAY**"
+  );
 }
 
 function headlineFor(type, competition) {
@@ -228,13 +323,7 @@ function makeContent(type, posts, count) {
     return selected.map(p => ({
       ...p,
       contentType: "Match Spotlight",
-      copy:
-        headlineFor(type, p.competition) + "\n\n" +
-        "**" + p.title + "** takes centre stage and we've got the latest prices ready. ⚽️🔥\n\n" +
-        (p.odds.length ? "👀 **Latest odds:**\n" + formatOdds(p.odds, 4) + "\n\n" : "") +
-        (p.time ? "⏰ **Kick-off:** " + p.time + "\n\n" : "") +
-        "Pick your side, check the markets and enjoy the action! 🎯\n\n" +
-        "👉 **CHECK THE ODDS ON BETANDPLAY**"
+      copy: buildRichMatchCopy(p)
     }));
   }
 
@@ -248,9 +337,10 @@ function makeContent(type, posts, count) {
           headlineFor(type, p.competition) + "\n\n" +
           "One game worth keeping an eye on today: **" + p.title + "**. 👀\n\n" +
           (pick ? "⚽️ **Our angle:** " + pick.label + " @ **" + pick.value + "**\n\n" : "") +
-          (p.time ? "⏰ " + p.time + "\n\n" : "") +
-          "Would you add it to your betslip? 🔥\n\n" +
-          "👉 **CHECK THE MARKET**"
+          (p.bettingOptions?.length ? "📈 **Other options to consider:**\n" + p.bettingOptions.slice(0,5).map(o=>"• **"+o.market+":** "+o.label+" @ **"+o.value+"**").join("\n") + "\n\n" : "") +
+          (p.time ? "⏰ **Kick-off:** " + p.time + "\n\n" : "") +
+          "Plenty of ways to play this one — would you keep it simple or build around one of the alternative markets? 🔥\n\n" +
+          "👉 **CHECK ALL MARKETS**"
       };
     });
   }
@@ -603,7 +693,12 @@ app.post("/api/generate-from-match", async (req, res) => {
     const match = stripWomensEvents(batches.flat()).find(m => String(m.id) === matchId);
     if (!match) return res.status(404).json({ok:false,error:"match_not_found"});
 
-    const post = makeContent("match",[toPost(match)],1)[0];
+    const basePost = toPost(match);
+    try {
+      const markets = await fetchMatchMarkets(match.id);
+      basePost.bettingOptions = chooseBettingOptions(markets);
+    } catch {}
+    const post = makeContent("match",[basePost],1)[0];
     res.json({ok:true,post});
   } catch (error) {
     res.status(error?.status || 502).json({ok:false,error:String(error?.message || error)});
@@ -629,6 +724,17 @@ app.post("/api/generate", async (req, res) => {
     });
 
     const base = stripWomensEvents(matches).slice(0, 24).map(toPost);
+
+    if (type === "match" || type === "picks") {
+      const enrichCount = Math.min(count, 5);
+      await Promise.all(base.slice(0,enrichCount).map(async p => {
+        try {
+          const markets = await fetchMatchMarkets(p.id);
+          p.bettingOptions = chooseBettingOptions(markets);
+        } catch {}
+      }));
+    }
+
     const posts = makeContent(type, base, count);
 
     res.set("Cache-Control", "no-store");
