@@ -256,6 +256,61 @@ function makeContent(type, posts, count) {
   return makeContent("match", posts, count);
 }
 
+
+function competitionKey(name="") {
+  const n = name.toLowerCase();
+  if (n.includes("champions league")) return "champions";
+  if (n.includes("europa league")) return "europa";
+  if (n.includes("conference league")) return "conference";
+  if (n.includes("premier league")) return "premier";
+  if (n.includes("bundesliga")) return "bundesliga";
+  if (n.includes("serie a")) return "seriea";
+  if (n.includes("la liga") || n.includes("laliga") || n.includes("primera division")) return "laliga";
+  if (n.includes("ligue 1")) return "ligue1";
+  if (n.includes("fa cup")) return "facup";
+  if (n.includes("nations league")) return "nations";
+  return "other";
+}
+
+function buildDailyReport(matches) {
+  const grouped = new Map();
+  for (const match of matches) {
+    const p = toPost(match);
+    const key = competitionKey(p.competition);
+    if (!grouped.has(key)) grouped.set(key, { key, competition: p.competition, items: [] });
+    grouped.get(key).items.push(p);
+  }
+
+  const priority = ["champions","europa","conference","premier","bundesliga","seriea","laliga","ligue1","facup","nations","other"];
+  const sections = [...grouped.values()]
+    .sort((a,b)=>priority.indexOf(a.key)-priority.indexOf(b.key))
+    .map(section => ({
+      ...section,
+      items: section.items.slice(0,6).map(item => ({
+        ...item,
+        featuredOdds: item.odds.slice(0,3)
+      }))
+    }));
+
+  const highlights = sections
+    .flatMap(s => s.items.map(i => ({...i, competition:s.competition, key:s.key})))
+    .slice(0,3);
+
+  return {
+    generatedAt: new Date().toISOString(),
+    dateLabel: new Intl.DateTimeFormat("en-GB", {
+      timeZone:"Europe/Malta",
+      weekday:"long",
+      day:"2-digit",
+      month:"long"
+    }).format(new Date()),
+    title:"Daily Sports Highlights",
+    intro:"A quick visual overview of the most relevant football action and current Betandplay prices.",
+    sections,
+    highlights
+  };
+}
+
 app.use(express.static(path.join(__dirname, "public"), {
   etag: true,
   maxAge: "1h"
@@ -268,6 +323,26 @@ app.get("/health", (_req, res) => {
     mode: "on-demand",
     cache_ttl_ms: CACHE_TTL_MS
   });
+});
+
+app.get("/api/daily-report", async (_req, res) => {
+  const start = new Date();
+  const end = new Date(start.getTime() + 24 * 60 * 60 * 1000);
+
+  try {
+    const matches = await getMatches({
+      start:start.toISOString(),
+      end:end.toISOString(),
+      tournamentKey:"all",
+      excludeGermany:false
+    });
+
+    const report = buildDailyReport(matches.slice(0,60));
+    res.set("Cache-Control","no-store");
+    res.json({ok:true, report});
+  } catch (error) {
+    res.status(error?.status || 502).json({ok:false,error:String(error?.message || error)});
+  }
 });
 
 app.post("/api/generate", async (req, res) => {
