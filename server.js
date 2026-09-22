@@ -20,6 +20,29 @@ const allowedMatchParams = new Set([
 ]);
 
 const allowedMarketParams = new Set(["group_key", "market_id", "page", "limit"]);
+const TOURNAMENT_ALIASES = {
+  all: [],
+  champions: ["uefa champions league","champions league"],
+  europa: ["uefa europa league","europa league"],
+  conference: ["uefa conference league","conference league","europa conference league"],
+  premier: ["premier league"],
+  bundesliga: ["bundesliga"],
+  seriea: ["serie a"],
+  laliga: ["laliga","la liga","primera division"],
+  ligue1: ["ligue 1"],
+  nations: ["uefa nations league","nations league"],
+  facup: ["fa cup"],
+  carabao: ["efl cup","carabao cup","league cup"],
+  dfbpokal: ["dfb pokal","dfb-pokal"]
+};
+
+function matchesTournament(match, tournamentKey) {
+  if (!tournamentKey || tournamentKey === "all") return true;
+  const aliases = TOURNAMENT_ALIASES[tournamentKey] || [];
+  const name = String(match?.tournament?.name || "").toLowerCase();
+  return aliases.some(alias => name.includes(alias));
+}
+
 
 function copyAllowedParams(source, allowed) {
   const out = new URLSearchParams();
@@ -160,7 +183,7 @@ function buildGeneratedPost(match) {
   };
 }
 
-async function generatePosts({start, end, count=3, excludeGermany=true}) {
+async function generatePosts({start, end, count=3, excludeGermany=true, tournamentKey="all"}) {
   const params = new URLSearchParams({
     type: "match",
     sport_key: "soccer",
@@ -180,7 +203,8 @@ async function generatePosts({start, end, count=3, excludeGermany=true}) {
   const matches = Array.isArray(result.body?.data) ? result.body.data : [];
   const candidates = matches
     .filter(m => m?.main_market?.outcomes?.length >= 2)
-    .filter(m => !excludeGermany || !isGermanMarket(m))
+    .filter(m => matchesTournament(m, tournamentKey))
+    .filter(m => !excludeGermany || tournamentKey === "bundesliga" || tournamentKey === "dfbpokal" || !isGermanMarket(m))
     .sort((a,b) => {
       const pa = Number(a?.tournament?.priority || 0);
       const pb = Number(b?.tournament?.priority || 0);
@@ -311,6 +335,27 @@ button,.filter,select{border:1px solid var(--line);background:var(--panel);color
   <button class="filter" data-filter="tennis">Tennis</button>
   <button class="filter" data-filter="cricket">Cricket</button>
   <button class="filter" data-filter="other">Other</button>
+  <select id="tournamentSelect">
+    <option value="all">All tournaments / Best available</option>
+    <optgroup label="UEFA">
+      <option value="champions">UEFA Champions League</option>
+      <option value="europa">UEFA Europa League</option>
+      <option value="conference">UEFA Conference League</option>
+      <option value="nations">UEFA Nations League</option>
+    </optgroup>
+    <optgroup label="Top leagues">
+      <option value="premier">Premier League</option>
+      <option value="bundesliga">Bundesliga</option>
+      <option value="seriea">Serie A</option>
+      <option value="laliga">LaLiga</option>
+      <option value="ligue1">Ligue 1</option>
+    </optgroup>
+    <optgroup label="Cups">
+      <option value="facup">FA Cup</option>
+      <option value="carabao">Carabao Cup</option>
+      <option value="dfbpokal">DFB-Pokal</option>
+    </optgroup>
+  </select>
   <select id="contentType">
     <option value="match">Match spotlight</option>
     <option value="tournament">Tournament preview</option>
@@ -426,7 +471,9 @@ document.getElementById("generateBtn").onclick=async()=>{
 
   try{
     const now=new Date();
-    const end=new Date(now.getTime()+24*60*60*1000);
+    const contentType=document.getElementById("contentType").value;
+    const longWindow=["tournament","acca","weekend"].includes(contentType);
+    const end=new Date(now.getTime()+(longWindow?7:1)*24*60*60*1000);
     const r=await fetch("/api/content/generate",{
       method:"POST",
       headers:{"Content-Type":"application/json"},
@@ -434,7 +481,8 @@ document.getElementById("generateBtn").onclick=async()=>{
         start:now.toISOString(),
         end:end.toISOString(),
         count:Number(document.getElementById("contentCount").value||3),
-        contentType:document.getElementById("contentType").value,
+        contentType,
+        tournamentKey:document.getElementById("tournamentSelect").value,
         excludeGermany:true
       })
     });
@@ -481,10 +529,11 @@ app.post("/api/content/generate", async (req, res) => {
     : new Date(Date.now()+24*60*60*1000).toISOString();
   const count = Number(req.body?.count || 3);
   const contentType = typeof req.body?.contentType === "string" ? req.body.contentType : "match";
+  const tournamentKey = typeof req.body?.tournamentKey === "string" ? req.body.tournamentKey : "all";
   const excludeGermany = req.body?.excludeGermany !== false;
 
   try {
-    const sourcePosts = await generatePosts({start,end,count:Math.max(count,5),excludeGermany});
+    const sourcePosts = await generatePosts({start,end,count:Math.max(count,8),excludeGermany,tournamentKey});
     let posts = sourcePosts.slice(0,count);
 
     if (contentType === "tournament" || contentType === "weekend") {
@@ -550,7 +599,7 @@ app.post("/api/content/generate", async (req, res) => {
       }));
     }
 
-    res.json({ok:true,posts,content_type:contentType,exclude_germany:excludeGermany});
+    res.json({ok:true,posts,content_type:contentType,tournament:tournamentKey,exclude_germany:excludeGermany});
   } catch (error) {
     res.status(error?.status || 502).json({
       ok:false,
