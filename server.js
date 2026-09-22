@@ -12,6 +12,9 @@ const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || "";
 const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || "";
 const POST_SECRET = process.env.POST_SECRET || "";
 
+const TELEGRAM_OUTBOX_TEXT = process.env.TELEGRAM_OUTBOX_TEXT || "";
+const TELEGRAM_OUTBOX_ID = process.env.TELEGRAM_OUTBOX_ID || "";
+
 const allowedMatchParams = new Set([
   "id",
   "type",
@@ -169,6 +172,34 @@ async function telegramApi(method, payload) {
   }
 }
 
+async function sendOutboxOnStartup() {
+  const text = TELEGRAM_OUTBOX_TEXT.trim();
+  if (!text) return;
+  if (!TELEGRAM_CHAT_ID) {
+    console.error("TELEGRAM_OUTBOX_FAILED reason=telegram_chat_id_not_configured");
+    return;
+  }
+
+  try {
+    const result = await telegramApi("sendMessage", {
+      chat_id: TELEGRAM_CHAT_ID,
+      text,
+      parse_mode: "HTML",
+      disable_web_page_preview: true
+    });
+
+    console.log(
+      `TELEGRAM_OUTBOX_SENT id=${TELEGRAM_OUTBOX_ID || "no-id"} message_id=${result.message_id}`
+    );
+  } catch (error) {
+    console.error(
+      `TELEGRAM_OUTBOX_FAILED id=${TELEGRAM_OUTBOX_ID || "no-id"} message=${String(
+        error?.message || error
+      )}`
+    );
+  }
+}
+
 app.get("/", (_req, res) => {
   res.json({
     service: "betandplay-render-bridge",
@@ -179,7 +210,8 @@ app.get("/", (_req, res) => {
       "/matches/:id/markets",
       "/telegram/status",
       "/telegram/send"
-    ]
+    ],
+    telegram_outbox_supported: true
   });
 });
 
@@ -195,6 +227,7 @@ app.get("/health", async (_req, res) => {
       upstream_status: result.status,
       upstream_content_type: result.contentType,
       telegram_configured: Boolean(TELEGRAM_BOT_TOKEN && TELEGRAM_CHAT_ID && POST_SECRET),
+      outbox_pending: Boolean(TELEGRAM_OUTBOX_TEXT),
       checked_at: new Date().toISOString()
     });
   } catch (error) {
@@ -245,7 +278,9 @@ app.get("/telegram/status", (_req, res) => {
     ok: true,
     bot_token_configured: Boolean(TELEGRAM_BOT_TOKEN),
     chat_id_configured: Boolean(TELEGRAM_CHAT_ID),
-    post_secret_configured: Boolean(POST_SECRET)
+    post_secret_configured: Boolean(POST_SECRET),
+    outbox_pending: Boolean(TELEGRAM_OUTBOX_TEXT),
+    outbox_id: TELEGRAM_OUTBOX_ID || null
   });
 });
 
@@ -292,4 +327,7 @@ app.use((_req, res) => {
 
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Betandplay bridge listening on port ${PORT}`);
+  setTimeout(() => {
+    void sendOutboxOnStartup();
+  }, 1000);
 });
