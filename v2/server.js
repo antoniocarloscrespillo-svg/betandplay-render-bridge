@@ -272,7 +272,7 @@ function competitionKey(name="") {
   return "other";
 }
 
-function buildDailyReport(matches) {
+function buildSportsReport(matches, period="daily", days=1) {
   const grouped = new Map();
   for (const match of matches) {
     const p = toPost(match);
@@ -304,11 +304,50 @@ function buildDailyReport(matches) {
       day:"2-digit",
       month:"long"
     }).format(new Date()),
-    title:"Daily Sports Highlights",
-    intro:"A quick visual overview of the most relevant football action and current Betandplay prices.",
+    period,
+    days,
+    title: period === "monthly" ? "Monthly Sports Outlook" : period === "weekly" ? "Weekly Sports Outlook" : "Daily Sports Highlights",
+    intro: period === "monthly"
+      ? "A visual overview of the most relevant football events and competitions across the next 30 days, based on Betandplay data."
+      : period === "weekly"
+        ? "A visual overview of the most relevant football action across the next 7 days, based on Betandplay data."
+        : "A quick visual overview of the most relevant football action and current Betandplay prices.",
     sections,
     highlights
   };
+}
+
+async function getReportMatches(days) {
+  const start = new Date();
+  const chunks = [];
+  let cursor = new Date(start);
+
+  while (cursor < new Date(start.getTime() + days * 24 * 60 * 60 * 1000)) {
+    const chunkEnd = new Date(Math.min(
+      cursor.getTime() + 7 * 24 * 60 * 60 * 1000,
+      start.getTime() + days * 24 * 60 * 60 * 1000
+    ));
+
+    const batch = await getMatches({
+      start: cursor.toISOString(),
+      end: chunkEnd.toISOString(),
+      tournamentKey: "all",
+      excludeGermany: false
+    });
+
+    chunks.push(...batch);
+    cursor = new Date(chunkEnd.getTime() + 1000);
+  }
+
+  const deduped = new Map();
+  for (const match of chunks) deduped.set(String(match.id), match);
+
+  return [...deduped.values()].sort((a,b)=>{
+    const pa = Number(a?.tournament?.priority || 0);
+    const pb = Number(b?.tournament?.priority || 0);
+    if (pb !== pa) return pb - pa;
+    return new Date(a?.start_time || 0) - new Date(b?.start_time || 0);
+  });
 }
 
 app.use(express.static(path.join(__dirname, "public"), {
@@ -325,19 +364,39 @@ app.get("/health", (_req, res) => {
   });
 });
 
-app.get("/api/daily-report", async (_req, res) => {
-  const start = new Date();
-  const end = new Date(start.getTime() + 24 * 60 * 60 * 1000);
+app.get("/api/report", async (req, res) => {
+  const period = ["daily","weekly","monthly"].includes(String(req.query.period))
+    ? String(req.query.period)
+    : "daily";
+  const days = period === "monthly" ? 30 : period === "weekly" ? 7 : 1;
 
   try {
-    const matches = await getMatches({
-      start:start.toISOString(),
-      end:end.toISOString(),
-      tournamentKey:"all",
-      excludeGermany:false
-    });
+    const matches = await getReportMatches(days);
+    const maxMatches = period === "monthly" ? 180 : period === "weekly" ? 120 : 60;
+    const report = buildSportsReport(matches.slice(0,maxMatches), period, days);
 
-    const report = buildDailyReport(matches.slice(0,60));
+    report.dateLabel = period === "daily"
+      ? new Intl.DateTimeFormat("en-GB", {
+          timeZone:"Europe/Malta",
+          weekday:"long",
+          day:"2-digit",
+          month:"long"
+        }).format(new Date())
+      : period === "weekly"
+        ? "Next 7 days"
+        : "Next 30 days";
+
+    res.set("Cache-Control","no-store");
+    res.json({ok:true, report});
+  } catch (error) {
+    res.status(error?.status || 502).json({ok:false,error:String(error?.message || error)});
+  }
+});
+
+app.get("/api/daily-report", async (_req, res) => {
+  try {
+    const matches = await getReportMatches(1);
+    const report = buildSportsReport(matches.slice(0,60), "daily", 1);
     res.set("Cache-Control","no-store");
     res.json({ok:true, report});
   } catch (error) {
