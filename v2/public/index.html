@@ -3,488 +3,177 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Betandplay Sports Content Hub V2</title>
+<meta name="theme-color" content="#07110f">
+<title>Betandplay Content Hub</title>
 <style>
-:root{
-  --bg:#060810;--panel:#10151f;--panel2:#171d2a;--text:#f7f9fc;--muted:#96a4ba;
-  --purple:#7b5cff;--blue:#2f8cff;--cyan:#16d0d8;--green:#32d583;--amber:#ffbe45;
-  --red:#ff586a;--pink:#ec6cff;--orange:#ff7a45;--lime:#9bd83b;--gold:#ffd45e;
-  --teal:#27d7b0;--indigo:#6673ff;--line:#263042;
-}
-*{box-sizing:border-box}
-body{margin:0;background:
-radial-gradient(circle at 88% 0%,rgba(124,92,255,.25),transparent 24%),
-radial-gradient(circle at 8% 18%,rgba(39,140,255,.18),transparent 24%),
-radial-gradient(circle at 50% 55%,rgba(24,200,216,.07),transparent 30%),
-var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif}
-button,select{font:inherit}
-.shell{max-width:none;margin:0;padding:0 20px 48px}
-header{display:none}
-.brandline{display:flex;gap:10px;align-items:center}
-.logo{width:50px;height:50px;border-radius:16px;background:linear-gradient(135deg,var(--purple),var(--blue) 45%,var(--cyan));display:grid;place-items:center;font-weight:900;box-shadow:0 12px 30px rgba(79,92,255,.3)}
-h1{margin:0;font-size:28px;letter-spacing:-.6px}.sub{margin:5px 0 0;color:var(--muted);font-size:14px}
-.status{font-size:12px;padding:8px 11px;border:1px solid rgba(50,213,131,.3);background:rgba(50,213,131,.08);color:#8ef0b7;border-radius:999px}
-.tabs{display:flex;gap:8px;margin:0 -20px;padding:10px 24px;border-bottom:1px solid #14283a;background:linear-gradient(180deg,#07121c,#08101a);position:sticky;top:0;z-index:20}.tab{border:1px solid #20384d;background:#07101a;color:#d6e0ee;padding:10px 15px;border-radius:12px;font-weight:850;cursor:pointer;font-size:13px}.tab.active{color:#fff;background:linear-gradient(135deg,#5b56ff,#138ce8 62%,#15c7d8);border-color:transparent;box-shadow:0 8px 24px rgba(33,113,255,.28)}
-.panel{display:none}.panel.active{display:block}
-.generator{display:grid;grid-template-columns:2fr 2fr 1fr auto;gap:10px;background:linear-gradient(180deg,#171c26,#11151d);border:1px solid var(--line);border-radius:20px;padding:16px;margin-bottom:18px}
-.searchbox{display:grid;grid-template-columns:1fr auto;gap:10px;background:linear-gradient(135deg,rgba(47,140,255,.16),rgba(124,92,255,.12),rgba(24,200,216,.08));border:1px solid #30405a;border-radius:20px;padding:16px;margin-bottom:18px}
-.searchbox input{border:1px solid var(--line);background:#0d1219;color:var(--text);border-radius:12px;padding:13px 14px;font:inherit;font-weight:700;outline:none}
-.searchbox input:focus{border-color:#4b79ff;box-shadow:0 0 0 3px rgba(47,140,255,.12)}
-.search-results{display:grid;gap:10px;margin-bottom:18px}
-.search-result{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;border:1px solid var(--line);border-radius:16px;padding:8px 10px;background:linear-gradient(145deg,#141a25,#0d1219)}
-.search-main{display:grid;gap:5px}.search-title{font-weight:900}.search-meta{font-size:12px;color:var(--muted)}
-select,.btn{border:1px solid var(--line);background:#0d1219;color:var(--text);border-radius:12px;padding:12px 13px;font-weight:750}.btn{cursor:pointer}.primary{border:0;background:linear-gradient(135deg,var(--purple),var(--blue),var(--cyan));box-shadow:0 8px 22px rgba(74,92,255,.28)}
-.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
-.card{background:linear-gradient(180deg,#171c26,#11151d);border:1px solid var(--line);border-radius:20px;padding:18px;overflow:hidden;position:relative}
-.card:before{content:"";position:absolute;left:0;right:0;top:0;height:4px;background:linear-gradient(90deg,var(--purple),var(--blue),var(--cyan),var(--green))}
-.top{display:flex;justify-content:space-between;gap:9px;flex-wrap:wrap}.pill{font-size:11px;padding:7px 9px;border-radius:999px;background:#0c1118;border:1px solid var(--line);color:#c8cfdb}.title{font-size:20px;font-weight:850;margin:13px 0}.odds{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.odd{padding:8px 10px;border-radius:10px;background:#0b0f16;border:1px solid #2a3240;font-size:13px}.copy{background:linear-gradient(180deg,#0b1018,#090d13);border:1px solid var(--line);padding:16px;border-radius:14px;line-height:1.62;font-size:14px;color:#e7edf7}
-.copy strong{color:#fff;font-weight:900}
-.copy .copy-heading{display:block;margin:10px 0 6px;font-size:12px;letter-spacing:.75px;text-transform:uppercase;color:#7fc7ff;font-weight:900}
-.copy .copy-bullet{display:block;margin:3px 0;padding-left:2px}
-.copy .copy-cta{display:block;margin-top:12px;padding:10px 12px;border-radius:10px;background:linear-gradient(135deg,rgba(123,92,255,.16),rgba(47,140,255,.14));border:1px solid #30415d;color:#fff;font-weight:900}.actions{display:flex;gap:10px;margin-top:14px}
-.empty{padding:54px 20px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:18px;grid-column:1/-1}
-.report-head{display:grid;grid-template-columns:1.6fr .8fr;gap:16px;margin-bottom:16px}
-.hero{min-height:220px;border:1px solid var(--line);border-radius:24px;padding:24px;background:
-linear-gradient(145deg,rgba(124,92,255,.9),rgba(39,140,255,.62) 55%,rgba(24,200,216,.25)),
-#11151d;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden;position:relative}
-.hero:after{content:"";position:absolute;width:230px;height:230px;border:35px solid rgba(255,255,255,.07);border-radius:50%;right:-55px;top:-65px}
-.hero-kicker{font-size:12px;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;opacity:.8}.hero-title{font-size:34px;line-height:1.02;font-weight:900;max-width:620px;letter-spacing:-1px}.hero-meta{display:flex;gap:8px;flex-wrap:wrap}.hero-chip{font-size:12px;padding:8px 10px;background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.16);border-radius:999px}
-.side-stack{display:grid;grid-template-columns:1fr;gap:12px}.metric{border-radius:20px;padding:18px;border:1px solid var(--line);background:#11151d}.metric:nth-child(1){background:linear-gradient(135deg,rgba(50,213,131,.22),#11151d)}.metric:nth-child(2){background:linear-gradient(135deg,rgba(247,184,75,.22),#11151d)}.metric:nth-child(3){background:linear-gradient(135deg,rgba(236,108,255,.18),#11151d)}.metric .big{font-size:32px;font-weight:900;margin-top:8px}.metric span{color:var(--muted);font-size:12px}
-.report-toolbar{display:flex;justify-content:space-between;gap:12px;align-items:center;margin:8px 0 16px}.report-title h2{margin:0;font-size:22px}.report-title p{margin:4px 0 0;color:var(--muted);font-size:13px}
-.competitions{display:grid;gap:14px}.competition{border:1px solid var(--line);border-radius:20px;background:#10141b;overflow:hidden}.comp-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:15px 17px;border-bottom:1px solid var(--line)}.comp-title{display:flex;align-items:center;gap:10px;font-size:16px;font-weight:900}.dot{width:10px;height:10px;border-radius:50%}.matches{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0}.match{padding:15px 17px;border-bottom:1px solid #1d2430}.match:nth-child(odd){border-right:1px solid #1d2430}.match-name{font-weight:800;margin-bottom:7px}.match-time{font-size:12px;color:var(--muted);margin-bottom:10px}.mini-odds{display:flex;gap:6px;flex-wrap:wrap}.mini{font-size:11px;padding:6px 8px;border-radius:8px;background:#0a0f15;border:1px solid #26303d}
-.c-champions .dot{background:var(--blue)}.c-europa .dot{background:var(--amber)}.c-conference .dot{background:var(--green)}.c-premier .dot{background:var(--pink)}.c-bundesliga .dot{background:var(--red)}.c-seriea .dot{background:var(--cyan)}.c-laliga .dot{background:var(--orange)}.c-ligue1 .dot{background:#8f7cff}.c-facup .dot{background:#58d6ff}.c-carabao .dot{background:#a66cff}.c-copa_del_rey .dot{background:#ff9d3f}.c-coppa_italia .dot{background:#36c7a8}.c-dfbpokal .dot{background:#ff6868}.c-nations .dot{background:var(--gold)}.c-australianopen .dot{background:#4aa3ff}.c-rolandgarros .dot{background:#d9894d}.c-wimbledon .dot{background:#8a6be8}.c-usopen .dot{background:#3bd5a0}.c-other .dot{background:#778297}
-
-.monthly-overview{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:16px 0}
-.month-card{border:1px solid var(--line);border-radius:18px;padding:16px;background:linear-gradient(145deg,#151b28,#0e131c)}
-.month-card:nth-child(4n+1){background:linear-gradient(145deg,rgba(47,140,255,.18),#10151f)}
-.month-card:nth-child(4n+2){background:linear-gradient(145deg,rgba(236,108,255,.16),#10151f)}
-.month-card:nth-child(4n+3){background:linear-gradient(145deg,rgba(50,213,131,.16),#10151f)}
-.month-card:nth-child(4n+4){background:linear-gradient(145deg,rgba(255,190,69,.16),#10151f)}
-.month-week{font-size:12px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.8px}
-.month-range{font-size:14px;font-weight:900;margin:6px 0 12px}
-.month-events{font-size:30px;font-weight:900}
-.month-events small{font-size:11px;color:var(--muted);font-weight:700}
-.timeline{display:grid;gap:10px;margin:16px 0 22px}
-.day-row{display:grid;grid-template-columns:120px 1fr;gap:12px;align-items:start;border:1px solid var(--line);background:#0d1219;border-radius:15px;padding:12px}
-.day-label{font-weight:900;color:#dfe6f3}.day-events{display:flex;gap:7px;flex-wrap:wrap}
-.day-chip{font-size:11px;padding:7px 9px;border-radius:999px;background:linear-gradient(135deg,rgba(124,92,255,.16),rgba(47,140,255,.12));border:1px solid #2c3850;color:#dfe7f7}
-.report-period-badge{display:inline-flex;padding:7px 10px;border-radius:999px;background:linear-gradient(135deg,rgba(124,92,255,.18),rgba(24,200,216,.14));border:1px solid #33425c;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.8px}
-.biggames-hero-ref{margin:0 -28px 14px;min-height:190px;background:
-linear-gradient(90deg,rgba(3,11,18,.82) 0%,rgba(3,11,18,.32) 31%,rgba(3,11,18,.05) 58%,rgba(3,11,18,.38) 100%),
-url('/big-games-hero.svg') center/cover no-repeat;border-bottom:1px solid #173147;display:flex;align-items:flex-end;padding:20px 34px;position:relative}
-.biggames-copy{max-width:520px;padding-bottom:6px}.biggames-kicker{font-size:14px;font-weight:800;letter-spacing:2px;color:#d9e6f4;margin-bottom:6px}
-.biggames-heading{font-size:38px;font-weight:950;line-height:.95;margin:0;letter-spacing:-1.8px}.biggames-heading span{color:#159fe8}
-.biggames-sub{margin:7px 0 12px;color:#b6c5d8;font-size:13px}
-.hero-credit{position:absolute;right:10px;bottom:7px;font-size:9px;color:rgba(220,232,245,.55)}
-.hero-credit a{color:inherit;text-decoration:none}
-.biggames-sportnav{display:flex;gap:14px;flex-wrap:wrap}.sportnav-btn{border:1px solid #2a4057;background:#07121d;color:#dfe8f4;border-radius:999px;padding:7px 14px;font-weight:850;cursor:pointer}.sportnav-btn.active{background:linear-gradient(135deg,#1268ff,#19c7de);border-color:transparent;color:white}
-.biggames-toolbar{display:grid;grid-template-columns:minmax(300px,1.55fr) .85fr .95fr .95fr auto;gap:14px;margin:0 0 16px;padding:10px;background:linear-gradient(180deg,#0a151f,#08111a);border:1px solid #14293c;border-radius:18px;box-shadow:0 12px 26px rgba(0,0,0,.18)}
-.big-filter,.big-search{height:44px;border:1px solid #294158!important;background:#08131e!important;color:#f5f8fc!important;border-radius:13px!important;padding:0 12px!important;font:inherit;font-weight:750;outline:none;min-width:0}
-.big-search::placeholder{color:#8ea2b7}.big-filter:focus,.big-search:focus{border-color:#2b8fe8!important;box-shadow:0 0 0 3px rgba(43,143,232,.12)}
-.reset-blue{height:52px;padding:0 15px!important;background:linear-gradient(135deg,#1475ff,#17b4e4)!important;border:0!important;color:#fff!important;border-radius:13px!important;font-weight:850!important;white-space:nowrap}
-.big-day{margin-bottom:26px}.big-day-title{display:flex;justify-content:space-between;align-items:center;margin:0 6px 10px}.big-day-title h3{margin:0;font-size:20px;letter-spacing:.3px;display:flex;align-items:center;gap:10px}.big-day-title h3:before{content:"▣";font-size:16px;color:#dfe9f5}.big-day-title .pill{background:none;border:0;color:#7f94ac;font-size:13px}
-.big-competition{border:1px solid #1d3448;border-radius:18px;overflow:hidden;background:#08111a;margin-bottom:13px;box-shadow:0 12px 28px rgba(0,0,0,.16)}
-.big-competition-head{display:none}
-.big-event-list{display:grid;grid-template-columns:1fr}
-.big-event{display:grid;grid-template-columns:115px minmax(300px,1.35fr) 280px auto;gap:0;align-items:stretch;padding:0;border-bottom:1px solid #162c3d;background:linear-gradient(90deg,#08111a,#091521)}
-.big-event:last-child{border-bottom:0}.big-event:nth-child(odd){border-right:0}
-.competition-cell{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:7px;border-right:1px solid #183044;padding:10px 8px;color:#dce8f5;font-size:11px;text-align:center;font-weight:850;text-transform:uppercase;letter-spacing:.35px}
-.competition-icon{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;background:#0b1621;border:1px solid #27455f;font-size:15px;overflow:hidden}
-.match-cell{display:grid;grid-template-columns:72px 1fr;align-items:center;border-right:1px solid #183044}
-.match-timebox{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border-right:1px solid #183044;height:100%;font-weight:900}.match-timebox b{font-size:15px}.match-timebox small{color:#8ea1b7;font-size:11px}
-.teams-wrap{display:grid;grid-template-columns:1fr 34px 1fr;align-items:center;gap:10px;padding:10px 12px}.team-side{display:flex;align-items:center;gap:8px;font-weight:900;min-width:0}.team-side.away{justify-content:flex-end;text-align:right}.team-badge{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;background:#0b1621;border:1px solid #29445c;color:#fff;font-size:10px;font-weight:950;flex:0 0 auto;overflow:hidden}.team-logo-img{width:32px;height:32px;max-width:32px;max-height:32px;object-fit:contain;display:block}.competition-logo-img{width:31px;height:31px;max-width:31px;max-height:31px;object-fit:contain;display:block}.vs-pill{width:34px;height:28px;border-radius:10px;background:#122236;border:1px solid #213b53;display:grid;place-items:center;color:#a9b8c8;font-size:11px;font-weight:900}
-.odds-cell{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;align-items:center;padding:9px 12px;border-right:1px solid #183044}.odd-box{display:flex;flex-direction:column;align-items:center;gap:5px}.odd-box span{font-size:10px;color:#8fa2b8}.odd-box b{display:grid;place-items:center;min-width:66px;height:38px;border-radius:11px;background:#0f2031;border:1px solid #213d56;font-size:17px}
-.action-cell{display:flex;align-items:center;gap:10px;padding:14px 16px}.action-cell .btn{white-space:nowrap}.bigGenerate{background:linear-gradient(135deg,#116fff,#16afe8)!important;border:0!important;color:#fff!important;box-shadow:0 8px 20px rgba(17,111,255,.18)!important}.bigMarkets{border:1px solid #1a9d74!important;color:#34d5a1!important;background:#081712!important}
-.markets-box{display:none;grid-column:1/-1;margin:0 14px 12px;padding:12px;border-radius:12px;background:linear-gradient(180deg,#0a1721,#08111a);border:1px solid #23465d;box-shadow:inset 0 1px 0 rgba(255,255,255,.02)}.markets-box.open{display:block}
-.market-options{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px}
-.market-option{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px;border-radius:10px;background:linear-gradient(180deg,#0c1a25,#0a151e);border:1px solid #27445b;transition:.15s ease}
-.market-option:hover{transform:translateY(-1px);border-color:#2f6784;background:#0e1e2b}
-.market-option-main{min-width:0}.market-option-name{font-size:9px;color:#6f94ae;text-transform:uppercase;letter-spacing:.6px;font-weight:900;margin-bottom:3px}.market-option-pick{font-size:12px;font-weight:850;color:#eef7ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.market-option-odd{min-width:54px;height:34px;border-radius:8px;display:grid;place-items:center;background:linear-gradient(135deg,#0f3b31,#0a2937);border:1px solid #238966;color:#89f1c9;font-size:13px;font-weight:950}
-.variants-host{grid-column:1/-1;width:100%;min-width:0}
-.variants-wrap{grid-column:1/-1;width:100%;min-width:0;margin-top:2px}
-.variants-toolbar{display:flex;justify-content:space-between;align-items:center;margin:0 16px 8px;padding:8px 10px;border:1px solid #20384b;border-radius:10px;background:#0a141d}
-.variants-toolbar strong{font-size:12px;color:#dbeaf6}.collapse-variants{padding:6px 10px!important;font-size:11px!important}
-.variant-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:0 16px 16px;width:calc(100% - 32px)}
-.variant-grid.collapsed{display:none}
-.variant-card{border:1px solid #223a4f;border-radius:14px;padding:14px;background:linear-gradient(180deg,#0d1823,#09121a);min-width:0}
-.variant-card:nth-child(1){border-top:3px solid #2b9cf1}.variant-card:nth-child(2){border-top:3px solid #ff7b45}.variant-card:nth-child(3){border-top:3px solid #2fd29a}
-.variant-card h4{margin:0 0 10px;color:#e9f4fb;font-size:14px}.variant-card .copy{max-height:none;overflow:visible}
-@media(max-width:1100px){.biggames-toolbar{grid-template-columns:1fr 1fr 1fr}.big-event{grid-template-columns:120px 1fr}.odds-cell,.action-cell{grid-column:2}.odds-cell{border-top:1px solid #183044}.action-cell{justify-content:flex-end}.competition-cell{grid-row:1/4}}
-@media(max-width:820px){.generator{grid-template-columns:1fr 1fr}.grid,.report-head,.matches,.monthly-overview,.variant-grid{grid-template-columns:1fr}.biggames-toolbar{grid-template-columns:1fr 1fr}.biggames-hero-ref{min-height:230px;padding:24px}.biggames-heading{font-size:38px}.big-event{grid-template-columns:1fr}.competition-cell,.match-cell,.odds-cell{border-right:0}.competition-cell{grid-row:auto;align-items:flex-start;flex-direction:row;justify-content:flex-start}.odds-cell,.action-cell{grid-column:auto}.teams-wrap{grid-template-columns:1fr 34px 1fr}.match:nth-child(odd){border-right:0}.hero-title{font-size:28px}}
-@media(max-width:540px){.shell{padding:0 12px 50px}.tabs{margin:0 -12px;padding:10px 12px;overflow:auto}.tab{padding:10px 13px;font-size:13px}.biggames-hero-ref{margin:0 -12px 12px;padding:18px 16px;min-height:210px}.biggames-heading{font-size:34px}.biggames-toolbar{grid-template-columns:1fr;padding:10px}.generator{grid-template-columns:1fr}.report-toolbar{align-items:flex-start;flex-direction:column}.action-cell{flex-direction:column;align-items:stretch}.action-cell .btn{width:100%}}
+:root{--bg:#07100f;--surface:#0c1715;--surface2:#101d1a;--surface3:#14231f;--line:#22352f;--text:#f3f7f5;--muted:#8ea29b;--green:#35d49a;--green2:#20b77f;--blue:#5fa8ff;--amber:#f2b84b;--red:#ef6f6c;--r:12px;--shadow:0 18px 48px rgba(0,0,0,.28)}
+*{box-sizing:border-box}html{background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}body{margin:0;background:radial-gradient(circle at 70% -10%,rgba(53,212,154,.08),transparent 28%),var(--bg);min-height:100vh}button,input,select,textarea{font:inherit}button{cursor:pointer}.app{max-width:1540px;margin:auto;padding:0 22px 48px}
+.topbar{height:58px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(7,16,15,.94);backdrop-filter:blur(14px);z-index:30;margin:0 -22px;padding:0 28px}.brand{display:flex;align-items:center;gap:11px;font-weight:900;letter-spacing:-.3px}.brandmark{width:30px;height:30px;border-radius:9px;background:linear-gradient(145deg,var(--green),#12885f);display:grid;place-items:center;color:#052019;font-weight:1000}.nav{display:flex;gap:5px}.navbtn{border:0;background:transparent;color:var(--muted);padding:9px 13px;border-radius:9px;font-weight:800}.navbtn.active,.navbtn:hover{background:var(--surface2);color:#fff}.navbtn.active{box-shadow:inset 0 -2px var(--green)}
+.view{display:none}.view.active{display:block}
+.pagehead{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;padding:24px 2px 16px}.eyebrow{color:var(--green);font-size:11px;letter-spacing:1.4px;font-weight:900;text-transform:uppercase}.pagehead h1{margin:3px 0 2px;font-size:28px;letter-spacing:-.8px}.pagehead p{margin:0;color:var(--muted);font-size:13px}.updated{font-size:11px;color:var(--muted)}
+.toolbar{display:grid;grid-template-columns:minmax(280px,1.5fr) 150px 190px 150px auto;gap:8px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:9px;position:sticky;top:68px;z-index:20;box-shadow:0 8px 24px rgba(0,0,0,.16)}.control{height:40px;border:1px solid var(--line);background:#091411;color:var(--text);border-radius:9px;padding:0 11px;min-width:0;outline:none}.control:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(53,212,154,.12)}.search{padding-left:13px}.btn{min-height:38px;border:1px solid var(--line);background:var(--surface2);color:var(--text);border-radius:9px;padding:8px 12px;font-weight:850}.btn:hover{border-color:#3d5c53;background:var(--surface3)}.btn:focus-visible,.navbtn:focus-visible,.chip:focus-visible,.odd:focus-visible{outline:2px solid var(--green);outline-offset:2px}.btn.primary{background:var(--green);border-color:var(--green);color:#052119}.btn.primary:hover{background:#50dfa9}.btn.ghost{background:transparent}.btn.danger{color:#ffb3b0}.btn:disabled{opacity:.5;cursor:not-allowed}
+.quickbar{display:flex;align-items:center;gap:7px;margin:10px 1px 14px;min-height:32px;flex-wrap:wrap}.chip{border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:999px;padding:6px 10px;font-size:11px;font-weight:850}.chip.active{background:#13342a;border-color:#28634e;color:#bff5df}.filterchips{display:flex;gap:6px;flex-wrap:wrap;margin-left:8px}.activechip{font-size:10px;border-radius:999px;background:#10211c;border:1px solid #28463c;color:#c6d6d0;padding:5px 8px}
+.today-strip{display:grid;grid-template-columns:1.4fr repeat(3,.6fr);gap:8px;margin-bottom:14px}.today-main,.stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px}.today-main strong{display:block;font-size:15px}.today-main span,.stat span{color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.8px;font-weight:800}.stat b{display:block;font-size:20px;margin-top:2px}
+.comp{border:1px solid var(--line);border-radius:var(--r);background:var(--surface);margin-bottom:10px;overflow:hidden}.comphead{height:48px;display:flex;align-items:center;gap:10px;padding:0 12px;border-bottom:1px solid var(--line);background:#0a1513}.comphead button{border:0;background:none;color:inherit;padding:0}.comp-logo,.team-logo{display:grid;place-items:center;flex:0 0 auto;background:#0b1513;border:1px solid #2a3d37;overflow:hidden;color:#c8d5d1;font-weight:900}.comp-logo{width:34px;height:34px;border-radius:9px;font-size:9px}.team-logo{width:38px;height:38px;border-radius:10px;font-size:10px}.comp-logo img{max-width:28px;max-height:28px;width:auto;height:auto;object-fit:contain}.team-logo img{max-width:32px;max-height:32px;width:auto;height:auto;object-fit:contain}.compmeta{min-width:0;flex:1}.compname{font-size:12px;font-weight:950;letter-spacing:.2px}.compcount{font-size:10px;color:var(--muted);margin-top:2px}.collapse-comp{font-size:11px;color:var(--muted);padding:8px!important}.compbody.collapsed{display:none}
+.event{display:grid;grid-template-columns:78px minmax(330px,1.35fr) minmax(280px,.9fr) auto;align-items:center;min-height:72px;border-bottom:1px solid #172722;transition:background .12s}.event:last-child{border-bottom:0}.event:hover,.event.selected{background:#0e1d19}.time{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;border-right:1px solid #172722}.time b{font-size:14px}.time small{font-size:9px;color:var(--muted);margin-top:2px}.match{display:grid;grid-template-columns:minmax(0,1fr) 26px minmax(0,1fr);gap:8px;align-items:center;padding:8px 14px}.team{display:flex;align-items:center;gap:8px;min-width:0;font-size:13px;font-weight:900}.team.away{justify-content:flex-end;text-align:right}.teamname{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.vs{font-size:9px;color:#63766f;text-align:center;font-weight:900}.odds{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:8px 12px}.odd{border:1px solid #294139;background:#0a1613;color:var(--text);border-radius:8px;height:42px;display:flex;align-items:center;justify-content:space-between;padding:0 9px;min-width:0}.odd span{font-size:9px;color:var(--muted)}.odd b{font-size:13px}.odd:hover{border-color:#3b6b5b;background:#10221c}.actions{display:flex;gap:6px;padding:8px 12px}.actions .btn{font-size:11px;white-space:nowrap}.editorial{font-size:9px;color:#ffd28b;background:#2b2213;border:1px solid #5b4720;padding:3px 6px;border-radius:999px;margin-left:6px}
+.empty,.error{border:1px dashed #2b443b;border-radius:var(--r);padding:38px;text-align:center;color:var(--muted);background:rgba(12,23,21,.6)}.empty strong,.error strong{display:block;color:var(--text);font-size:15px;margin-bottom:5px}.error{border-color:#573b38}.skeleton{height:72px;border-bottom:1px solid #172722;background:linear-gradient(90deg,#0b1714 20%,#11231e 38%,#0b1714 56%);background-size:220% 100%;animation:shimmer 1.2s infinite}@keyframes shimmer{to{background-position:-220% 0}}
+.drawerback{position:fixed;inset:0;background:rgba(0,0,0,.52);z-index:60;opacity:0;pointer-events:none;transition:.16s}.drawerback.open{opacity:1;pointer-events:auto}.drawer{position:absolute;right:0;top:0;height:100%;width:min(560px,94vw);background:#091310;border-left:1px solid var(--line);box-shadow:var(--shadow);transform:translateX(100%);transition:.18s;display:flex;flex-direction:column}.drawerback.open .drawer{transform:none}.drawerhead{padding:16px 18px;border-bottom:1px solid var(--line);display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.drawerhead h2{font-size:18px;margin:2px 0}.drawerhead p{margin:0;color:var(--muted);font-size:11px}.drawerbody{padding:14px 18px 28px;overflow:auto}.marketgroup{border:1px solid var(--line);border-radius:10px;margin-bottom:8px;overflow:hidden}.marketgroup summary{padding:10px 12px;font-size:12px;font-weight:900;background:var(--surface);cursor:pointer;list-style:none;display:flex;justify-content:space-between}.marketgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;padding:8px}.market{border:1px solid #263e36;background:#0d1b17;border-radius:8px;padding:8px 9px;display:flex;justify-content:space-between;gap:8px;font-size:11px}.market b{color:#9df0ce}.drawer-loading{display:grid;gap:8px}.drawer-loading div{height:56px;border-radius:9px;background:#10201b}
+.modalback{position:fixed;inset:0;background:rgba(0,0,0,.62);z-index:70;display:none;align-items:flex-start;justify-content:center;padding:7vh 18px 40px;overflow:auto}.modalback.open{display:flex}.modal{width:min(1000px,100%);background:#091310;border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow:hidden}.modalhead{padding:14px 18px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:14px}.modalhead h2{font-size:18px;margin:0 0 3px}.modalhead p{font-size:11px;color:var(--muted);margin:0}.modalbody{padding:14px 18px}.gen-controls{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:8px;margin-bottom:14px}.seg{display:flex;gap:4px;background:#07100e;padding:4px;border:1px solid var(--line);border-radius:9px}.seg button{flex:1;border:0;background:transparent;color:var(--muted);padding:7px;border-radius:6px;font-size:11px;font-weight:850}.seg button.active{background:var(--surface3);color:#fff}.generated{border-top:1px solid var(--line);padding-top:13px}.genbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}.genbar h3{margin:0;font-size:12px;text-transform:uppercase;letter-spacing:.8px}.post{border:1px solid var(--line);border-radius:10px;background:var(--surface);margin-bottom:8px;overflow:hidden}.posthead{display:flex;justify-content:space-between;align-items:center;padding:9px 11px;border-bottom:1px solid var(--line)}.posthead strong{font-size:12px}.posttools{display:flex;gap:5px}.postbody{padding:12px 14px;font-size:12px;line-height:1.55;white-space:pre-wrap}.post.collapsed .postbody,.post.collapsed .postfooter{display:none}.postfooter{display:flex;gap:6px;padding:0 12px 11px}.editarea{width:100%;min-height:220px;background:#07100e;color:#fff;border:1px solid var(--line);border-radius:8px;padding:10px;resize:vertical}
+.studio{max-width:980px;margin:28px auto}.studiohero{text-align:center;padding:26px 12px}.studiohero h1{font-size:28px;margin:0 0 6px}.studiohero p{color:var(--muted);font-size:13px}.studio-search{display:flex;gap:8px;max-width:720px;margin:18px auto}.studio-search input{flex:1}.explore{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:18px}.explore button{padding:18px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:#fff;text-align:left;font-weight:900}.searchresults{margin-top:12px}.searchrow{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:var(--surface);margin-bottom:6px}.searchrow b{font-size:12px}.searchrow span{display:block;color:var(--muted);font-size:10px;margin-top:2px}
+@media(max-width:1100px){.toolbar{grid-template-columns:1fr 140px 170px auto}.toolbar #countryFilter{display:none}.event{grid-template-columns:70px 1fr auto}.odds{grid-column:2}.actions{grid-column:3;grid-row:1/3;flex-direction:column}.today-strip{grid-template-columns:1fr repeat(3,.5fr)}}
+@media(max-width:780px){.app{padding:0 12px 40px}.topbar{margin:0 -12px;padding:0 14px}.brand span:last-child{display:none}.toolbar{top:58px;grid-template-columns:1fr 1fr}.toolbar .search{grid-column:1/-1}.today-strip{grid-template-columns:1fr 1fr}.today-main{grid-column:1/-1}.event{grid-template-columns:60px 1fr}.match{padding-right:8px}.odds{grid-column:1/-1;border-top:1px solid #172722;padding:7px 9px}.actions{grid-column:1/-1;grid-row:auto;flex-direction:row;justify-content:flex-end;border-top:1px solid #172722}.comphead{height:44px}.gen-controls{grid-template-columns:1fr}.modalback{padding:12px}.explore{grid-template-columns:1fr}.pagehead{padding-top:16px}.pagehead h1{font-size:23px}}
+@media(max-width:480px){.navbtn{padding:8px 9px;font-size:11px}.toolbar{grid-template-columns:1fr}.toolbar .search{grid-column:auto}.match{grid-template-columns:1fr 20px 1fr}.team{flex-direction:column;text-align:center;gap:4px}.team.away{flex-direction:column-reverse;text-align:center}.team-logo{width:34px;height:34px}.team-logo img{max-width:28px;max-height:28px}.actions .btn{flex:1}.quickbar{overflow:auto;flex-wrap:nowrap}.today-strip{grid-template-columns:1fr 1fr}.marketgrid{grid-template-columns:1fr}}
 </style>
-<link rel="stylesheet" href="/hero.css">
 </head>
 <body>
-<div class="shell">
-<header>
-  <div class="brandline">
-    <div class="logo">BNP</div>
-    <div><h1>Sports Content Hub</h1><div class="sub">Content studio + daily sportsbook report</div></div>
-  </div>
-  <div class="status">● Live Betandplay data</div>
+<div class="app">
+<header class="topbar">
+  <div class="brand"><div class="brandmark">B</div><span>Betandplay</span><span style="color:var(--muted);font-weight:700">Content Hub</span></div>
+  <nav class="nav" aria-label="Main navigation">
+    <button class="navbtn active" data-view="biggames">Big Games</button>
+    <button class="navbtn" data-view="studio">Content Studio</button>
+  </nav>
 </header>
 
-<div class="tabs">
-  <button class="tab active" data-tab="studio">Content Studio</button>
-<button class="tab" data-tab="biggames">Big Games</button>
-</div>
-
-<section id="studio" class="panel active">
-  <div class="searchbox">
-    <input id="teamSearch" type="search" placeholder="Search a team or player... e.g. Liverpool, Inter, Alcaraz">
-    <button id="searchBtn" class="btn primary">🔎 Search match</button>
+<main>
+<section id="biggames" class="view active">
+  <div class="pagehead">
+    <div><div class="eyebrow">Sports editorial workstation</div><h1>Big Games</h1><p>Find what matters, check the market, create content.</p></div>
+    <div class="updated" id="lastUpdated">Live odds</div>
   </div>
-  <div id="searchResults" class="search-results"></div>
-  <div class="generator">
-    <select id="tournament">
-      <option value="all">All tournaments / Best available</option>
-      <optgroup label="UEFA">
-        <option value="champions">UEFA Champions League</option>
-        <option value="europa">UEFA Europa League</option>
-        <option value="conference">UEFA Conference League</option>
-        <option value="nations">UEFA Nations League</option>
-      </optgroup>
-      <optgroup label="Top leagues">
-        <option value="premier">Premier League</option><option value="bundesliga">Bundesliga</option>
-        <option value="seriea">Serie A</option><option value="laliga">LaLiga</option><option value="ligue1">Ligue 1</option>
-      </optgroup>
-      <optgroup label="Cups">
-        <option value="facup">FA Cup</option><option value="carabao">Carabao Cup</option><option value="dfbpokal">DFB-Pokal</option>
-      </optgroup>
-    </select>
-    <select id="contentType">
-      <option value="match">Match Spotlight</option><option value="tournament">Tournament Preview</option>
-      <option value="acca">Tournament ACCA</option><option value="picks">Today's Picks</option><option value="weekend">Weekend Preview</option>
-    </select>
-    <select id="count"><option value="1">1 post</option><option value="3" selected>3 posts</option><option value="5">5 posts</option></select>
-    <button id="generate" class="btn primary">✨ Generate content</button>
+  <div class="toolbar" role="search">
+    <input id="search" class="control search" aria-label="Search team player or competition" placeholder="Search team, player or competition…">
+    <select id="sportFilter" class="control" aria-label="Sport"><option value="soccer">Football</option><option value="tennis">Tennis</option><option value="basketball">Basketball</option></select>
+    <select id="competitionFilter" class="control" aria-label="Competition"><option value="all">All competitions</option></select>
+    <select id="countryFilter" class="control" aria-label="Country"><option value="all">All countries</option></select>
+    <button id="resetFilters" class="btn ghost">Reset filters</button>
   </div>
-  <div id="grid" class="grid"><div class="empty">Choose the tournament and content format you want to create.</div></div>
+  <div class="quickbar" aria-label="Date filters">
+    <button class="chip active" data-range="today">Today</button>
+    <button class="chip" data-range="tomorrow">Tomorrow</button>
+    <button class="chip" data-range="7">Next 7 days</button>
+    <button class="chip" data-range="30">Next 30 days</button>
+    <div id="activeFilters" class="filterchips"></div>
+  </div>
+  <div id="todayStrip" class="today-strip"></div>
+  <div id="events"><div class="comp"><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div></div></div>
 </section>
 
-<section id="biggames" class="panel">
-  <div class="biggames-hero-ref">
-    <div class="biggames-copy">
-      <div class="biggames-kicker">UPCOMING</div>
-      <h2 class="biggames-heading">BIG <span>GAMES</span></h2>
-      <div class="biggames-sub">Top teams. Major competitions. Ready for your content.</div>
-      <div class="biggames-sportnav">
-        <button class="sportnav-btn active" data-sport="soccer">⚽ Football</button>
-        <button class="sportnav-btn" data-sport="tennis">◉ Tennis</button>
-        <button class="sportnav-btn" data-sport="basketball">◉ Basketball</button>
-      </div>
-    </div>
-    <div class="hero-credit">Stadium photo: <a href="https://commons.wikimedia.org/wiki/File:Stadium_at_night_(7733326170)_(2).jpg" target="_blank" rel="noreferrer">Darren Wilkinson / Wikimedia Commons</a></div>
+<section id="studio" class="view">
+  <div class="studio">
+    <div class="studiohero"><div class="eyebrow">Content Studio</div><h1>What do you want to create?</h1><p>Start with an event. We only show controls when they are useful.</p></div>
+    <div class="studio-search"><input id="studioSearch" class="control" placeholder="Search event, team, player or competition…"><button id="studioSearchBtn" class="btn primary">Search</button></div>
+    <div id="studioResults" class="searchresults"></div>
+    <div class="explore"><button data-explore="soccer">⚽<br>Football</button><button data-explore="tennis">🎾<br>Tennis</button><button data-explore="basketball">🏀<br>Basketball</button></div>
   </div>
-
-  <div class="biggames-toolbar">
-    <input id="bigSearch" class="big-search" type="search" placeholder="⌕  Search team, player or competition...">
-    <select id="bigRange" class="big-filter"><option value="30">▣ Next 30 days</option><option value="14">Next 14 days</option><option value="7">Next 7 days</option></select>
-    <select id="bigCompetition" class="big-filter"><option value="all">🏆 All competitions</option></select>
-    <select id="bigCountry" class="big-filter"><option value="all">◉ All countries</option></select>
-    <button id="clearBigFilters" class="btn reset-blue">↻ Reset filters</button>
-  </div>
-
-  <select id="bigSport" style="display:none"><option value="soccer">Football</option><option value="tennis">Tennis</option><option value="basketball">Basketball</option></select>
-  <select id="bigTeam" style="display:none"><option value="all">All teams / players</option></select>
-  <input id="bigDate" type="hidden">
-
-  <div id="bigGamesRoot"><div class="empty">Open this tab to load upcoming big games.</div></div>
 </section>
+</main>
 </div>
+
+<div id="marketBack" class="drawerback" aria-hidden="true"><aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="marketTitle"><div class="drawerhead"><div><div class="eyebrow">Markets</div><h2 id="marketTitle">Match markets</h2><p id="marketMeta"></p></div><button class="btn ghost closeDrawer" aria-label="Close markets">✕</button></div><div id="marketBody" class="drawerbody"></div></aside></div>
+
+<div id="createBack" class="modalback" aria-hidden="true"><section class="modal" role="dialog" aria-modal="true" aria-labelledby="createTitle"><div class="modalhead"><div><div class="eyebrow">Create content</div><h2 id="createTitle">Selected match</h2><p id="createMeta"></p></div><button class="btn ghost closeCreate" aria-label="Close content creator">✕</button></div><div class="modalbody">
+  <div class="gen-controls">
+    <div><label class="eyebrow">Channel</label><div class="seg" data-seg="channel"><button class="active">Telegram</button><button>Email</button><button>Push</button></div></div>
+    <div><label class="eyebrow">Language</label><div class="seg" data-seg="language"><button class="active">EN</button><button>DE</button><button>IT</button><button>ES</button></div></div>
+    <div><label class="eyebrow">Tone</label><div class="seg" data-seg="tone"><button class="active">Sports</button><button>Hype</button><button>Informative</button></div></div>
+    <button id="generateSelected" class="btn primary">Generate 3 angles →</button>
+  </div>
+  <div id="generated"></div>
+</div></section></div>
 
 <script>
-const grid=document.getElementById("grid");
-const btn=document.getElementById("generate");
-const searchInput=document.getElementById("teamSearch");
-const searchBtn=document.getElementById("searchBtn");
-const searchResults=document.getElementById("searchResults");
-const bigGamesRoot=document.getElementById("bigGamesRoot");
-let currentPosts=[];
-let bigEvents=[];
+const state={events:[],range:"today",selected:null,lastSuccess:null};
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const esc=v=>String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+const initials=n=>String(n||"").split(/\s+/).filter(Boolean).map(x=>x[0]).join("").slice(0,3).toUpperCase();
+const localDate=iso=>new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/Malta",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date(iso));
+const dayLabel=iso=>new Intl.DateTimeFormat("en-GB",{timeZone:"Europe/Malta",weekday:"long",day:"2-digit",month:"short"}).format(new Date(iso));
+const timeLabel=iso=>new Intl.DateTimeFormat("en-GB",{timeZone:"Europe/Malta",hour:"2-digit",minute:"2-digit",hour12:false}).format(new Date(iso));
+const todayKey=()=>localDate(new Date().toISOString());
+const tomorrowKey=()=>{const d=new Date();d.setDate(d.getDate()+1);return localDate(d.toISOString())};
+function logo(url,name,cls){return '<span class="'+cls+'">'+(url?'<img src="'+esc(url)+'" alt="" loading="lazy" onerror="this.remove();this.parentElement.textContent=\''+esc(initials(name))+'\'">':esc(initials(name)))+'</span>'}
+function teamLogo(e,name){const x=(e.teamLogos||[]).find(a=>a.name===name);return logo(x?.url,name,"team-logo")}
+function competitionLogo(e){return logo(e.competitionLogo,e.competition,"comp-logo")}
+function setView(id){$$(".navbtn").forEach(x=>x.classList.toggle("active",x.dataset.view===id));$$(".view").forEach(x=>x.classList.toggle("active",x.id===id));if(id==="biggames"&&!state.events.length)loadEvents()}
+$$(".navbtn").forEach(b=>b.onclick=()=>setView(b.dataset.view));
 
-function esc(v){return String(v??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll(String.fromCharCode(34),"&quot;").replaceAll("'","&#39;");}
-
-function renderCopyHtml(value){
-  const raw=String(value??"");
-  return raw.split("\n").map(line=>{
-    let safe=esc(line);
-    safe=safe.replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>");
-
-    const trimmed=line.trim();
-    if(!trimmed) return '<div style="height:8px"></div>';
-
-    if(/^(MAIN ODDS|OTHER MARKETS|TODAY'S PICK|OUR PICK|MORE BETTING OPTIONS|LATEST ODDS|OUR ANGLE)$/i.test(trimmed.replace(/[*:]/g,"").trim())){
-      return '<span class="copy-heading">'+safe+'</span>';
-    }
-
-    if(trimmed.startsWith("• ") || trimmed.startsWith("↳ ")){
-      return '<span class="copy-bullet">'+safe+'</span>';
-    }
-
-    if(trimmed.startsWith("👉")){
-      return '<span class="copy-cta">'+safe+'</span>';
-    }
-
-    return '<div>'+safe+'</div>';
-  }).join("");
+function rangeOk(e){
+ const k=localDate(e.startTime), now=Date.now(), t=new Date(e.startTime).getTime();
+ if(state.range==="today")return k===todayKey();
+ if(state.range==="tomorrow")return k===tomorrowKey();
+ const days=Number(state.range);return t>=now&&t<=now+days*86400000;
 }
-
-document.querySelectorAll(".tab").forEach(tab=>tab.onclick=()=>{
-  document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
-  document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"));
-  tab.classList.add("active");
-  document.getElementById(tab.dataset.tab).classList.add("active");
-  if(tab.dataset.tab==="biggames" && !bigGamesRoot.dataset.loaded) loadBigGames();
-});
-
-async function searchMatches(){
-  const q=searchInput.value.trim();
-  if(q.length<2){
-    searchResults.innerHTML='<div class="empty">Type at least 2 characters.</div>';
-    return;
-  }
-
-  const old=searchBtn.textContent;
-  searchBtn.textContent="Searching…";
-  searchBtn.disabled=true;
-
-  try{
-    const r=await fetch("/api/search-matches?q="+encodeURIComponent(q),{cache:"no-store"});
-    const d=await r.json();
-    if(!r.ok) throw new Error(d.error||"search_failed");
-
-    const matches=d.matches||[];
-    if(!matches.length){
-      searchResults.innerHTML='<div class="empty">No upcoming matches found for "'+esc(q)+'".</div>';
-      return;
-    }
-
-    searchResults.innerHTML=matches.map(m=>
-      '<div class="search-result">'+
-        '<div class="search-main">'+
-          '<div class="search-title">'+esc(m.title)+'</div>'+
-          '<div class="search-meta">'+esc(m.competition)+' · '+esc(m.time)+' · '+esc(m.sport||"Sport")+'</div>'+
-        '</div>'+
-        '<button class="btn primary generateMatchPost" data-match-id="'+esc(m.id)+'">Generate post</button>'+
-      '</div>'
-    ).join("");
-
-    document.querySelectorAll(".generateMatchPost").forEach(el=>el.onclick=async()=>{
-      const original=el.textContent;
-      el.textContent="Generating…";
-      el.disabled=true;
-      try{
-        const rr=await fetch("/api/generate-from-match",{
-          method:"POST",
-          headers:{"Content-Type":"application/json"},
-          body:JSON.stringify({matchId:el.dataset.matchId})
-        });
-        const dd=await rr.json();
-        if(!rr.ok) throw new Error(dd.error||"generation_failed");
-        renderPosts([dd.post]);
-        window.scrollTo({top:grid.offsetTop-80,behavior:"smooth"});
-      }catch(e){
-        searchResults.insertAdjacentHTML("afterbegin",'<div class="empty">Could not generate post: '+esc(e.message)+'</div>');
-      }finally{
-        el.textContent=original;
-        el.disabled=false;
-      }
-    });
-  }catch(e){
-    searchResults.innerHTML='<div class="empty">Search failed: '+esc(e.message)+'</div>';
-  }finally{
-    searchBtn.textContent=old;
-    searchBtn.disabled=false;
-  }
+function filtered(){
+ const q=$("#search").value.trim().toLowerCase(), sport=$("#sportFilter").value, comp=$("#competitionFilter").value,country=$("#countryFilter").value;
+ return state.events.filter(e=>(e.sportKey||"").toLowerCase()===sport&&rangeOk(e)&&(comp==="all"||e.competition===comp)&&(country==="all"||e.country===country)&&(!q||[e.title,e.competition,e.country,...(e.teamNames||[])].join(" ").toLowerCase().includes(q)));
 }
-
-searchBtn.onclick=searchMatches;
-searchInput.addEventListener("keydown",e=>{if(e.key==="Enter") searchMatches();});
-
-function renderPosts(posts){
-  currentPosts=posts;
-  if(!posts.length){grid.innerHTML='<div class="empty">No suitable events were found for that selection.</div>';return;}
-  grid.innerHTML=posts.map((p,index)=>{
-    const odds=(p.odds||[]).map(o=>'<span class="odd">'+esc(o.label)+' <b>'+esc(o.value)+'</b></span>').join("");
-    return '<article class="card"><div class="top"><span class="pill">'+esc(p.contentType||"Content")+'</span><span class="pill">'+esc(p.competition||"")+'</span><span class="pill">'+esc(p.time||"")+'</span></div>'+
-      '<div class="title">'+esc(p.title||"")+'</div><div class="odds">'+odds+'</div><div class="copy">'+renderCopyHtml(p.copy||"")+'</div>'+
-      '<div class="actions"><button class="btn primary" data-copy="'+index+'">Copy post</button></div></article>';
-  }).join("");
-  document.querySelectorAll("[data-copy]").forEach(el=>el.onclick=async()=>{
-    const p=currentPosts[Number(el.dataset.copy)];
-    await navigator.clipboard.writeText(p.copy||"");
-    const old=el.textContent;el.textContent="Copied ✓";setTimeout(()=>el.textContent=old,1200);
-  });
+function fillFilters(){
+ const comps=[...new Set(state.events.map(e=>e.competition).filter(Boolean))].sort(), countries=[...new Set(state.events.map(e=>e.country).filter(Boolean))].sort();
+ $("#competitionFilter").innerHTML='<option value="all">All competitions</option>'+comps.map(x=>'<option>'+esc(x)+'</option>').join("");
+ $("#countryFilter").innerHTML='<option value="all">All countries</option>'+countries.map(x=>'<option>'+esc(x)+'</option>').join("");
 }
+function activeChips(){
+ const a=[];a.push($("#sportFilter").selectedOptions[0]?.text||"Football");if($("#competitionFilter").value!=="all")a.push($("#competitionFilter").value);if($("#countryFilter").value!=="all")a.push($("#countryFilter").value);if($("#search").value.trim())a.push("Search: "+$("#search").value.trim());
+ $("#activeFilters").innerHTML=a.map(x=>'<span class="activechip">'+esc(x)+'</span>').join("");
+}
+function todaySummary(list){
+ const comps=new Set(list.map(e=>e.competition)),sports=new Set(list.map(e=>e.sportKey));const now=Date.now();const soon=list.filter(e=>new Date(e.startTime)-now>0&&new Date(e.startTime)-now<90*60000).length;
+ $("#todayStrip").innerHTML='<div class="today-main"><span>'+esc(state.range==="today"?"Today":state.range==="tomorrow"?"Tomorrow":"Editorial view")+'</span><strong>'+esc(state.range==="today"?new Intl.DateTimeFormat("en-GB",{timeZone:"Europe/Malta",weekday:"long",day:"2-digit",month:"long"}).format(new Date()):"Upcoming big games")+'</strong></div><div class="stat"><span>Games</span><b>'+list.length+'</b></div><div class="stat"><span>Competitions</span><b>'+comps.size+'</b></div><div class="stat"><span>Starting soon</span><b>'+soon+'</b></div>';
+}
+function eventRow(e){
+ const teams=(e.teamNames||[]).slice(0,2),h=teams[0]||e.title.split(" vs ")[0],a=teams[1]||e.title.split(" vs ")[1],od=(e.odds||[]).slice(0,3);const soon=new Date(e.startTime)-Date.now()>0&&new Date(e.startTime)-Date.now()<90*60000;
+ return '<article class="event" tabindex="0" data-event="'+esc(e.id)+'"><div class="time"><b>'+esc(timeLabel(e.startTime))+'</b><small>CEST</small></div><div class="match"><button class="team filterTeam" data-team="'+esc(h)+'" aria-label="Filter '+esc(h)+'">'+teamLogo(e,h)+'<span class="teamname">'+esc(h)+'</span></button><span class="vs">VS</span><button class="team away filterTeam" data-team="'+esc(a)+'" aria-label="Filter '+esc(a)+'"><span class="teamname">'+esc(a)+'</span>'+teamLogo(e,a)+'</button></div><div class="odds">'+[0,1,2].map((i)=>'<button class="odd" aria-label="Odd '+(i===0?"1":i===1?"X":"2")+' '+esc(od[i]?.value||"unavailable")+'"><span>'+(i===0?"1":i===1?"X":"2")+'</span><b>'+esc(od[i]?.value||"—")+'</b></button>').join("")+'</div><div class="actions">'+(soon?'<span class="editorial">⚡ Soon</span>':'')+'<button class="btn markets" data-id="'+esc(e.id)+'">View Markets</button><button class="btn primary create" data-id="'+esc(e.id)+'">Create Content →</button></div></article>';
+}
+function render(){
+ const list=filtered();activeChips();todaySummary(list);
+ if(!list.length){$("#events").innerHTML='<div class="empty"><strong>No matches found</strong>Try removing some filters.<br><button class="btn primary" style="margin-top:12px" id="emptyReset">Reset filters</button></div>';$("#emptyReset").onclick=reset;return}
+ const groups=new Map();for(const e of list){if(!groups.has(e.competition))groups.set(e.competition,[]);groups.get(e.competition).push(e)}
+ $("#events").innerHTML=[...groups.entries()].map(([name,items])=>{const e=items[0];return '<section class="comp"><header class="comphead">'+competitionLogo(e)+'<button class="compmeta filterComp" data-comp="'+esc(name)+'"><div class="compname">'+esc(name)+'</div><div class="compcount">'+items.length+' match'+(items.length===1?"":"es")+'</div></button><button class="collapse-comp" aria-label="Collapse '+esc(name)+'">Collapse</button></header><div class="compbody">'+items.map(eventRow).join("")+'</div></section>'}).join("");
+ bindRows();
+}
+function bindRows(){
+ $$(".collapse-comp").forEach(b=>b.onclick=()=>{const body=b.closest(".comp").querySelector(".compbody");body.classList.toggle("collapsed");b.textContent=body.classList.contains("collapsed")?"Expand":"Collapse"});
+ $$(".filterComp").forEach(b=>b.onclick=()=>{$("#competitionFilter").value=b.dataset.comp;render()});
+ $$(".filterTeam").forEach(b=>b.onclick=e=>{e.stopPropagation();$("#search").value=b.dataset.team;render()});
+ $$(".markets").forEach(b=>b.onclick=e=>{e.stopPropagation();openMarkets(b.dataset.id)});
+ $$(".create").forEach(b=>b.onclick=e=>{e.stopPropagation();openCreate(b.dataset.id)});
+ $$(".event").forEach(row=>{row.onclick=e=>{if(e.target.closest("button"))return;state.selected=state.events.find(x=>String(x.id)===row.dataset.event);row.classList.add("selected")};row.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();openCreate(row.dataset.event)}}});
+}
+async function loadEvents(){
+ $("#events").innerHTML='<div class="comp">'+Array(6).fill('<div class="skeleton"></div>').join("")+'</div>';
+ try{const r=await fetch("/api/big-events",{cache:"no-store"}),d=await r.json();if(!r.ok)throw new Error(d.error||"api_error");state.events=d.events||[];state.lastSuccess=new Date();$("#lastUpdated").textContent="Updated "+new Intl.DateTimeFormat("en-GB",{timeZone:"Europe/Malta",hour:"2-digit",minute:"2-digit"}).format(state.lastSuccess)+" CEST";fillFilters();render()}
+ catch(e){$("#events").innerHTML='<div class="error"><strong>Live odds are temporarily unavailable</strong>'+(state.lastSuccess?"Last successful update: "+state.lastSuccess.toLocaleTimeString():"Could not reach the sportsbook API.")+'<br><button class="btn primary" id="retry" style="margin-top:12px">Retry</button></div>';$("#retry").onclick=loadEvents}
+}
+function reset(){$("#search").value="";$("#sportFilter").value="soccer";$("#competitionFilter").value="all";$("#countryFilter").value="all";state.range="today";$$("[data-range]").forEach(x=>x.classList.toggle("active",x.dataset.range==="today"));render()}
+$("#resetFilters").onclick=reset;["search","sportFilter","competitionFilter","countryFilter"].forEach(id=>$("#"+id).addEventListener(id==="search"?"input":"change",render));$$("[data-range]").forEach(b=>b.onclick=()=>{state.range=b.dataset.range;$$("[data-range]").forEach(x=>x.classList.toggle("active",x===b));render()});
 
-btn.onclick=async()=>{
-  const old=btn.textContent;btn.textContent="Generating…";btn.disabled=true;
-  try{
-    const r=await fetch("/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({
-      tournamentKey:document.getElementById("tournament").value,
-      contentType:document.getElementById("contentType").value,
-      count:Number(document.getElementById("count").value||3),
-      excludeGermany:true
-    })});
-    const d=await r.json();if(!r.ok)throw new Error(d.error||"generation_failed");renderPosts(d.posts||[]);
-  }catch(e){grid.innerHTML='<div class="empty">Generation failed: '+esc(e.message)+'</div>';}
-  finally{btn.textContent=old;btn.disabled=false;}
+function eventById(id){return state.events.find(e=>String(e.id)===String(id))}
+function openDrawer(back){back.classList.add("open");back.setAttribute("aria-hidden","false")}
+function closeDrawer(back){back.classList.remove("open");back.setAttribute("aria-hidden","true")}
+async function openMarkets(id){
+ const e=eventById(id);if(!e)return;$("#marketTitle").textContent=e.title;$("#marketMeta").textContent=e.competition+" · "+dayLabel(e.startTime)+" · "+timeLabel(e.startTime)+" CEST";$("#marketBody").innerHTML='<div class="drawer-loading"><div></div><div></div><div></div><div></div></div>';openDrawer($("#marketBack"));
+ try{const r=await fetch("/api/match-markets/"+encodeURIComponent(id),{cache:"no-store"}),d=await r.json();if(!r.ok)throw new Error(d.error||"markets_error");const groups=d.groups||[];$("#marketBody").innerHTML=groups.length?groups.map((g,i)=>'<details class="marketgroup" '+(i<4?"open":"")+'><summary><span>'+esc(g.name)+'</span><span>'+g.markets.reduce((n,m)=>n+m.selections.length,0)+' selections</span></summary><div class="marketgrid">'+g.markets.flatMap(m=>m.selections.map(s=>'<div class="market"><span>'+esc(s.label)+'</span><b>'+esc(s.value)+'</b></div>')).join("")+'</div></details>').join(""):'<div class="empty"><strong>No additional markets</strong>Only the main market is currently available.</div>'}
+ catch(err){$("#marketBody").innerHTML='<div class="error"><strong>Markets unavailable</strong>Try again in a moment.</div>'}
+}
+$(".closeDrawer").onclick=()=>closeDrawer($("#marketBack"));$("#marketBack").onclick=e=>{if(e.target===e.currentTarget)closeDrawer(e.currentTarget)};
+
+function openCreate(id){const e=eventById(id);if(!e)return;state.selected=e;$("#createTitle").textContent=e.title;$("#createMeta").textContent=e.competition+" · "+dayLabel(e.startTime)+" · "+timeLabel(e.startTime)+" CEST";$("#generated").innerHTML="";openDrawer($("#createBack"))}
+$(".closeCreate").onclick=()=>closeDrawer($("#createBack"));$("#createBack").onclick=e=>{if(e.target===e.currentTarget)closeDrawer(e.currentTarget)};
+$$(".seg button").forEach(b=>b.onclick=()=>{b.parentElement.querySelectorAll("button").forEach(x=>x.classList.remove("active"));b.classList.add("active")});
+function postCard(v,i){return '<article class="post" data-post="'+i+'"><header class="posthead"><strong>OPTION '+(i+1)+' · '+esc(v.contentType||"CONTENT")+'</strong><div class="posttools"><button class="btn collapsePost">Collapse</button></div></header><div class="postbody">'+esc(v.copy||"")+'</div><footer class="postfooter"><button class="btn primary copyPost">Copy</button><button class="btn editPost">Edit</button></footer></article>'}
+$("#generateSelected").onclick=async()=>{
+ if(!state.selected)return;const b=$("#generateSelected");b.disabled=true;b.textContent="Creating 3 content angles…";$("#generated").innerHTML='<div class="generated"><div class="empty"><strong>Creating 3 content angles for '+esc(state.selected.title)+'…</strong>Checking match markets and preparing different editorial approaches.</div></div>';
+ try{const r=await fetch("/api/generate-variants",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({matchId:state.selected.id})}),d=await r.json();if(!r.ok)throw new Error(d.error||"generation_error");$("#generated").innerHTML='<div class="generated"><div class="genbar"><h3>Generated content</h3><div><button class="btn" id="collapseAll">Collapse all</button> <button class="btn" id="expandAll">Expand all</button></div></div>'+(d.variants||[]).map(postCard).join("")+'</div>';bindPosts(d.variants||[])}
+ catch(err){$("#generated").innerHTML='<div class="error"><strong>Could not generate content</strong>'+esc(err.message)+'</div>'}
+ finally{b.disabled=false;b.textContent="Generate 3 angles →"}
 };
+function bindPosts(vars){$("#collapseAll").onclick=()=>$$(".post").forEach(x=>x.classList.add("collapsed"));$("#expandAll").onclick=()=>$$(".post").forEach(x=>x.classList.remove("collapsed"));$$(".collapsePost").forEach(b=>b.onclick=()=>{const p=b.closest(".post");p.classList.toggle("collapsed");b.textContent=p.classList.contains("collapsed")?"Expand":"Collapse"});$$(".copyPost").forEach((b,i)=>b.onclick=async()=>{const body=b.closest(".post").querySelector(".postbody");await navigator.clipboard.writeText(body.textContent);const old=b.textContent;b.textContent="✓ Copied";setTimeout(()=>b.textContent=old,1200)});$$(".editPost").forEach((b,i)=>b.onclick=()=>{const p=b.closest(".post"),body=p.querySelector(".postbody");if(body.querySelector("textarea"))return;const t=document.createElement("textarea");t.className="editarea";t.value=body.textContent;body.textContent="";body.appendChild(t);t.focus();b.textContent="Done";b.onclick=()=>{body.textContent=t.value;b.textContent="Edit";bindPosts(vars)}})}
+async function studioSearch(){const q=$("#studioSearch").value.trim();if(q.length<2){$("#studioResults").innerHTML='<div class="empty"><strong>Start typing</strong>Enter at least 2 characters.</div>';return}$("#studioResults").innerHTML='<div class="skeleton"></div>';try{const r=await fetch("/api/search-matches?q="+encodeURIComponent(q),{cache:"no-store"}),d=await r.json();const m=d.matches||[];$("#studioResults").innerHTML=m.length?m.map(x=>'<div class="searchrow"><div><b>'+esc(x.title)+'</b><span>'+esc(x.competition)+' · '+esc(x.time)+'</span></div><button class="btn primary studioCreate" data-id="'+esc(x.id)+'">Create Content →</button></div>').join(""):'<div class="empty"><strong>No upcoming matches found</strong>Try another team or competition.</div>';$$(".studioCreate").forEach(b=>b.onclick=()=>{let e=eventById(b.dataset.id);if(!e){e=m.find(x=>String(x.id)===b.dataset.id);state.events.push(e)}openCreate(b.dataset.id)})}catch{$("#studioResults").innerHTML='<div class="error"><strong>Search unavailable</strong>Try again.</div>'}}
+$("#studioSearchBtn").onclick=studioSearch;$("#studioSearch").onkeydown=e=>{if(e.key==="Enter")studioSearch()};$$("[data-explore]").forEach(b=>b.onclick=()=>{setView("biggames");$("#sportFilter").value=b.dataset.explore;state.range="30";$$("[data-range]").forEach(x=>x.classList.toggle("active",x.dataset.range==="30"));render()});
 
-function fmtBigDate(iso){
-  if(!iso)return "";
-  return new Intl.DateTimeFormat("en-GB",{timeZone:"Europe/Malta",weekday:"short",day:"2-digit",month:"short"}).format(new Date(iso));
-}
-
-function dateInputValue(iso){
-  if(!iso)return "";
-  return new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/Malta",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date(iso));
-}
-
-function uniqueSorted(values){return [...new Set(values.filter(Boolean))].sort((a,b)=>String(a).localeCompare(String(b)));}
-
-function populateBigFilters(){
-  const competition=document.getElementById("bigCompetition"), team=document.getElementById("bigTeam"), country=document.getElementById("bigCountry");
-  const current={competition:competition.value,team:team.value,country:country.value};
-  competition.innerHTML='<option value="all">All competitions</option>'+uniqueSorted(bigEvents.map(e=>e.competition)).map(v=>'<option>'+esc(v)+'</option>').join("");
-  team.innerHTML='<option value="all">All teams / players</option>'+uniqueSorted(bigEvents.flatMap(e=>e.teamNames||[])).map(v=>'<option>'+esc(v)+'</option>').join("");
-  country.innerHTML='<option value="all">All countries</option>'+uniqueSorted(bigEvents.map(e=>e.country)).map(v=>'<option>'+esc(v)+'</option>').join("");
-  if([...competition.options].some(o=>o.value===current.competition))competition.value=current.competition;
-  if([...team.options].some(o=>o.value===current.team))team.value=current.team;
-  if([...country.options].some(o=>o.value===current.country))country.value=current.country;
-}
-
-function filteredBigEvents(){
-  const sport=document.getElementById("bigSport").value;
-  const competition=document.getElementById("bigCompetition").value;
-  const country=document.getElementById("bigCountry").value;
-  const q=(document.getElementById("bigSearch").value||"").trim().toLowerCase();
-  const range=Number(document.getElementById("bigRange").value||30);
-  const now=Date.now(), max=now+range*24*60*60*1000;
-  return bigEvents.filter(e=>{
-    const when=new Date(e.startTime||0).getTime();
-    const hay=[e.title,e.competition,e.country,...(e.teamNames||[])].filter(Boolean).join(" ").toLowerCase();
-    return (e.sportKey||"").toLowerCase()===sport &&
-      (competition==="all" || e.competition===competition) &&
-      (country==="all" || e.country===country) &&
-      (!q || hay.includes(q)) &&
-      when>=now && when<=max;
-  });
-}
-
-function renderBigGames(){
-  const events=filteredBigEvents();
-  if(!events.length){bigGamesRoot.innerHTML='<div class="empty">No big games match these filters.</div>';return;}
-
-  const byDay=new Map();
-  for(const e of events){
-    const key=dateInputValue(e.startTime)||"unknown";
-    if(!byDay.has(key,))byDay.set(key,[]);
-    byDay.get(key).push(e);
-  }
-
-  bigGamesRoot.innerHTML=[...byDay.entries()].sort((a,b)=>a[0].localeCompare(b[0])).map(([date,items])=>{
-    const comps=new Map();
-    for(const e of items){if(!comps.has(e.competition))comps.set(e.competition,[]);comps.get(e.competition).push(e);}
-    const compHtml=[...comps.entries()].map(([comp,list])=>
-      '<div class="big-competition"><div class="big-event-list">'+
-      list.map(e=>{
-        const odds=(e.odds||[]).slice(0,3);
-        const teams=(e.teamNames||[]).slice(0,2);
-        const t1=teams[0]||e.title.split(" vs ")[0]||"Team 1", t2=teams[1]||e.title.split(" vs ")[1]||"Team 2";
-        const initials=n=>String(n).split(/\s+/).filter(Boolean).slice(0,2).map(x=>x[0]).join("").toUpperCase();
-        const logoFor=n=>((e.teamLogos||[]).find(x=>x.name===n)||{}).url||"";
-        const logoHtml=n=>logoFor(n)?'<img class="team-logo-img" src="'+esc(logoFor(n))+'" alt="">':esc(initials(n));
-        const competitionLogo=e.competitionLogo?'<img class="competition-logo-img" src="'+esc(e.competitionLogo)+'" alt="">':'⚽';
-        const timeMatch=(e.time||"").match(/(\d{2}:\d{2})/); const tm=timeMatch?timeMatch[1]:"--:--";
-        return '<div class="big-event">'+
-          '<div class="competition-cell"><div class="competition-icon">'+competitionLogo+'</div><div>'+esc(e.competition)+'</div></div>'+
-          '<div class="match-cell"><div class="match-timebox"><b>'+esc(tm)+'</b><small>CEST</small></div><div class="teams-wrap"><div class="team-side"><span class="team-badge">'+logoHtml(t1)+'</span><span>'+esc(t1)+'</span></div><div class="vs-pill">VS</div><div class="team-side away"><span>'+esc(t2)+'</span><span class="team-badge">'+logoHtml(t2)+'</span></div></div></div>'+
-          '<div class="odds-cell">'+[0,1,2].map(i=>{const o=odds[i];return '<div class="odd-box"><span>'+(i===0?'1':i===1?'X':'2')+'</span><b>'+esc(o?.value||'—')+'</b></div>';}).join("")+'</div>'+
-          '<div class="action-cell"><button class="btn bigMarkets" data-id="'+esc(e.id)+'">▥ More markets</button><button class="btn primary bigGenerate" data-id="'+esc(e.id)+'">✎ Generate 3 posts</button></div>'+
-          '<div id="markets-'+esc(e.id)+'" class="markets-box"></div>'+
-          '<div id="variants-'+esc(e.id)+'" class="variants-host variants-wrap"></div>'+
-        '</div>';
-      }).join("")+'</div></div>'
-    ).join("");
-    return '<section class="big-day"><div class="big-day-title"><h3>'+esc(fmtBigDate(items[0]?.startTime))+'</h3><span class="pill">'+items.length+' events</span></div>'+compHtml+'</section>';
-  }).join("");
-
-  document.querySelectorAll(".bigMarkets").forEach(btn=>btn.onclick=async()=>{
-    const box=document.getElementById("markets-"+btn.dataset.id);
-    if(box.dataset.loaded){box.classList.toggle("open");return;}
-    btn.textContent="Loading…";btn.disabled=true;
-    try{
-      const r=await fetch("/api/match-markets/"+encodeURIComponent(btn.dataset.id),{cache:"no-store"});
-      const d=await r.json();if(!r.ok)throw new Error(d.error||"markets_failed");
-      box.innerHTML=(d.options||[]).length
-        ? '<div class="market-options">'+(d.options||[]).map(o=>
-            '<div class="market-option">'+
-              '<div class="market-option-main"><div class="market-option-name">'+esc(o.market)+'</div><div class="market-option-pick">'+esc(o.label)+'</div></div>'+
-              '<div class="market-option-odd">'+esc(o.value)+'</div>'+
-            '</div>'
-          ).join("")+'</div>'
-        : '<div class="empty" style="padding:18px">No additional markets available.</div>';
-      box.dataset.loaded="1";box.classList.add("open");
-    }catch(e){box.innerHTML='Could not load markets: '+esc(e.message);box.classList.add("open");}
-    finally{btn.textContent="More markets";btn.disabled=false;}
-  });
-
-  document.querySelectorAll(".bigGenerate").forEach(btn=>btn.onclick=async()=>{
-    const root=document.getElementById("variants-"+btn.dataset.id);
-    btn.textContent="Generating…";btn.disabled=true;
-    try{
-      const r=await fetch("/api/generate-variants",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({matchId:btn.dataset.id})});
-      const d=await r.json();if(!r.ok)throw new Error(d.error||"generation_failed");
-      const labels=["Short & direct","Aggressive picks","Full match context"];
-      root.innerHTML=
-        '<div class="variants-toolbar"><strong>3 generated posts</strong><button class="btn collapse-variants">Collapse</button></div>'+
-        '<div class="variant-grid">'+(d.variants||[]).map((v,i)=>'<div class="variant-card"><h4>'+esc(v.contentType||("Option "+(i+1)))+' · '+esc(labels[i]||"")+'</h4><div class="copy">'+renderCopyHtml(v.copy||"")+'</div><button class="btn primary copyVariant" data-copytext="'+encodeURIComponent(v.copy||"")+'" style="margin-top:10px">Copy post</button></div>').join("")+'</div>';
-      const grid=root.querySelector(".variant-grid");
-      const collapse=root.querySelector(".collapse-variants");
-      collapse.onclick=()=>{
-        const isCollapsed=grid.classList.toggle("collapsed");
-        collapse.textContent=isCollapsed?"Expand":"Collapse";
-      };
-      root.querySelectorAll(".copyVariant").forEach(el=>el.onclick=async()=>{await navigator.clipboard.writeText(decodeURIComponent(el.dataset.copytext||""));const old=el.textContent;el.textContent="Copied ✓";setTimeout(()=>el.textContent=old,1200);});
-    }catch(e){root.innerHTML='<div class="empty">Could not generate posts: '+esc(e.message)+'</div>';}
-    finally{btn.textContent="Generate 3 posts";btn.disabled=false;}
-  });
-}
-
-async function loadBigGames(){
-  bigGamesRoot.dataset.loaded="1";
-  bigGamesRoot.innerHTML='<div class="empty">Loading upcoming big games from Betandplay…</div>';
-  try{
-    const r=await fetch("/api/big-events",{cache:"no-store"});
-    const d=await r.json();if(!r.ok)throw new Error(d.error||"big_games_failed");
-    bigEvents=d.events||[];
-    populateBigFilters();renderBigGames();
-  }catch(e){bigGamesRoot.innerHTML='<div class="empty">Could not load big games: '+esc(e.message)+'</div>';}
-}
-
-["bigCompetition","bigCountry","bigRange"].forEach(id=>document.getElementById(id)?.addEventListener("change",renderBigGames));
-document.getElementById("bigSearch")?.addEventListener("input",renderBigGames);
-document.querySelectorAll(".sportnav-btn").forEach(btn=>btn.onclick=()=>{
-  document.querySelectorAll(".sportnav-btn").forEach(x=>x.classList.remove("active"));
-  btn.classList.add("active");
-  document.getElementById("bigSport").value=btn.dataset.sport;
-  renderBigGames();
-});
-document.getElementById("clearBigFilters").onclick=()=>{
-  document.getElementById("bigSport").value="soccer";
-  document.getElementById("bigCompetition").value="all";
-  document.getElementById("bigTeam").value="all";
-  document.getElementById("bigCountry").value="all";
-  document.getElementById("bigRange").value="30";
-  document.getElementById("bigSearch").value="";
-  document.querySelectorAll(".sportnav-btn").forEach(x=>x.classList.toggle("active",x.dataset.sport==="soccer"));
-  renderBigGames();
-};
-
+document.addEventListener("keydown",e=>{const typing=/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName);if(e.key==="Escape"){closeDrawer($("#marketBack"));closeDrawer($("#createBack"));return}if(typing)return;if(e.key==="/"){e.preventDefault();$("#search").focus()}if(e.key.toLowerCase()==="g"&&state.selected)openCreate(state.selected.id)});
+loadEvents();
 </script>
 </body>
 </html>
