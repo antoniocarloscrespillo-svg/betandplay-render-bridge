@@ -95,13 +95,18 @@ url('/big-games-hero.svg') center/cover no-repeat;border-bottom:1px solid #17314
 .teams-wrap{display:grid;grid-template-columns:1fr 34px 1fr;align-items:center;gap:10px;padding:10px 12px}.team-side{display:flex;align-items:center;gap:8px;font-weight:900;min-width:0}.team-side.away{justify-content:flex-end;text-align:right}.team-badge{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;background:#0b1621;border:1px solid #29445c;color:#fff;font-size:10px;font-weight:950;flex:0 0 auto;overflow:hidden}.team-logo-img{width:32px;height:32px;max-width:32px;max-height:32px;object-fit:contain;display:block}.competition-logo-img{width:31px;height:31px;max-width:31px;max-height:31px;object-fit:contain;display:block}.vs-pill{width:34px;height:28px;border-radius:10px;background:#122236;border:1px solid #213b53;display:grid;place-items:center;color:#a9b8c8;font-size:11px;font-weight:900}
 .odds-cell{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;align-items:center;padding:9px 12px;border-right:1px solid #183044}.odd-box{display:flex;flex-direction:column;align-items:center;gap:5px}.odd-box span{font-size:10px;color:#8fa2b8}.odd-box b{display:grid;place-items:center;min-width:66px;height:38px;border-radius:11px;background:#0f2031;border:1px solid #213d56;font-size:17px}
 .action-cell{display:flex;align-items:center;gap:10px;padding:14px 16px}.action-cell .btn{white-space:nowrap}.bigGenerate{background:linear-gradient(135deg,#116fff,#16afe8)!important;border:0!important;color:#fff!important;box-shadow:0 8px 20px rgba(17,111,255,.18)!important}.bigMarkets{border:1px solid #1a9d74!important;color:#34d5a1!important;background:#081712!important}
-.markets-box{display:none;grid-column:1/-1;margin:0 16px 14px;padding:14px;border-radius:14px;background:linear-gradient(180deg,#09131d,#07101a);border:1px solid #1f3b50}.markets-box.open{display:block}
-.market-options{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:9px}
-.market-option{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:11px 12px;border-radius:11px;background:#0d1a26;border:1px solid #223e53}
-.market-option-main{min-width:0}.market-option-name{font-size:10px;color:#7e9ab2;text-transform:uppercase;letter-spacing:.55px;font-weight:850;margin-bottom:4px}.market-option-pick{font-size:13px;font-weight:850;color:#eef6fd;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.market-option-odd{min-width:58px;height:36px;border-radius:9px;display:grid;place-items:center;background:linear-gradient(135deg,#103b34,#0d2531);border:1px solid #217a61;color:#7cf0c5;font-size:14px;font-weight:950}
+.markets-box{display:none;grid-column:1/-1;margin:0 14px 12px;padding:12px;border-radius:12px;background:linear-gradient(180deg,#0a1721,#08111a);border:1px solid #23465d;box-shadow:inset 0 1px 0 rgba(255,255,255,.02)}.markets-box.open{display:block}
+.market-options{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px}
+.market-option{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px;border-radius:10px;background:linear-gradient(180deg,#0c1a25,#0a151e);border:1px solid #27445b;transition:.15s ease}
+.market-option:hover{transform:translateY(-1px);border-color:#2f6784;background:#0e1e2b}
+.market-option-main{min-width:0}.market-option-name{font-size:9px;color:#6f94ae;text-transform:uppercase;letter-spacing:.6px;font-weight:900;margin-bottom:3px}.market-option-pick{font-size:12px;font-weight:850;color:#eef7ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.market-option-odd{min-width:54px;height:34px;border-radius:8px;display:grid;place-items:center;background:linear-gradient(135deg,#0f3b31,#0a2937);border:1px solid #238966;color:#89f1c9;font-size:13px;font-weight:950}
 .variants-host{grid-column:1/-1;width:100%;min-width:0}
+.variants-wrap{grid-column:1/-1;width:100%;min-width:0;margin-top:2px}
+.variants-toolbar{display:flex;justify-content:space-between;align-items:center;margin:0 16px 8px;padding:8px 10px;border:1px solid #20384b;border-radius:10px;background:#0a141d}
+.variants-toolbar strong{font-size:12px;color:#dbeaf6}.collapse-variants{padding:6px 10px!important;font-size:11px!important}
 .variant-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:0 16px 16px;width:calc(100% - 32px)}
+.variant-grid.collapsed{display:none}
 .variant-card{border:1px solid #223a4f;border-radius:14px;padding:14px;background:linear-gradient(180deg,#0d1823,#09121a);min-width:0}
 .variant-card:nth-child(1){border-top:3px solid #2b9cf1}.variant-card:nth-child(2){border-top:3px solid #ff7b45}.variant-card:nth-child(3){border-top:3px solid #2fd29a}
 .variant-card h4{margin:0 0 10px;color:#e9f4fb;font-size:14px}.variant-card .copy{max-height:none;overflow:visible}
@@ -401,7 +406,7 @@ function renderBigGames(){
           '<div class="odds-cell">'+[0,1,2].map(i=>{const o=odds[i];return '<div class="odd-box"><span>'+(i===0?'1':i===1?'X':'2')+'</span><b>'+esc(o?.value||'—')+'</b></div>';}).join("")+'</div>'+
           '<div class="action-cell"><button class="btn bigMarkets" data-id="'+esc(e.id)+'">▥ More markets</button><button class="btn primary bigGenerate" data-id="'+esc(e.id)+'">✎ Generate 3 posts</button></div>'+
           '<div id="markets-'+esc(e.id)+'" class="markets-box"></div>'+
-          '<div id="variants-'+esc(e.id)+'" class="variants-host"></div>'+
+          '<div id="variants-'+esc(e.id)+'" class="variants-host variants-wrap"></div>'+
         '</div>';
       }).join("")+'</div></div>'
     ).join("");
@@ -435,7 +440,15 @@ function renderBigGames(){
       const r=await fetch("/api/generate-variants",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({matchId:btn.dataset.id})});
       const d=await r.json();if(!r.ok)throw new Error(d.error||"generation_failed");
       const labels=["Short & direct","Aggressive picks","Full match context"];
-      root.innerHTML='<div class="variant-grid">'+(d.variants||[]).map((v,i)=>'<div class="variant-card"><h4>'+esc(v.contentType||("Option "+(i+1)))+' · '+esc(labels[i]||"")+'</h4><div class="copy">'+renderCopyHtml(v.copy||"")+'</div><button class="btn primary copyVariant" data-copytext="'+encodeURIComponent(v.copy||"")+'" style="margin-top:10px">Copy post</button></div>').join("")+'</div>';
+      root.innerHTML=
+        '<div class="variants-toolbar"><strong>3 generated posts</strong><button class="btn collapse-variants">Collapse</button></div>'+
+        '<div class="variant-grid">'+(d.variants||[]).map((v,i)=>'<div class="variant-card"><h4>'+esc(v.contentType||("Option "+(i+1)))+' · '+esc(labels[i]||"")+'</h4><div class="copy">'+renderCopyHtml(v.copy||"")+'</div><button class="btn primary copyVariant" data-copytext="'+encodeURIComponent(v.copy||"")+'" style="margin-top:10px">Copy post</button></div>').join("")+'</div>';
+      const grid=root.querySelector(".variant-grid");
+      const collapse=root.querySelector(".collapse-variants");
+      collapse.onclick=()=>{
+        const isCollapsed=grid.classList.toggle("collapsed");
+        collapse.textContent=isCollapsed?"Expand":"Collapse";
+      };
       root.querySelectorAll(".copyVariant").forEach(el=>el.onclick=async()=>{await navigator.clipboard.writeText(decodeURIComponent(el.dataset.copytext||""));const old=el.textContent;el.textContent="Copied ✓";setTimeout(()=>el.textContent=old,1200);});
     }catch(e){root.innerHTML='<div class="empty">Could not generate posts: '+esc(e.message)+'</div>';}
     finally{btn.textContent="Generate 3 posts";btn.disabled=false;}
