@@ -312,6 +312,25 @@ function makeContent(type, posts, count) {
   return makeContent("match", posts, count);
 }
 
+function normalizeSearchText(value="") {
+  return String(value)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g,"")
+    .toLowerCase()
+    .trim();
+}
+
+function matchSearchHaystack(match) {
+  return [
+    match?.name,
+    match?.slug,
+    match?.competitors?.home?.name,
+    match?.competitors?.away?.name,
+    match?.tournament?.name,
+    match?.tournament?.category?.name
+  ].filter(Boolean).map(normalizeSearchText).join(" ");
+}
+
 function stripWomensEvents(matches) {
   return (matches || []).filter(match => !isWomensEvent(match));
 }
@@ -525,6 +544,67 @@ app.get("/api/daily-report", async (_req, res) => {
     const report = buildSportsReport(matches.slice(0,60), "daily", 1);
     res.set("Cache-Control","no-store");
     res.json({ok:true, report});
+  } catch (error) {
+    res.status(error?.status || 502).json({ok:false,error:String(error?.message || error)});
+  }
+});
+
+app.get("/api/search-matches", async (req, res) => {
+  const q = normalizeSearchText(req.query.q || "");
+  if (q.length < 2) return res.json({ok:true,matches:[]});
+
+  const start = new Date();
+  const end = new Date(start.getTime() + 45 * 24 * 60 * 60 * 1000);
+
+  try {
+    const sports = ["soccer","tennis"];
+    const batches = await Promise.all(sports.map(sportKey =>
+      getMatches({
+        start:start.toISOString(),
+        end:end.toISOString(),
+        tournamentKey:"all",
+        excludeGermany:false,
+        sportKey
+      })
+    ));
+
+    const matches = stripWomensEvents(batches.flat())
+      .filter(m => matchSearchHaystack(m).includes(q))
+      .sort((a,b)=>new Date(a?.start_time||0)-new Date(b?.start_time||0))
+      .slice(0,20)
+      .map(toPost);
+
+    res.set("Cache-Control","no-store");
+    res.json({ok:true,matches});
+  } catch (error) {
+    res.status(error?.status || 502).json({ok:false,error:String(error?.message || error)});
+  }
+});
+
+app.post("/api/generate-from-match", async (req, res) => {
+  const matchId = String(req.body?.matchId || "");
+  if (!matchId) return res.status(400).json({ok:false,error:"match_id_required"});
+
+  const start = new Date();
+  const end = new Date(start.getTime() + 45 * 24 * 60 * 60 * 1000);
+
+  try {
+    const sports = ["soccer","tennis"];
+    const batches = await Promise.all(sports.map(sportKey =>
+      getMatches({
+        start:start.toISOString(),
+        end:end.toISOString(),
+        tournamentKey:"all",
+        excludeGermany:false,
+        sportKey
+      })
+    ));
+
+    const match = stripWomensEvents(batches.flat()).find(m => String(m.id) === matchId);
+    if (!match) return res.status(404).json({ok:false,error:"match_not_found"});
+
+    const post = makeContent("match",[toPost(match)],1)[0];
+    res.json({ok:true,post});
   } catch (error) {
     res.status(error?.status || 502).json({ok:false,error:String(error?.message || error)});
   }
