@@ -319,7 +319,14 @@ button,.filter{border:1px solid var(--line);background:var(--panel);color:var(--
 </div>
 
 <script>
-const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]));
+function esc(s){
+  return String(s??"")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll(String.fromCharCode(34),"&quot;")
+    .replaceAll("'","&#39;");
+}
 let posts=[];
 let current="all";
 const published=JSON.parse(localStorage.getItem("bnp_published")||"{}");
