@@ -29,6 +29,51 @@
 </style>
 
 <style>
+/* screenshot-inspired sportsbook pass */
+body{background:#06111d!important}
+.app{max-width:1640px;padding:0 26px 52px}
+.topbar{height:64px;background:#07111c!important;border-color:#16283a!important;padding:0 34px}
+.brand{font-size:15px}.brandmark{width:34px;height:34px;border-radius:10px;background:linear-gradient(145deg,#2f93ff,#1b63d8)!important;color:white!important}
+.navbtn{padding:10px 17px;border-radius:10px;color:#8fa5bb}.navbtn.active{background:#0f2238!important;color:#fff!important;box-shadow:inset 0 -2px #2f93ff!important}
+.pagehead{display:none}
+.sports-hero{position:relative;min-height:235px;margin:0 -26px 16px;overflow:hidden;border-bottom:1px solid #18304a;background:
+linear-gradient(90deg,#06111d 0%,rgba(6,17,29,.84) 25%,rgba(6,17,29,.20) 58%,rgba(6,17,29,.58) 100%),
+url('/big-games-hero.svg') center 42%/cover no-repeat}
+.sports-hero:after{content:"";position:absolute;inset:auto 0 0;height:70px;background:linear-gradient(180deg,transparent,#06111d)}
+.sports-hero-overlay{position:absolute;inset:0;background:linear-gradient(90deg,rgba(4,11,19,.80),rgba(4,11,19,.18) 52%,rgba(4,11,19,.36))}
+.sports-hero-copy{position:relative;z-index:2;padding:38px 48px 24px;max-width:690px}
+.hero-kicker{font-size:12px;font-weight:950;letter-spacing:2.2px;color:#d8e5f3}
+.sports-hero h1{margin:4px 0 8px;font-size:52px;line-height:.94;letter-spacing:-2.2px;font-weight:1000}.sports-hero h1 span{color:#2f9cff}
+.sports-hero p{margin:0 0 20px;color:#a8bbcf;font-size:14px}
+.hero-sports{display:flex;gap:9px;flex-wrap:wrap}
+.hero-sport{height:38px;padding:0 17px;border-radius:999px;border:1px solid #274766;background:#0a1826;color:#c9d7e4;font-size:12px;font-weight:900}
+.hero-sport.active{background:linear-gradient(135deg,#1b6ff0,#22a5ff);border-color:transparent;color:#fff;box-shadow:0 7px 18px rgba(29,117,242,.24)}
+.toolbar{top:74px;margin-top:0;grid-template-columns:minmax(330px,1.55fr) 150px 210px 165px auto;background:#0a1623!important;border-color:#1d344b!important;border-radius:14px;padding:10px;box-shadow:0 10px 28px rgba(0,0,0,.22)}
+.control{height:44px;background:#08131f!important;border-color:#29435f!important;border-radius:11px;color:#edf6ff}.control::placeholder{color:#71889e}.control:focus{border-color:#2f93ff!important;box-shadow:0 0 0 3px rgba(47,147,255,.13)!important}
+.btn{border-color:#29415a;background:#0f1d2d;color:#dfeaf4}.btn:hover{background:#14263a;border-color:#35597a}.btn.primary{background:linear-gradient(135deg,#1c77f2,#2ea6ff)!important;border-color:transparent!important;color:#fff!important;box-shadow:0 7px 18px rgba(31,120,240,.18)}
+.quickbar{margin:10px 0 12px}.chip{padding:7px 12px;background:#091521;border-color:#23394f;color:#9eb1c3}.chip.active{background:#102a47!important;border-color:#2d6ca6!important;color:#e6f3ff!important}
+.today-strip{grid-template-columns:1.7fr repeat(3,.6fr);gap:9px;margin-bottom:10px}.today-main,.stat{background:#0a1623!important;border-color:#1c344b!important;border-radius:12px;padding:10px 13px}.today-main strong{font-size:14px}.stat b{font-size:18px}
+.editorial-rail{gap:9px;margin-bottom:13px}.rail{background:#0a1623!important;border-color:#1c344b!important;border-radius:12px}.railhead strong{color:#dfeaf4}.railtime{color:#56aaff!important}
+.comp{background:#08131f!important;border-color:#1d344a!important;border-radius:14px;margin-bottom:12px;box-shadow:0 10px 24px rgba(0,0,0,.14)}
+.comphead{height:50px;background:linear-gradient(90deg,#0a1725,#0a1520)!important;border-bottom-color:#1d344a!important;padding:0 14px}
+.compname{font-size:12px;letter-spacing:.45px;text-transform:uppercase}.compcount{font-size:10px}
+.comp-logo{width:36px;height:36px;border-radius:10px;background:#0e1c2b!important;border-color:#294761!important}.comp-logo img{max-width:30px;max-height:30px}
+.event{grid-template-columns:80px minmax(330px,1.4fr) minmax(300px,.95fr) auto;min-height:68px;border-bottom-color:#172b3f!important;background:#08131f}
+.event:hover,.event.selected{background:#0d2033!important}
+.time{border-right-color:#172b3f!important}.time b{font-size:15px}.time small{color:#71879a}
+.match{padding:8px 15px;gap:9px}.team{font-size:13px}.team-logo{width:36px;height:36px;border-radius:10px;background:#0c1927!important;border-color:#294761!important}.team-logo img{max-width:30px;max-height:30px}.vs{color:#73879b}
+.odds{gap:7px;padding:8px 12px}.odd{height:40px;border-radius:9px;background:#0d1d2d!important;border-color:#294661!important}.odd span{color:#8096aa}.odd b{font-size:14px}.odd:hover{background:#122b45!important;border-color:#3a78b0!important}
+.actions{gap:7px;padding:8px 14px}.actions .btn{font-size:11px;min-height:36px;padding:7px 11px}.actions .markets{background:#0b1c28;border-color:#1e695a;color:#6de2bf}.actions .create{min-width:134px}
+.editorial{background:#2a2217;border-color:#5b4829;color:#ffd491}
+.drawer{background:#08131f!important;border-left-color:#20384e!important}.drawerhead{background:#0a1725;border-bottom-color:#1e344a}.drawerbody{background:#08131f}.marketgroup{border-color:#1f384e;background:#0a1725}.marketgroup summary{background:#0d1b2a}.market{background:#0d2031!important;border-color:#2a4760!important}.market b{color:#7ebfff!important}
+.modal{background:#08131f!important;border-color:#20394f!important}.modalhead{background:#0a1725}.seg{background:#07111c;border-color:#1d354b}.seg button.active{background:#142a42;color:#fff}.post{background:#0a1725!important;border-color:#1d354b}.postbody{font-size:13px;line-height:1.62}
+.studio{max-width:1100px}.studiohero{padding-top:42px}.studiohero h1{font-size:32px}.explore button,.searchrow{background:#0a1725!important;border-color:#1d354b!important}
+@media(max-width:1100px){.sports-hero{min-height:210px}.sports-hero h1{font-size:44px}.event{grid-template-columns:70px 1fr auto}.toolbar{grid-template-columns:1fr 140px 180px auto}.toolbar #countryFilter{display:none}}
+@media(max-width:780px){.app{padding:0 12px 40px}.sports-hero{margin:0 -12px 12px;min-height:190px}.sports-hero-copy{padding:28px 20px 18px}.sports-hero h1{font-size:38px}.topbar{margin:0 -12px;padding:0 14px}.toolbar{top:68px}.event{grid-template-columns:58px 1fr}.actions .btn{min-height:40px}.today-strip{grid-template-columns:1fr 1fr}.today-main{grid-column:1/-1}}
+@media(max-width:480px){.sports-hero{min-height:175px}.sports-hero p{font-size:12px}.sports-hero h1{font-size:34px}.hero-sport{height:34px;padding:0 12px}.toolbar{grid-template-columns:1fr}.comphead{height:46px}.event{min-height:64px}.odds{padding:7px 9px}.actions{padding:8px 9px}.actions .btn{font-size:11px}}
+</style>
+
+<style>
 :root{
   --accent:#4f9dff;
   --accent-strong:#2f7fe8;
@@ -68,6 +113,19 @@
 
 <main>
 <section id="biggames" class="view active">
+  <section class="sports-hero" aria-label="Big Games">
+    <div class="sports-hero-overlay"></div>
+    <div class="sports-hero-copy">
+      <div class="hero-kicker">UPCOMING</div>
+      <h1>BIG <span>GAMES</span></h1>
+      <p>Top teams. Major competitions. Ready for your content.</p>
+      <div class="hero-sports" aria-label="Sports">
+        <button class="hero-sport active" data-hero-sport="soccer">⚽ Football</button>
+        <button class="hero-sport" data-hero-sport="tennis">◉ Tennis</button>
+        <button class="hero-sport" data-hero-sport="basketball">◉ Basketball</button>
+      </div>
+    </div>
+  </section>
   <div class="pagehead">
     <div><div class="eyebrow">Sports editorial workstation</div><h1>Big Games</h1><p>Find what matters, check the market, create content.</p></div>
     <div class="updated" id="lastUpdated">Live odds</div>
@@ -130,7 +188,14 @@ function logo(url,name,cls){return '<span class="'+cls+'">'+(url?'<img src="'+es
 function teamLogo(e,name){const x=(e.teamLogos||[]).find(a=>a.name===name);return logo(x?.url,name,"team-logo")}
 function competitionLogo(e){return logo(e.competitionLogo,e.competition,"comp-logo")}
 function setView(id){$$(".navbtn").forEach(x=>x.classList.toggle("active",x.dataset.view===id));$$(".view").forEach(x=>x.classList.toggle("active",x.id===id));if(id==="biggames"&&!state.events.length)loadEvents()}
-$$(".navbtn").forEach(b=>b.onclick=()=>setView(b.dataset.view));
+$(".navbtn").forEach(b=>b.onclick=()=>setView(b.dataset.view));
+const heroSportBound=true;
+$("[data-hero-sport]").forEach(b=>b.onclick=()=>{
+  const sport=b.dataset.heroSport;
+  $("#sportFilter").value=sport;
+  $("[data-hero-sport]").forEach(x=>x.classList.toggle("active",x===b));
+  render();
+});
 
 function rangeOk(e){
  const k=localDate(e.startTime), now=Date.now(), t=new Date(e.startTime).getTime();
@@ -199,8 +264,11 @@ async function loadEvents(){
  try{const r=await fetch("/api/big-events",{cache:"no-store"}),d=await r.json();if(!r.ok)throw new Error(d.error||"api_error");state.events=d.events||[];state.lastSuccess=new Date();localStorage.setItem("bnp_big_events_cache",JSON.stringify({at:state.lastSuccess.toISOString(),events:state.events}));$("#lastUpdated").textContent=(d.cached?"Cached · ":"")+"Updated "+new Intl.DateTimeFormat("en-GB",{timeZone:"Europe/Malta",hour:"2-digit",minute:"2-digit"}).format(state.lastSuccess)+" CEST";fillFilters();render()}
  catch(e){let stale=null;try{stale=JSON.parse(localStorage.getItem("bnp_big_events_cache")||"null")}catch{}if(stale?.events?.length){state.events=stale.events;state.lastSuccess=new Date(stale.at);fillFilters();render();$("#lastUpdated").textContent="Stale data · "+new Intl.DateTimeFormat("en-GB",{timeZone:"Europe/Malta",hour:"2-digit",minute:"2-digit"}).format(state.lastSuccess)+" CEST";$("#events").insertAdjacentHTML("afterbegin",'<div class="error" style="padding:10px 12px;margin-bottom:8px"><strong style="display:inline;margin-right:6px">Live odds unavailable.</strong> Showing cached data. <button class="btn" id="retry" style="margin-left:8px">Retry</button></div>');$("#retry").onclick=loadEvents}else{$("#events").innerHTML='<div class="error"><strong>Live odds are temporarily unavailable</strong>Could not reach the sportsbook API.<br><button class="btn primary" id="retry" style="margin-top:12px">Retry</button></div>';$("#retry").onclick=loadEvents}}
 }
-function reset(){$("#search").value="";$("#sportFilter").value="soccer";$("#competitionFilter").value="all";$("#countryFilter").value="all";state.range="today";$$("[data-range]").forEach(x=>x.classList.toggle("active",x.dataset.range==="today"));render()}
-$("#resetFilters").onclick=reset;["search","sportFilter","competitionFilter","countryFilter"].forEach(id=>$("#"+id).addEventListener(id==="search"?"input":"change",render));$$("[data-range]").forEach(b=>b.onclick=()=>{state.range=b.dataset.range;$$("[data-range]").forEach(x=>x.classList.toggle("active",x===b));render()});
+function reset(){$("#search").value="";$("#sportFilter").value="soccer";$("#competitionFilter").value="all";$("#countryFilter").value="all";state.range="today";$("[data-range]").forEach(x=>x.classList.toggle("active",x.dataset.range==="today"));$("[data-hero-sport]").forEach(x=>x.classList.toggle("active",x.dataset.heroSport==="soccer"));render()}
+$("#resetFilters").onclick=reset;["search","sportFilter","competitionFilter","countryFilter"].forEach(id=>$("#"+id).addEventListener(id==="search"?"input":"change",()=>{
+  if(id==="sportFilter")$("[data-hero-sport]").forEach(x=>x.classList.toggle("active",x.dataset.heroSport===$("#sportFilter").value));
+  render();
+}));$$("[data-range]").forEach(b=>b.onclick=()=>{state.range=b.dataset.range;$$("[data-range]").forEach(x=>x.classList.toggle("active",x===b));render()});
 
 function eventById(id){return state.events.find(e=>String(e.id)===String(id))}
 function openDrawer(back){back.classList.add("open");back.setAttribute("aria-hidden","false")}
