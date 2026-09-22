@@ -315,6 +315,10 @@ function stripWomensEvents(matches) {
 
 function competitionKey(name="") {
   const n = name.toLowerCase();
+  if (n.includes("australian open")) return "australianopen";
+  if (n.includes("roland garros") || n.includes("french open")) return "rolandgarros";
+  if (n.includes("wimbledon")) return "wimbledon";
+  if (n.includes("us open")) return "usopen";
   if (n.includes("champions league")) return "champions";
   if (n.includes("europa league")) return "europa";
   if (n.includes("conference league")) return "conference";
@@ -337,7 +341,7 @@ function buildSportsReport(matches, period="daily", days=1) {
     grouped.get(key).items.push(p);
   }
 
-  const priority = ["champions","europa","conference","premier","bundesliga","seriea","laliga","ligue1","facup","nations","other"];
+  const priority = ["champions","australianopen","rolandgarros","wimbledon","usopen","europa","conference","premier","bundesliga","seriea","laliga","ligue1","facup","nations","other"];
   const sections = [...grouped.values()]
     .sort((a,b)=>priority.indexOf(a.key)-priority.indexOf(b.key))
     .map(section => ({
