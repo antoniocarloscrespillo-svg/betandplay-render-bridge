@@ -70,6 +70,21 @@ function isGermanMarket(match) {
     names.includes("dfb");
 }
 
+function isWomensEvent(match) {
+  const tournament = match?.tournament || {};
+  const category = tournament?.category || {};
+  const text = [
+    match?.name,
+    tournament?.name,
+    tournament?.slug,
+    category?.name,
+    match?.competitors?.home?.name,
+    match?.competitors?.away?.name
+  ].filter(Boolean).join(" ").toLowerCase();
+
+  return /(^|[\\s\\-_/])(women|women's|womens|female|feminin|femenin|femenino|femenina|frauen|damen|femminile|kvinner|naiset|ladies)([\\s\\-_/]|$)/i.test(text);
+}
+
 function matchesTournament(match, tournamentKey) {
   if (!tournamentKey || tournamentKey === "all") return true;
   const aliases = TOURNAMENT_ALIASES[tournamentKey] || [];
@@ -127,6 +142,7 @@ async function getMatches({ start, end, tournamentKey = "all", excludeGermany = 
   const matches = Array.isArray(body?.data) ? body.data : [];
 
   const filtered = matches
+    .filter(m => !isWomensEvent(m))
     .filter(m => m?.main_market?.outcomes?.length >= 2)
     .filter(m => matchesTournament(m, tournamentKey))
     .filter(m => !excludeGermany || tournamentKey === "bundesliga" || tournamentKey === "dfbpokal" || !isGermanMarket(m))
