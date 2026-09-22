@@ -57,7 +57,7 @@ linear-gradient(145deg,rgba(124,92,255,.9),rgba(39,140,255,.62) 55%,rgba(24,200,
 
 <div class="tabs">
   <button class="tab active" data-tab="studio">Content Studio</button>
-  <button class="tab" data-tab="report">Daily Report</button>
+  <button class="tab" data-tab="report">Reports</button>
 </div>
 
 <section id="studio" class="panel active">
@@ -89,7 +89,18 @@ linear-gradient(145deg,rgba(124,92,255,.9),rgba(39,140,255,.62) 55%,rgba(24,200,
 </section>
 
 <section id="report" class="panel">
-  <div id="reportRoot"><div class="empty">Loading today's sports report…</div></div>
+  <div class="report-toolbar" style="margin-top:0">
+    <div class="report-title">
+      <h2>Sports Reports</h2>
+      <p>Generate API-based daily, weekly or monthly overviews.</p>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn primary reportPeriod" data-period="daily">Daily Report</button>
+      <button class="btn reportPeriod" data-period="weekly">Weekly Report</button>
+      <button class="btn reportPeriod" data-period="monthly">Monthly Report</button>
+    </div>
+  </div>
+  <div id="reportRoot"><div class="empty">Choose a report period.</div></div>
 </section>
 </div>
 
@@ -106,7 +117,7 @@ document.querySelectorAll(".tab").forEach(tab=>tab.onclick=()=>{
   document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"));
   tab.classList.add("active");
   document.getElementById(tab.dataset.tab).classList.add("active");
-  if(tab.dataset.tab==="report") loadReport(false);
+  if(tab.dataset.tab==="report" && !reportRoot.dataset.loaded) loadReport("daily",false);
 });
 
 function renderPosts(posts){
@@ -139,22 +150,34 @@ btn.onclick=async()=>{
   finally{btn.textContent=old;btn.disabled=false;}
 };
 
-function reportCacheKey(){return "bnp_daily_report_"+new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/Malta",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());}
-
-async function loadReport(force){
-  if(!force){
-    const cached=localStorage.getItem(reportCacheKey());
-    if(cached){try{return renderReport(JSON.parse(cached));}catch{}}
-  }
-  reportRoot.innerHTML='<div class="empty">Building today’s report from Betandplay…</div>';
-  try{
-    const r=await fetch("/api/daily-report",{cache:"no-store"});
-    const d=await r.json();if(!r.ok)throw new Error(d.error||"report_failed");
-    localStorage.setItem(reportCacheKey(),JSON.stringify(d.report));renderReport(d.report);
-  }catch(e){reportRoot.innerHTML='<div class="empty">Daily report failed: '+esc(e.message)+'</div>';}
+function reportCacheKey(period){
+  const date=new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/Malta",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
+  return "bnp_"+period+"_report_"+date;
 }
 
-function renderReport(report){
+async function loadReport(period="daily",force=false){
+  document.querySelectorAll(".reportPeriod").forEach(x=>x.classList.toggle("primary",x.dataset.period===period));
+  reportRoot.dataset.loaded="1";
+
+  if(!force){
+    const cached=localStorage.getItem(reportCacheKey(period));
+    if(cached){try{return renderReport(JSON.parse(cached),period);}catch{}}
+  }
+
+  const label=period==="monthly"?"next 30 days":period==="weekly"?"next 7 days":"today";
+  reportRoot.innerHTML='<div class="empty">Building the '+label+' report from Betandplay API…</div>';
+
+  try{
+    const r=await fetch("/api/report?period="+encodeURIComponent(period),{cache:"no-store"});
+    const d=await r.json();if(!r.ok)throw new Error(d.error||"report_failed");
+    localStorage.setItem(reportCacheKey(period),JSON.stringify(d.report));
+    renderReport(d.report,period);
+  }catch(e){
+    reportRoot.innerHTML='<div class="empty">'+esc(period[0].toUpperCase()+period.slice(1))+' report failed: '+esc(e.message)+'</div>';
+  }
+}
+
+function renderReport(report,period="daily"){
   const highlight=report.highlights?.[0];
   const sections=report.sections||[];
   const total=sections.reduce((n,s)=>n+s.items.length,0);
@@ -173,10 +196,10 @@ function renderReport(report){
     '<div class="report-toolbar"><div class="report-title"><h2>'+esc(report.title)+' · '+esc(report.dateLabel)+'</h2><p>'+esc(report.intro)+'</p></div><button id="refreshReport" class="btn">↻ Refresh report</button></div>'+
     '<div class="competitions">'+(body||'<div class="empty">No major events found.</div>')+'</div>';
 
-  document.getElementById("refreshReport").onclick=()=>loadReport(true);
+  document.getElementById("refreshReport").onclick=()=>loadReport(period,true);
 }
 
-loadReport(false);
+document.querySelectorAll(".reportPeriod").forEach(btn=>btn.onclick=()=>loadReport(btn.dataset.period,false));
 </script>
 </body>
 </html>
