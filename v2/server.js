@@ -196,6 +196,19 @@ function toPost(match) {
   };
 }
 
+function headlineFor(type, competition) {
+  const comp = String(competition || "Football").toUpperCase();
+  if (type === "weekend") return "🔥 A HUGE WEEKEND OF " + comp + "!";
+  if (type === "tournament") return "🏆 " + comp + " IS BACK!";
+  if (type === "acca") return "🔥 " + comp + " ACCA";
+  if (type === "picks") return "🎯 TODAY'S VALUE";
+  return "🔥 " + comp + " — MATCHDAY!";
+}
+
+function formatOdds(odds, limit=4) {
+  return (odds || []).slice(0, limit).map(o => "📊 " + o.label + " — **" + o.value + "**").join("\n");
+}
+
 function makeContent(type, posts, count) {
   const selected = posts.slice(0, Math.max(1, count));
 
@@ -204,24 +217,30 @@ function makeContent(type, posts, count) {
       ...p,
       contentType: "Match Spotlight",
       copy:
-        "🔥 " + p.competition.toUpperCase() + "!\n\n" +
-        p.title + " takes centre stage. ⚽\n\n" +
-        (p.odds.length ? "📊 Current Betandplay odds:\n" + p.odds.map(o => o.label + " — " + o.value).join("\n") + "\n\n" : "") +
-        (p.time ? "⏰ Kick-off: " + p.time + "\n\n" : "") +
-        "What's your pick? 👀🔥"
+        headlineFor(type, p.competition) + "\n\n" +
+        "**" + p.title + "** takes centre stage and we've got the latest prices ready. ⚽️🔥\n\n" +
+        (p.odds.length ? "👀 **Latest odds:**\n" + formatOdds(p.odds, 4) + "\n\n" : "") +
+        (p.time ? "⏰ **Kick-off:** " + p.time + "\n\n" : "") +
+        "Pick your side, check the markets and enjoy the action! 🎯\n\n" +
+        "👉 **CHECK THE ODDS ON BETANDPLAY**"
     }));
   }
 
   if (type === "picks") {
-    return selected.map(p => ({
-      ...p,
-      contentType: "Today's Pick",
-      copy:
-        "🎯 TODAY'S PICK\n\n" +
-        p.title + "\n" +
-        (p.odds[0] ? "⚽ " + p.odds[0].label + " @ " + p.odds[0].value + "\n\n" : "") +
-        "One to watch on today's Betandplay board. 🔥"
-    }));
+    return selected.map((p,index) => {
+      const pick = p.odds[index % Math.max(1,p.odds.length)] || p.odds[0];
+      return {
+        ...p,
+        contentType: "Today's Pick",
+        copy:
+          headlineFor(type, p.competition) + "\n\n" +
+          "One game worth keeping an eye on today: **" + p.title + "**. 👀\n\n" +
+          (pick ? "⚽️ **Our angle:** " + pick.label + " @ **" + pick.value + "**\n\n" : "") +
+          (p.time ? "⏰ " + p.time + "\n\n" : "") +
+          "Would you add it to your betslip? 🔥\n\n" +
+          "👉 **CHECK THE MARKET**"
+      };
+    });
   }
 
   const grouped = new Map();
@@ -231,25 +250,32 @@ function makeContent(type, posts, count) {
   }
 
   if (type === "tournament" || type === "weekend") {
-    return [...grouped.entries()].slice(0, count).map(([competition, items]) => ({
-      id: type + "-" + competition,
-      title: competition + (type === "weekend" ? " — Weekend Preview" : " — Tournament Preview"),
-      competition,
-      contentType: type === "weekend" ? "Weekend Preview" : "Tournament Preview",
-      odds: items.flatMap(x => x.odds.slice(0, 1)).slice(0, 4),
-      time: items[0]?.time || "",
-      copy:
-        "🔥 " + competition.toUpperCase() + (type === "weekend" ? " — WEEKEND PREVIEW" : " IS COMING!") + "\n\n" +
-        items.slice(0, 4).map(x => "⚽ " + x.title + (x.time ? " · " + x.time : "")).join("\n") +
-        "\n\nBig fixtures are coming up. Check the latest Betandplay markets and build your picks! 🔥"
-    }));
+    return [...grouped.entries()].slice(0, count).map(([competition, items]) => {
+      const fixtures = items.slice(0, 5);
+      return {
+        id: type + "-" + competition,
+        title: competition + (type === "weekend" ? " — Weekend Preview" : " — Tournament Preview"),
+        competition,
+        contentType: type === "weekend" ? "Weekend Preview" : "Tournament Preview",
+        odds: fixtures.flatMap(x => x.odds.slice(0, 1)).slice(0, 5),
+        time: fixtures[0]?.time || "",
+        copy:
+          headlineFor(type, competition) + "\n\n" +
+          (type === "weekend"
+            ? "The weekend is loaded with football and these are some of the games on our radar. ⚽️🔥\n\n"
+            : "Big fixtures are coming up and there is plenty to choose from. Here are some of the games on our radar. 👀\n\n") +
+          fixtures.map(x => "⚽️ **" + x.title + "**" + (x.odds[0] ? " — " + x.odds[0].label + " @ **" + x.odds[0].value + "**" : "")).join("\n") +
+          "\n\nBuild your picks, find your value and enjoy the action! 🎯\n\n" +
+          "👉 **CHECK ALL MARKETS ON BETANDPLAY**"
+      };
+    });
   }
 
   if (type === "acca") {
     const groups = [...grouped.entries()].filter(([, items]) => items.length >= 2);
     return groups.slice(0, count).map(([competition, items]) => {
       const legs = items.slice(0, 4)
-        .map(x => ({ title: x.title, pick: x.odds[0] }))
+        .map((x,i) => ({ title: x.title, pick: x.odds[i % Math.max(1,x.odds.length)] || x.odds[0] }))
         .filter(x => x.pick?.value);
       const combined = legs.reduce((total, x) => total * Number(x.pick.value || 1), 1);
 
@@ -261,17 +287,18 @@ function makeContent(type, posts, count) {
         odds: legs.map(x => ({ label: x.title + " · " + x.pick.label, value: x.pick.value })),
         time: items[0]?.time || "",
         copy:
-          "🔥 " + competition.toUpperCase() + " ACCA\n\n" +
-          legs.map(x => "⚽ " + x.title + " — " + x.pick.label + " @ " + x.pick.value).join("\n") +
-          (legs.length > 1 ? "\n\n🎯 Combined odds: " + combined.toFixed(2) : "") +
-          "\n\nWho's backing it? 🔥"
+          headlineFor(type, competition) + "\n\n" +
+          "Looking for an acca? We've put together a few selections from **" + competition + "**. 👀\n\n" +
+          legs.map(x => "⚽️ **" + x.title + "**\n↳ " + x.pick.label + " @ **" + x.pick.value + "**").join("\n\n") +
+          (legs.length > 1 ? "\n\n🎯 **Combined odds: " + combined.toFixed(2) + "**" : "") +
+          "\n\nWould you play it as it is or change a leg? 🔥\n\n" +
+          "👉 **BUILD YOUR ACCA**"
       };
     });
   }
 
   return makeContent("match", posts, count);
 }
-
 
 function competitionKey(name="") {
   const n = name.toLowerCase();
