@@ -402,6 +402,50 @@ function toPost(match) {
   };
 }
 
+function buildVariantPost(p, style="short") {
+  const options = Array.isArray(p.bettingOptions) ? p.bettingOptions : [];
+  const main = (p.odds || []).slice(0,3);
+  const extra = options.slice(0,6);
+  const mainLines = main.map(o=>"• "+o.label+" — "+o.value).join("\n");
+  const extraLines = extra.map(o=>"• "+o.market+": "+o.label+" @ "+o.value).join("\n");
+
+  if (style === "short") {
+    return (
+      "🔥 "+p.title+"\n\n"+
+      (p.time ? "⏰ "+p.time+"\n" : "")+
+      "🏆 "+p.competition+"\n\n"+
+      (mainLines ? "MAIN ODDS\n"+mainLines+"\n\n" : "")+
+      (extra[0] ? "One extra angle: "+extra[0].market+" — "+extra[0].label+" @ "+extra[0].value+"\n\n" : "")+
+      "👉 CHECK THE MATCH ON BETANDPLAY"
+    );
+  }
+
+  if (style === "aggressive") {
+    const recommended = extra.slice(0,3);
+    return (
+      "🔥 BIG GAME. BIG MARKETS.\n\n"+
+      p.title+" is one of the games to attack on the board today. If you're building a betslip, here are the angles we'd be looking at. 👀\n\n"+
+      (p.time ? "⏰ "+p.time+"\n" : "")+
+      "🏆 "+p.competition+"\n\n"+
+      (mainLines ? "MAIN ODDS\n"+mainLines+"\n\n" : "")+
+      (recommended.length ? "BET IDEAS\n"+recommended.map((o,i)=>(i+1)+". "+o.market+": "+o.label+" @ "+o.value).join("\n")+"\n\n" : "")+
+      "🔥 Our approach: don't just look at the 1X2 — check the goals and alternative markets before kick-off.\n\n"+
+      "👉 BUILD YOUR BETSLIP ON BETANDPLAY"
+    );
+  }
+
+  return (
+    "🏆 MATCH PREVIEW: "+p.title+"\n\n"+
+    p.title+" is one of the standout fixtures coming up in "+p.competition+". Rather than looking only at the match result, the current Betandplay board gives us a few different ways to approach it.\n\n"+
+    (p.time ? "⏰ Kick-off: "+p.time+"\n\n" : "")+
+    (mainLines ? "MAIN ODDS\n"+mainLines+"\n\n" : "")+
+    (extraLines ? "MARKETS TO WATCH\n"+extraLines+"\n\n" : "")+
+    "The straight result gives the basic shape of the market, but goals, BTTS, handicaps and other alternatives can offer a very different angle depending on how you expect the game to develop.\n\n"+
+    "If you prefer a simpler bet, stick to the main market. If you're expecting a more open game, the goal-related markets are worth checking before the price moves. 👀\n\n"+
+    "👉 CHECK THE FULL MATCH MARKET ON BETANDPLAY"
+  );
+}
+
 function buildRichMatchCopy(p, variant=0) {
   const options = Array.isArray(p.bettingOptions) ? p.bettingOptions : [];
   const main = (p.odds || []).slice(0,3);
@@ -812,12 +856,29 @@ app.post("/api/generate-variants", async (req,res) => {
       event.bettingOptions=chooseBettingOptions(markets);
     } catch {}
 
-    const variants=[0,1,2].map(variant=>({
-      ...event,
-      contentType:"Match Spotlight",
-      variant:variant+1,
-      copy:buildRichMatchCopy(event,variant)
-    }));
+    const variants=[
+      {
+        ...event,
+        contentType:"Short Post",
+        variant:1,
+        style:"short",
+        copy:buildVariantPost(event,"short")
+      },
+      {
+        ...event,
+        contentType:"Aggressive Picks",
+        variant:2,
+        style:"aggressive",
+        copy:buildVariantPost(event,"aggressive")
+      },
+      {
+        ...event,
+        contentType:"Context Preview",
+        variant:3,
+        style:"long",
+        copy:buildVariantPost(event,"long")
+      }
+    ];
 
     res.json({ok:true,variants});
   } catch (error) {
