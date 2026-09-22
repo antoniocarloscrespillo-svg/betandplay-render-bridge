@@ -73,16 +73,25 @@ function isGermanMarket(match) {
 function isWomensEvent(match) {
   const tournament = match?.tournament || {};
   const category = tournament?.category || {};
+  const competitors = Array.isArray(match?.competitors) ? match.competitors : [];
   const text = [
-    match?.name,
-    tournament?.name,
-    tournament?.slug,
-    category?.name,
-    match?.competitors?.home?.name,
-    match?.competitors?.away?.name
+    match?.name, match?.slug, match?.gender, match?.type,
+    tournament?.name, tournament?.slug, tournament?.gender,
+    category?.name, category?.slug, category?.gender,
+    category?.country_code,
+    match?.competitors?.home?.name, match?.competitors?.away?.name,
+    ...competitors.flatMap(c => [c?.name, c?.slug, c?.gender])
   ].filter(Boolean).join(" ").toLowerCase();
 
-  return /(^|[\\s\\-_/])(women|women's|womens|female|feminin|femenin|femenino|femenina|frauen|damen|femminile|kvinner|naiset|ladies)([\\s\\-_/]|$)/i.test(text);
+  const femaleMarkers = [
+    "women", "woman", "women's", "womens", "female", "ladies",
+    "frauen", "damen", "femenino", "femenina", "femenil",
+    "femminile", "feminine", "féminin", "feminin",
+    "kvinner", "kvinne", "naiset", "dam", "damer",
+    "wsl", "uwcl"
+  ];
+
+  return femaleMarkers.some(marker => text.includes(marker));
 }
 
 function matchesTournament(match, tournamentKey) {
@@ -300,6 +309,10 @@ function makeContent(type, posts, count) {
   return makeContent("match", posts, count);
 }
 
+function stripWomensEvents(matches) {
+  return (matches || []).filter(match => !isWomensEvent(match));
+}
+
 function competitionKey(name="") {
   const n = name.toLowerCase();
   if (n.includes("champions league")) return "champions";
@@ -317,7 +330,7 @@ function competitionKey(name="") {
 
 function buildSportsReport(matches, period="daily", days=1) {
   const grouped = new Map();
-  for (const match of matches) {
+  for (const match of stripWomensEvents(matches)) {
     const p = toPost(match);
     const key = competitionKey(p.competition);
     if (!grouped.has(key)) grouped.set(key, { key, competition: p.competition, items: [] });
@@ -465,7 +478,7 @@ app.post("/api/generate", async (req, res) => {
       excludeGermany
     });
 
-    const base = matches.slice(0, 24).map(toPost);
+    const base = stripWomensEvents(matches).slice(0, 24).map(toPost);
     const posts = makeContent(type, base, count);
 
     res.set("Cache-Control", "no-store");
