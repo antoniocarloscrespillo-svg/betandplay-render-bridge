@@ -27,6 +27,12 @@ h1{margin:0;font-size:28px;letter-spacing:-.6px}.sub{margin:5px 0 0;color:var(--
 .tabs{display:flex;gap:8px;margin:0 0 18px}.tab{border:1px solid var(--line);background:#0d1118;color:#b6bfd0;padding:10px 14px;border-radius:12px;font-weight:800;cursor:pointer}.tab.active{color:#fff;background:linear-gradient(135deg,var(--purple),var(--blue),var(--cyan));border-color:transparent;box-shadow:0 8px 24px rgba(69,106,255,.25)}
 .panel{display:none}.panel.active{display:block}
 .generator{display:grid;grid-template-columns:2fr 2fr 1fr auto;gap:10px;background:linear-gradient(180deg,#171c26,#11151d);border:1px solid var(--line);border-radius:20px;padding:16px;margin-bottom:18px}
+.searchbox{display:grid;grid-template-columns:1fr auto;gap:10px;background:linear-gradient(135deg,rgba(47,140,255,.16),rgba(124,92,255,.12),rgba(24,200,216,.08));border:1px solid #30405a;border-radius:20px;padding:16px;margin-bottom:18px}
+.searchbox input{border:1px solid var(--line);background:#0d1219;color:var(--text);border-radius:12px;padding:13px 14px;font:inherit;font-weight:700;outline:none}
+.searchbox input:focus{border-color:#4b79ff;box-shadow:0 0 0 3px rgba(47,140,255,.12)}
+.search-results{display:grid;gap:10px;margin-bottom:18px}
+.search-result{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;border:1px solid var(--line);border-radius:16px;padding:14px 16px;background:linear-gradient(145deg,#141a25,#0d1219)}
+.search-main{display:grid;gap:5px}.search-title{font-weight:900}.search-meta{font-size:12px;color:var(--muted)}
 select,.btn{border:1px solid var(--line);background:#0d1219;color:var(--text);border-radius:12px;padding:12px 13px;font-weight:750}.btn{cursor:pointer}.primary{border:0;background:linear-gradient(135deg,var(--purple),var(--blue),var(--cyan));box-shadow:0 8px 22px rgba(74,92,255,.28)}
 .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
 .card{background:linear-gradient(180deg,#171c26,#11151d);border:1px solid var(--line);border-radius:20px;padding:18px;overflow:hidden;position:relative}
@@ -79,6 +85,11 @@ linear-gradient(145deg,rgba(124,92,255,.9),rgba(39,140,255,.62) 55%,rgba(24,200,
 </div>
 
 <section id="studio" class="panel active">
+  <div class="searchbox">
+    <input id="teamSearch" type="search" placeholder="Search a team or player... e.g. Liverpool, Inter, Alcaraz">
+    <button id="searchBtn" class="btn primary">🔎 Search match</button>
+  </div>
+  <div id="searchResults" class="search-results"></div>
   <div class="generator">
     <select id="tournament">
       <option value="all">All tournaments / Best available</option>
@@ -126,6 +137,9 @@ linear-gradient(145deg,rgba(124,92,255,.9),rgba(39,140,255,.62) 55%,rgba(24,200,
 const grid=document.getElementById("grid");
 const btn=document.getElementById("generate");
 const reportRoot=document.getElementById("reportRoot");
+const searchInput=document.getElementById("teamSearch");
+const searchBtn=document.getElementById("searchBtn");
+const searchResults=document.getElementById("searchResults");
 let currentPosts=[];
 
 function esc(v){return String(v??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll(String.fromCharCode(34),"&quot;").replaceAll("'","&#39;");}
@@ -137,6 +151,70 @@ document.querySelectorAll(".tab").forEach(tab=>tab.onclick=()=>{
   document.getElementById(tab.dataset.tab).classList.add("active");
   if(tab.dataset.tab==="report" && !reportRoot.dataset.loaded) loadReport("daily",false);
 });
+
+async function searchMatches(){
+  const q=searchInput.value.trim();
+  if(q.length<2){
+    searchResults.innerHTML='<div class="empty">Type at least 2 characters.</div>';
+    return;
+  }
+
+  const old=searchBtn.textContent;
+  searchBtn.textContent="Searching…";
+  searchBtn.disabled=true;
+
+  try{
+    const r=await fetch("/api/search-matches?q="+encodeURIComponent(q),{cache:"no-store"});
+    const d=await r.json();
+    if(!r.ok) throw new Error(d.error||"search_failed");
+
+    const matches=d.matches||[];
+    if(!matches.length){
+      searchResults.innerHTML='<div class="empty">No upcoming matches found for "'+esc(q)+'".</div>';
+      return;
+    }
+
+    searchResults.innerHTML=matches.map(m=>
+      '<div class="search-result">'+
+        '<div class="search-main">'+
+          '<div class="search-title">'+esc(m.title)+'</div>'+
+          '<div class="search-meta">'+esc(m.competition)+' · '+esc(m.time)+' · '+esc(m.sport||"Sport")+'</div>'+
+        '</div>'+
+        '<button class="btn primary generateMatchPost" data-match-id="'+esc(m.id)+'">Generate post</button>'+
+      '</div>'
+    ).join("");
+
+    document.querySelectorAll(".generateMatchPost").forEach(el=>el.onclick=async()=>{
+      const original=el.textContent;
+      el.textContent="Generating…";
+      el.disabled=true;
+      try{
+        const rr=await fetch("/api/generate-from-match",{
+          method:"POST",
+          headers:{"Content-Type":"application/json"},
+          body:JSON.stringify({matchId:el.dataset.matchId})
+        });
+        const dd=await rr.json();
+        if(!rr.ok) throw new Error(dd.error||"generation_failed");
+        renderPosts([dd.post]);
+        window.scrollTo({top:grid.offsetTop-80,behavior:"smooth"});
+      }catch(e){
+        searchResults.insertAdjacentHTML("afterbegin",'<div class="empty">Could not generate post: '+esc(e.message)+'</div>');
+      }finally{
+        el.textContent=original;
+        el.disabled=false;
+      }
+    });
+  }catch(e){
+    searchResults.innerHTML='<div class="empty">Search failed: '+esc(e.message)+'</div>';
+  }finally{
+    searchBtn.textContent=old;
+    searchBtn.disabled=false;
+  }
+}
+
+searchBtn.onclick=searchMatches;
+searchInput.addEventListener("keydown",e=>{if(e.key==="Enter") searchMatches();});
 
 function renderPosts(posts){
   currentPosts=posts;
