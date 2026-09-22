@@ -16,6 +16,7 @@ const __dirname = path.dirname(__filename);
 
 const cache = new Map();
 const wikiImageCache = new Map();
+const BIG_EVENTS_ENRICHED_TTL_MS = 10 * 60 * 1000;
 
 const TEAM_VISUAL_ALIASES = {
   "real madrid":"Real Madrid CF",
@@ -558,9 +559,29 @@ function toPost(match) {
   };
 }
 
-function buildVariantPost(p, style="short") {
+function contentPrefs(body={}) {
+  return {
+    channel:["Telegram","Email","Push"].includes(body.channel) ? body.channel : "Telegram",
+    language:["EN","DE","IT","ES"].includes(body.language) ? body.language : "EN",
+    tone:["Sports","Hype","Informative"].includes(body.tone) ? body.tone : "Sports",
+    contentType:["Match Post","Value Bet","Acca"].includes(body.contentType) ? body.contentType : "Match Post"
+  };
+}
+
+function copyLexicon(language="EN") {
+  const map={
+    EN:{kick:"Kick-off",comp:"Competition",main:"MAIN ODDS",markets:"MARKETS TO WATCH",extra:"Extra angle",check:"CHECK THE MATCH ON BETANDPLAY",ideas:"BET IDEAS",full:"CHECK THE FULL MATCH MARKET ON BETANDPLAY"},
+    DE:{kick:"Anstoß",comp:"Wettbewerb",main:"HAUPTQUOTEN",markets:"MÄRKTE IM BLICK",extra:"Weitere Option",check:"JETZT BEI BETANDPLAY CHECKEN",ideas:"WETTIDEEN",full:"ALLE MÄRKTE BEI BETANDPLAY CHECKEN"},
+    IT:{kick:"Calcio d'inizio",comp:"Competizione",main:"QUOTE PRINCIPALI",markets:"MERCATI DA SEGUIRE",extra:"Altra opzione",check:"SCOPRI IL MATCH SU BETANDPLAY",ideas:"IDEE DI SCOMMESSA",full:"SCOPRI TUTTI I MERCATI SU BETANDPLAY"},
+    ES:{kick:"Inicio",comp:"Competición",main:"CUOTAS PRINCIPALES",markets:"MERCADOS A SEGUIR",extra:"Otra opción",check:"MIRA EL PARTIDO EN BETANDPLAY",ideas:"IDEAS DE APUESTA",full:"MIRA TODOS LOS MERCADOS EN BETANDPLAY"}
+  };
+  return map[language] || map.EN;
+}
+
+function buildVariantPost(p, style="short", prefs={}) {
   const options = Array.isArray(p.bettingOptions) ? p.bettingOptions : [];
   const main = (p.odds || []).slice(0,3);
+  const lex = copyLexicon(prefs.language || "EN");
   const extra = options.slice(0,6);
   const mainLines = main.map(o=>"• "+o.label+" — "+o.value).join("\n");
   const extraLines = extra.map(o=>"• "+o.market+": "+o.label+" @ "+o.value).join("\n");
@@ -568,11 +589,11 @@ function buildVariantPost(p, style="short") {
   if (style === "short") {
     return (
       "🔥 "+p.title+"\n\n"+
-      (p.time ? "⏰ "+p.time+"\n" : "")+
-      "🏆 "+p.competition+"\n\n"+
-      (mainLines ? "MAIN ODDS\n"+mainLines+"\n\n" : "")+
-      (extra[0] ? "One extra angle: "+extra[0].market+" — "+extra[0].label+" @ "+extra[0].value+"\n\n" : "")+
-      "👉 CHECK THE MATCH ON BETANDPLAY"
+      (p.time ? "⏰ "+lex.kick+": "+p.time+"\n" : "")+
+      "🏆 "+lex.comp+": "+p.competition+"\n\n"+
+      (mainLines ? lex.main+"\n"+mainLines+"\n\n" : "")+
+      (extra[0] ? lex.extra+": "+extra[0].market+" — "+extra[0].label+" @ "+extra[0].value+"\n\n" : "")+
+      "👉 "+lex.check
     );
   }
 
@@ -584,9 +605,9 @@ function buildVariantPost(p, style="short") {
       (p.time ? "⏰ "+p.time+"\n" : "")+
       "🏆 "+p.competition+"\n\n"+
       (mainLines ? "MAIN ODDS\n"+mainLines+"\n\n" : "")+
-      (recommended.length ? "BET IDEAS\n"+recommended.map((o,i)=>(i+1)+". "+o.market+": "+o.label+" @ "+o.value).join("\n")+"\n\n" : "")+
+      (recommended.length ? lex.ideas+"\n"+recommended.map((o,i)=>(i+1)+". "+o.market+": "+o.label+" @ "+o.value).join("\n")+"\n\n" : "")+
       "🔥 Our approach: don't just look at the 1X2 — check the goals and alternative markets before kick-off.\n\n"+
-      "👉 BUILD YOUR BETSLIP ON BETANDPLAY"
+      "👉 "+(prefs.contentType==="Acca" ? "BUILD YOUR ACCA ON BETANDPLAY" : lex.check)
     );
   }
 
@@ -594,11 +615,11 @@ function buildVariantPost(p, style="short") {
     "🏆 MATCH PREVIEW: "+p.title+"\n\n"+
     p.title+" is one of the standout fixtures coming up in "+p.competition+". Rather than looking only at the match result, the current Betandplay board gives us a few different ways to approach it.\n\n"+
     (p.time ? "⏰ Kick-off: "+p.time+"\n\n" : "")+
-    (mainLines ? "MAIN ODDS\n"+mainLines+"\n\n" : "")+
-    (extraLines ? "MARKETS TO WATCH\n"+extraLines+"\n\n" : "")+
+    (mainLines ? lex.main+"\n"+mainLines+"\n\n" : "")+
+    (extraLines ? lex.markets+"\n"+extraLines+"\n\n" : "")+
     "The straight result gives the basic shape of the market, but goals, BTTS, handicaps and other alternatives can offer a very different angle depending on how you expect the game to develop.\n\n"+
     "If you prefer a simpler bet, stick to the main market. If you're expecting a more open game, the goal-related markets are worth checking before the price moves. 👀\n\n"+
-    "👉 CHECK THE FULL MATCH MARKET ON BETANDPLAY"
+    "👉 "+lex.full
   );
 }
 
@@ -1008,10 +1029,16 @@ app.get("/health", (_req, res) => {
 
 app.get("/api/big-events", async (_req, res) => {
   try {
+    const hit=cached("big-events-enriched");
+    if(hit){
+      res.set("Cache-Control","public, max-age=60");
+      return res.json({ok:true,events:hit,cached:true});
+    }
     const events = await getBigEvents(30);
     const enriched = await enrichBigEventsWithWikipedia(events);
-    res.set("Cache-Control","no-store");
-    res.json({ok:true,events:enriched});
+    cache.set("big-events-enriched",{createdAt:Date.now(),value:enriched});
+    res.set("Cache-Control","public, max-age=60");
+    res.json({ok:true,events:enriched,cached:false});
   } catch (error) {
     res.status(error?.status || 502).json({ok:false,error:String(error?.message || error)});
   }
@@ -1030,6 +1057,7 @@ app.get("/api/match-markets/:id", async (req,res) => {
 
 app.post("/api/generate-variants", async (req,res) => {
   const matchId=String(req.body?.matchId || "");
+  const prefs=contentPrefs(req.body || {});
   if(!matchId) return res.status(400).json({ok:false,error:"match_id_required"});
 
   try {
@@ -1048,21 +1076,21 @@ app.post("/api/generate-variants", async (req,res) => {
         contentType:"Short Post",
         variant:1,
         style:"short",
-        copy:buildVariantPost(event,"short")
+        copy:buildVariantPost(event,"short",prefs)
       },
       {
         ...event,
         contentType:"Aggressive Picks",
         variant:2,
         style:"aggressive",
-        copy:buildVariantPost(event,"aggressive")
+        copy:buildVariantPost(event,"aggressive",prefs)
       },
       {
         ...event,
         contentType:"Context Preview",
         variant:3,
         style:"long",
-        copy:buildVariantPost(event,"long")
+        copy:buildVariantPost(event,"long",prefs)
       }
     ];
 
