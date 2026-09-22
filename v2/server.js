@@ -198,40 +198,116 @@ function marketOutcomeToOdd(outcome) {
   return {label,value};
 }
 
+function marketFamily(name="") {
+  const n = String(name).toLowerCase();
+
+  if (/early payout|match result|1x2|moneyline|winner/.test(n)) return "result";
+  if (/double chance/.test(n)) return "double_chance";
+  if (/both teams to score|btts/.test(n)) return "btts";
+  if (/total goals|over\/under|total.*goals|goals over|goals under/.test(n)) return "goals_total";
+  if (/draw no bet/.test(n)) return "draw_no_bet";
+  if (/asian handicap|handicap/.test(n)) return "handicap";
+  if (/team total|home.*total|away.*total/.test(n)) return "team_total";
+  if (/corners|corner/.test(n)) return "corners";
+  if (/cards|booking|bookings/.test(n)) return "cards";
+  if (/both teams.*corner/.test(n)) return "corners";
+  if (/to qualify|qualification/.test(n)) return "qualify";
+  if (/first goal|first team to score|team to score first/.test(n)) return "first_goal";
+  if (/half.?time.*result|1st half.*result/.test(n)) return "half_time";
+  if (/second half.*result|2nd half.*result/.test(n)) return "second_half";
+  if (/clean sheet/.test(n)) return "clean_sheet";
+  if (/correct score/.test(n)) return "correct_score";
+  if (/player.*shot|shots on target|player.*score|anytime scorer|goalscorer/.test(n)) return "player_prop";
+  return "other";
+}
+
+function chooseSelectionFromMarket(market, family) {
+  const selections = (market.outcomes || [])
+    .map(marketOutcomeToOdd)
+    .filter(Boolean)
+    .filter(o => {
+      const odd = Number(o.value);
+      return Number.isFinite(odd) && odd >= 1.15 && odd <= 8;
+    });
+
+  if (!selections.length) return null;
+
+  if (family === "goals_total" || family === "team_total" || family === "corners" || family === "cards") {
+    const over = selections.find(o => /^over\b/i.test(o.label));
+    if (over) return over;
+  }
+
+  if (family === "btts") {
+    return selections.find(o => /^yes$/i.test(o.label)) || selections[0];
+  }
+
+  if (family === "double_chance" || family === "draw_no_bet" || family === "handicap") {
+    return selections.sort((a,b)=>Math.abs(Number(a.value)-1.75)-Math.abs(Number(b.value)-1.75))[0];
+  }
+
+  return selections.sort((a,b)=>Math.abs(Number(a.value)-2)-Math.abs(Number(b.value)-2))[0];
+}
+
 function chooseBettingOptions(markets) {
-  const preferred = [
-    /match result|1x2|moneyline|winner/i,
-    /double chance/i,
-    /both teams to score|btts/i,
-    /total goals|over\/under|goals/i,
-    /draw no bet/i,
-    /handicap/i,
-    /team total/i,
-    /to qualify/i
+  const familyOrder = [
+    "goals_total",
+    "btts",
+    "double_chance",
+    "draw_no_bet",
+    "handicap",
+    "team_total",
+    "corners",
+    "cards",
+    "qualify",
+    "first_goal",
+    "half_time",
+    "clean_sheet",
+    "player_prop",
+    "correct_score"
   ];
 
-  const seen = new Set();
+  const buckets = new Map();
+
+  for (const market of markets) {
+    const marketName = String(market.name || market.market_name || market.label || market.key || "").trim();
+    if (!marketName) continue;
+
+    const family = marketFamily(marketName);
+    if (family === "result" || family === "other") continue;
+
+    if (!buckets.has(family)) buckets.set(family, []);
+    buckets.get(family).push({market, marketName});
+  }
+
   const options = [];
+  const usedLabels = new Set();
 
-  for (const rx of preferred) {
-    for (const market of markets) {
-      const marketName = String(market.name || market.market_name || market.label || market.key || "");
-      if (!rx.test(marketName)) continue;
-      const selections = (market.outcomes || []).map(marketOutcomeToOdd).filter(Boolean).slice(0,3);
-      if (!selections.length) continue;
+  for (const family of familyOrder) {
+    const candidates = buckets.get(family) || [];
+    let chosen = null;
 
-      for (const selection of selections) {
-        const key = marketName+"|"+selection.label;
-        if (seen.has(key)) continue;
-        seen.add(key);
-        options.push({
-          market: marketName,
-          label: selection.label,
-          value: selection.value
-        });
-        if (options.length >= 8) return options;
-      }
+    for (const candidate of candidates) {
+      const selection = chooseSelectionFromMarket(candidate.market, family);
+      if (!selection) continue;
+
+      const key = family + "|" + selection.label.toLowerCase();
+      if (usedLabels.has(key)) continue;
+
+      chosen = {
+        market: candidate.marketName,
+        label: selection.label,
+        value: selection.value,
+        family
+      };
+      break;
     }
+
+    if (chosen) {
+      usedLabels.add(family + "|" + chosen.label.toLowerCase());
+      options.push(chosen);
+    }
+
+    if (options.length >= 7) break;
   }
 
   return options;
