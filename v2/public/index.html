@@ -37,7 +37,11 @@ select,.btn{border:1px solid var(--line);background:#0d1219;color:var(--text);bo
 .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
 .card{background:linear-gradient(180deg,#171c26,#11151d);border:1px solid var(--line);border-radius:20px;padding:18px;overflow:hidden;position:relative}
 .card:before{content:"";position:absolute;left:0;right:0;top:0;height:4px;background:linear-gradient(90deg,var(--purple),var(--blue),var(--cyan),var(--green))}
-.top{display:flex;justify-content:space-between;gap:9px;flex-wrap:wrap}.pill{font-size:11px;padding:7px 9px;border-radius:999px;background:#0c1118;border:1px solid var(--line);color:#c8cfdb}.title{font-size:20px;font-weight:850;margin:13px 0}.odds{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.odd{padding:8px 10px;border-radius:10px;background:#0b0f16;border:1px solid #2a3240;font-size:13px}.copy{white-space:pre-wrap;background:#0a0e14;border:1px solid var(--line);padding:14px;border-radius:14px;line-height:1.5;font-size:14px}.actions{display:flex;gap:10px;margin-top:14px}
+.top{display:flex;justify-content:space-between;gap:9px;flex-wrap:wrap}.pill{font-size:11px;padding:7px 9px;border-radius:999px;background:#0c1118;border:1px solid var(--line);color:#c8cfdb}.title{font-size:20px;font-weight:850;margin:13px 0}.odds{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.odd{padding:8px 10px;border-radius:10px;background:#0b0f16;border:1px solid #2a3240;font-size:13px}.copy{background:linear-gradient(180deg,#0b1018,#090d13);border:1px solid var(--line);padding:16px;border-radius:14px;line-height:1.62;font-size:14px;color:#e7edf7}
+.copy strong{color:#fff;font-weight:900}
+.copy .copy-heading{display:block;margin:10px 0 6px;font-size:12px;letter-spacing:.75px;text-transform:uppercase;color:#7fc7ff;font-weight:900}
+.copy .copy-bullet{display:block;margin:3px 0;padding-left:2px}
+.copy .copy-cta{display:block;margin-top:12px;padding:10px 12px;border-radius:10px;background:linear-gradient(135deg,rgba(123,92,255,.16),rgba(47,140,255,.14));border:1px solid #30415d;color:#fff;font-weight:900}.actions{display:flex;gap:10px;margin-top:14px}
 .empty{padding:54px 20px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:18px;grid-column:1/-1}
 .report-head{display:grid;grid-template-columns:1.6fr .8fr;gap:16px;margin-bottom:16px}
 .hero{min-height:220px;border:1px solid var(--line);border-radius:24px;padding:24px;background:
@@ -144,6 +148,31 @@ let currentPosts=[];
 
 function esc(v){return String(v??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll(String.fromCharCode(34),"&quot;").replaceAll("'","&#39;");}
 
+function renderCopyHtml(value){
+  const raw=String(value??"");
+  return raw.split("\n").map(line=>{
+    let safe=esc(line);
+    safe=safe.replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>");
+
+    const trimmed=line.trim();
+    if(!trimmed) return '<div style="height:8px"></div>';
+
+    if(/^(MAIN ODDS|OTHER MARKETS|TODAY'S PICK|OUR PICK|MORE BETTING OPTIONS|LATEST ODDS|OUR ANGLE)$/i.test(trimmed.replace(/[*:]/g,"").trim())){
+      return '<span class="copy-heading">'+safe+'</span>';
+    }
+
+    if(trimmed.startsWith("• ") || trimmed.startsWith("↳ ")){
+      return '<span class="copy-bullet">'+safe+'</span>';
+    }
+
+    if(trimmed.startsWith("👉")){
+      return '<span class="copy-cta">'+safe+'</span>';
+    }
+
+    return '<div>'+safe+'</div>';
+  }).join("");
+}
+
 document.querySelectorAll(".tab").forEach(tab=>tab.onclick=()=>{
   document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
   document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"));
@@ -222,7 +251,7 @@ function renderPosts(posts){
   grid.innerHTML=posts.map((p,index)=>{
     const odds=(p.odds||[]).map(o=>'<span class="odd">'+esc(o.label)+' <b>'+esc(o.value)+'</b></span>').join("");
     return '<article class="card"><div class="top"><span class="pill">'+esc(p.contentType||"Content")+'</span><span class="pill">'+esc(p.competition||"")+'</span><span class="pill">'+esc(p.time||"")+'</span></div>'+
-      '<div class="title">'+esc(p.title||"")+'</div><div class="odds">'+odds+'</div><div class="copy">'+esc(p.copy||"")+'</div>'+
+      '<div class="title">'+esc(p.title||"")+'</div><div class="odds">'+odds+'</div><div class="copy">'+renderCopyHtml(p.copy||"")+'</div>'+
       '<div class="actions"><button class="btn primary" data-copy="'+index+'">Copy post</button></div></article>';
   }).join("");
   document.querySelectorAll("[data-copy]").forEach(el=>el.onclick=async()=>{
