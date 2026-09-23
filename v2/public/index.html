@@ -3,176 +3,117 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#07110f">
+<meta name="theme-color" content="#0b1f3a">
 <title>Betandplay Content Hub</title>
 <style>
-:root{--bg:#07111d;--surface:#0d1826;--surface2:#122033;--surface3:#182a41;--line:#243a55;--text:#f4f8ff;--muted:#93a7bf;--green:#4f9dff;--green2:#2f7fe8;--blue:#5fa8ff;--amber:#f2b84b;--red:#ef6f6c;--r:12px;--shadow:0 18px 48px rgba(0,0,0,.28)}
-*{box-sizing:border-box}html{background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}body{margin:0;background:radial-gradient(circle at 70% -10%,rgba(79,157,255,.12),transparent 28%),var(--bg);min-height:100vh}button,input,select,textarea{font:inherit}button{cursor:pointer}.app{max-width:1540px;margin:auto;padding:0 22px 48px}
-.topbar{height:58px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(7,16,15,.94);backdrop-filter:blur(14px);z-index:30;margin:0 -22px;padding:0 28px}.brand{display:flex;align-items:center;gap:11px;font-weight:900;letter-spacing:-.3px}.brandmark{width:30px;height:30px;border-radius:9px;background:linear-gradient(145deg,#5fa8ff,#246fd2);display:grid;place-items:center;color:#052019;font-weight:1000}.nav{display:flex;gap:5px}.navbtn{border:0;background:transparent;color:var(--muted);padding:9px 13px;border-radius:9px;font-weight:800}.navbtn.active,.navbtn:hover{background:var(--surface2);color:#fff}.navbtn.active{box-shadow:inset 0 -2px var(--green)}
-.view{display:none}.view.active{display:block}
-.pagehead{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;padding:24px 2px 16px}.eyebrow{color:var(--green);font-size:11px;letter-spacing:1.4px;font-weight:900;text-transform:uppercase}.pagehead h1{margin:3px 0 2px;font-size:28px;letter-spacing:-.8px}.pagehead p{margin:0;color:var(--muted);font-size:13px}.updated{font-size:11px;color:var(--muted)}
-.toolbar{display:grid;grid-template-columns:minmax(280px,1.5fr) 150px 190px 150px auto;gap:8px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:9px;position:sticky;top:68px;z-index:20;box-shadow:0 8px 24px rgba(0,0,0,.16)}.control{height:40px;border:1px solid var(--line);background:#091411;color:var(--text);border-radius:9px;padding:0 11px;min-width:0;outline:none}.control:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(79,157,255,.14)}.search{padding-left:13px}.btn{min-height:38px;border:1px solid var(--line);background:var(--surface2);color:var(--text);border-radius:9px;padding:8px 12px;font-weight:850}.btn:hover{border-color:#3d5c53;background:var(--surface3)}.btn:focus-visible,.navbtn:focus-visible,.chip:focus-visible,.odd:focus-visible{outline:2px solid var(--green);outline-offset:2px}.btn.primary{background:var(--green);border-color:var(--green);color:#06172b}.btn.primary:hover{background:#78b8ff}.btn.ghost{background:transparent}.btn.danger{color:#ffb3b0}.btn:disabled{opacity:.5;cursor:not-allowed}
-.quickbar{display:flex;align-items:center;gap:7px;margin:10px 1px 14px;min-height:32px;flex-wrap:wrap}.chip{border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:999px;padding:6px 10px;font-size:11px;font-weight:850}.chip.active{background:#112b48;border-color:#315d8b;color:#dceeff}.filterchips{display:flex;gap:6px;flex-wrap:wrap;margin-left:8px}.activechip{font-size:10px;border-radius:999px;background:#102238;border:1px solid #2b4c6d;color:#d2deeb;padding:5px 8px;display:inline-flex;align-items:center;gap:5px}.activechip button{border:0;background:transparent;color:#8fa49d;padding:0;font-size:11px}
-.today-strip{display:grid;grid-template-columns:1.4fr repeat(3,.6fr);gap:8px;margin-bottom:10px}.today-main,.stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px}.today-main strong{display:block;font-size:15px}.today-main span,.stat span{color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.8px;font-weight:800}.stat b{display:block;font-size:20px;margin-top:2px}
-.editorial-rail{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}.rail{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:9px 11px;min-width:0}.railhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}.railhead strong{font-size:10px;letter-spacing:.7px;color:#cfe0da}.railhead span{font-size:9px;color:var(--muted)}.railitem{display:flex;gap:7px;align-items:center;min-width:0;padding:4px 0;font-size:11px}.railtime{color:var(--green);font-weight:900;min-width:38px}.railname{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#e8f0ed}
-.comp{border:1px solid var(--line);border-radius:var(--r);background:var(--surface);margin-bottom:10px;overflow:hidden}.comphead{height:48px;display:flex;align-items:center;gap:10px;padding:0 12px;border-bottom:1px solid var(--line);background:#0b1725}.comphead button{border:0;background:none;color:inherit;padding:0}.comp-logo,.team-logo{display:grid;place-items:center;flex:0 0 auto;background:#0c1928;border:1px solid #2b435f;overflow:hidden;color:#d2e0ee;font-weight:900}.comp-logo{width:34px;height:34px;border-radius:9px;font-size:9px}.team-logo{width:38px;height:38px;border-radius:10px;font-size:10px}.comp-logo img{max-width:28px;max-height:28px;width:auto;height:auto;object-fit:contain}.team-logo img{max-width:32px;max-height:32px;width:auto;height:auto;object-fit:contain}.compmeta{min-width:0;flex:1}.compname{font-size:12px;font-weight:950;letter-spacing:.2px}.compcount{font-size:10px;color:var(--muted);margin-top:2px}.collapse-comp{font-size:11px;color:var(--muted);padding:8px!important}.compbody.collapsed{display:none}
-.event{display:grid;grid-template-columns:78px minmax(330px,1.35fr) minmax(280px,.9fr) auto;align-items:center;min-height:72px;border-bottom:1px solid #17283b;transition:background .12s}.event:last-child{border-bottom:0}.event:hover,.event.selected{background:#10233a}.time{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;border-right:1px solid #17283b}.time b{font-size:14px}.time small{font-size:9px;color:var(--muted);margin-top:2px}.match{display:grid;grid-template-columns:minmax(0,1fr) 26px minmax(0,1fr);gap:8px;align-items:center;padding:8px 14px}.team{display:flex;align-items:center;gap:8px;min-width:0;font-size:13px;font-weight:900}.team.away{justify-content:flex-end;text-align:right}.teamname{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.vs{font-size:9px;color:#6f849b;text-align:center;font-weight:900}.odds{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:8px 12px}.odd{border:1px solid #2a4667;background:#0c1928;color:var(--text);border-radius:8px;height:42px;display:flex;align-items:center;justify-content:space-between;padding:0 9px;min-width:0}.odd span{font-size:9px;color:var(--muted)}.odd b{font-size:13px}.odd:hover{border-color:#3d6fa2;background:#112944}.actions{display:flex;gap:6px;padding:8px 12px}.actions .btn{font-size:11px;white-space:nowrap}.editorial{font-size:9px;color:#ffd28b;background:#2b2213;border:1px solid #5b4720;padding:3px 6px;border-radius:999px;margin-left:6px}
-.empty,.error{border:1px dashed #2b4663;border-radius:var(--r);padding:38px;text-align:center;color:var(--muted);background:rgba(12,23,21,.6)}.empty strong,.error strong{display:block;color:var(--text);font-size:15px;margin-bottom:5px}.error{border-color:#573b38}.skeleton{height:72px;border-bottom:1px solid #17283b;background:linear-gradient(90deg,#0b1826 20%,#142941 38%,#0b1826 56%);background-size:220% 100%;animation:shimmer 1.2s infinite}@keyframes shimmer{to{background-position:-220% 0}}
-.drawerback{position:fixed;inset:0;background:rgba(0,0,0,.52);z-index:60;opacity:0;pointer-events:none;transition:.16s}.drawerback.open{opacity:1;pointer-events:auto}.drawer{position:absolute;right:0;top:0;height:100%;width:min(560px,94vw);background:#0a1624;border-left:1px solid var(--line);box-shadow:var(--shadow);transform:translateX(100%);transition:.18s;display:flex;flex-direction:column}.drawerback.open .drawer{transform:none}.drawerhead{padding:16px 18px;border-bottom:1px solid var(--line);display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.drawerhead h2{font-size:18px;margin:2px 0}.drawerhead p{margin:0;color:var(--muted);font-size:11px}.drawerbody{padding:14px 18px 28px;overflow:auto}.marketgroup{border:1px solid var(--line);border-radius:10px;margin-bottom:8px;overflow:hidden}.marketgroup summary{padding:10px 12px;font-size:12px;font-weight:900;background:var(--surface);cursor:pointer;list-style:none;display:flex;justify-content:space-between}.marketgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;padding:8px}.market{border:1px solid #294762;background:#0f1e30;border-radius:8px;padding:8px 9px;display:flex;justify-content:space-between;gap:8px;font-size:11px}.market b{color:#98caff}.drawer-loading{display:grid;gap:8px}.drawer-loading div{height:56px;border-radius:9px;background:#14273b}
-.modalback{position:fixed;inset:0;background:rgba(0,0,0,.62);z-index:70;display:none;align-items:flex-start;justify-content:center;padding:7vh 18px 40px;overflow:auto}.modalback.open{display:flex}.modal{width:min(1000px,100%);background:#0a1624;border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow:hidden}.modalhead{padding:14px 18px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:14px}.modalhead h2{font-size:18px;margin:0 0 3px}.modalhead p{font-size:11px;color:var(--muted);margin:0}.modalbody{padding:14px 18px}.gen-controls{display:grid;grid-template-columns:1fr 1fr 1fr 1fr auto;gap:8px;margin-bottom:14px}.seg{display:flex;gap:4px;background:#071421;padding:4px;border:1px solid var(--line);border-radius:9px}.seg button{flex:1;border:0;background:transparent;color:var(--muted);padding:7px;border-radius:6px;font-size:11px;font-weight:850}.seg button.active{background:var(--surface3);color:#fff}.generated{border-top:1px solid var(--line);padding-top:13px}.genbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}.genbar h3{margin:0;font-size:12px;text-transform:uppercase;letter-spacing:.8px}.post{border:1px solid var(--line);border-radius:10px;background:var(--surface);margin-bottom:8px;overflow:hidden}.posthead{display:flex;justify-content:space-between;align-items:center;padding:9px 11px;border-bottom:1px solid var(--line)}.posthead strong{font-size:12px}.posttools{display:flex;gap:5px}.postbody{padding:12px 14px;font-size:12px;line-height:1.55;white-space:pre-wrap}.post.collapsed .postbody,.post.collapsed .postfooter{display:none}.postfooter{display:flex;gap:6px;padding:0 12px 11px}.editarea{width:100%;min-height:220px;background:#071421;color:#fff;border:1px solid var(--line);border-radius:8px;padding:10px;resize:vertical}
-.studio{max-width:980px;margin:28px auto}.studiohero{text-align:center;padding:26px 12px}.studiohero h1{font-size:28px;margin:0 0 6px}.studiohero p{color:var(--muted);font-size:13px}.studio-search{display:flex;gap:8px;max-width:720px;margin:18px auto}.studio-search input{flex:1}.explore{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:18px}.explore button{padding:18px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:#fff;text-align:left;font-weight:900}.searchresults{margin-top:12px}.searchrow{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:var(--surface);margin-bottom:6px}.searchrow b{font-size:12px}.searchrow span{display:block;color:var(--muted);font-size:10px;margin-top:2px}
-@media(max-width:1100px){.toolbar{grid-template-columns:1fr 140px 170px auto}.toolbar #countryFilter{display:none}.event{grid-template-columns:70px 1fr auto}.odds{grid-column:2}.actions{grid-column:3;grid-row:1/3;flex-direction:column}.today-strip{grid-template-columns:1fr repeat(3,.5fr)}}
-@media(max-width:900px){.gen-controls{grid-template-columns:1fr 1fr}.editorial-rail{grid-template-columns:1fr 1fr 1fr}}
-@media(max-width:780px){.app{padding:0 12px 40px}.topbar{margin:0 -12px;padding:0 14px}.brand span:last-child{display:none}.toolbar{top:58px;grid-template-columns:1fr 1fr}.toolbar .search{grid-column:1/-1}.today-strip{grid-template-columns:1fr 1fr}.today-main{grid-column:1/-1}.event{grid-template-columns:60px 1fr}.match{padding-right:8px}.odds{grid-column:1/-1;border-top:1px solid #17283b;padding:7px 9px}.actions{grid-column:1/-1;grid-row:auto;flex-direction:row;justify-content:flex-end;border-top:1px solid #17283b}.comphead{height:44px}.gen-controls{grid-template-columns:1fr}.modalback{padding:12px}.explore{grid-template-columns:1fr}.pagehead{padding-top:16px}.pagehead h1{font-size:23px}}
-@media(max-width:600px){.editorial-rail{grid-template-columns:1fr}.gen-controls{grid-template-columns:1fr}.today-strip{grid-template-columns:1fr 1fr}}
-@media(max-width:480px){.navbtn{padding:8px 9px;font-size:11px}.toolbar{grid-template-columns:1fr}.toolbar .search{grid-column:auto}.match{grid-template-columns:1fr 20px 1fr}.team{flex-direction:column;text-align:center;gap:4px}.team.away{flex-direction:column-reverse;text-align:center}.team-logo{width:34px;height:34px}.team-logo img{max-width:28px;max-height:28px}.actions .btn{flex:1}.quickbar{overflow:auto;flex-wrap:nowrap}.today-strip{grid-template-columns:1fr 1fr}.marketgrid{grid-template-columns:1fr}}
-
-/* Light editorial sportsbook theme */
-:root{--bg:#f3f7fc;--surface:#ffffff;--surface2:#f5f8fc;--surface3:#eaf2fb;--line:#d9e4f0;--text:#12243a;--muted:#6f8298;--green:#1677e8;--green2:#0d63c7;--blue:#1677e8;--shadow:0 16px 42px rgba(31,68,110,.10)}
-html{background:var(--bg);color:var(--text)}
-body{background:linear-gradient(180deg,#edf5ff 0,#f7f9fc 340px,#f3f7fc 100%);color:var(--text)}
-.topbar{background:rgba(255,255,255,.94);border-color:var(--line);box-shadow:0 4px 20px rgba(31,68,110,.06)}
-.navbtn.active,.navbtn:hover{background:#eaf3ff;color:#125fae}.brandmark{color:#fff}
-.toolbar{background:rgba(255,255,255,.96);border-color:var(--line);box-shadow:0 8px 28px rgba(31,68,110,.08)}
-.control{background:#fff;color:var(--text);border-color:#d4e0ed}.btn{background:#f4f8fc;color:#20364f;border-color:#d4e0ed}.btn:hover{background:#eaf3fd;border-color:#b9cee3}.btn.primary{background:#1677e8;border-color:#1677e8;color:#fff}.btn.primary:hover{background:#0f69d3}
-.chip{background:#fff;color:#63778e;border-color:#d5e1ed}.chip.active{background:#e8f3ff;border-color:#9fc8f2;color:#0e5fac}.activechip{background:#eef6ff;border-color:#c9def3;color:#355b80}
-.today-main,.stat,.rail,.comp,.post,.explore button,.searchrow{background:#fff;border-color:var(--line);box-shadow:0 4px 16px rgba(31,68,110,.04)}
-.railhead strong,.railname{color:#263d55}.comphead{background:#f7faff;border-color:var(--line)}.comp-logo,.team-logo{background:#fff;border-color:#d8e3ee;color:#56718d}
-.event{border-color:#e5edf5}.event:hover,.event.selected{background:#f1f7fe}.time{border-color:#e5edf5}.vs{color:#8da0b4}
-.odd{background:#f7faff;color:#17314c;border-color:#d4e2f0}.odd:hover{background:#eaf4ff;border-color:#9fc5eb}.odd span{color:#75899e}
-.empty,.error{background:#fff;border-color:#cad9e8}.empty strong,.error strong{color:var(--text)}
-.skeleton{border-color:#e5edf5;background:linear-gradient(90deg,#f4f7fa 20%,#e7eef5 38%,#f4f7fa 56%);background-size:220% 100%}
-.drawerback,.modalback{background:rgba(17,39,64,.35)}.drawer,.modal{background:#fff;border-color:var(--line);color:var(--text)}.drawerhead,.modalhead{border-color:var(--line)}
-.marketgroup{border-color:var(--line)}.marketgroup summary{background:#f6f9fc}.market{background:#f8fbfe;border-color:#d7e3ee}.market b{color:#126bc9}.drawer-loading div{background:#edf3f8}
-.seg{background:#f3f7fb}.seg button.active{background:#dfeeff;color:#155f9f}.postbody{color:#263c53}.editarea{background:#fff;color:#18314a;border-color:#cad9e8}
-.sports-shell{background:#f3f7fc!important}.sports-toolbar,.sports-datebar{background:#fff!important;border-color:#d9e4f0!important}.sports-event,.sports-comp{background:#fff!important;color:#12243a!important;border-color:#d9e4f0!important}
-.sports-hero{box-shadow:0 16px 36px rgba(21,65,111,.14)}
-</style>
-
-<style>
-/* screenshot-inspired sportsbook pass */
-body{background:#06111d!important}
-.app{max-width:1640px;padding:0 26px 52px}
-.topbar{height:64px;background:#07111c!important;border-color:#16283a!important;padding:0 34px}
-.brand{font-size:15px}.brandmark{width:34px;height:34px;border-radius:10px;background:linear-gradient(145deg,#2f93ff,#1b63d8)!important;color:white!important}
-.navbtn{padding:10px 17px;border-radius:10px;color:#8fa5bb}.navbtn.active{background:#0f2238!important;color:#fff!important;box-shadow:inset 0 -2px #2f93ff!important}
-.pagehead{display:none}
-.sports-hero{position:relative;min-height:235px;margin:0 -26px 16px;overflow:hidden;border-bottom:1px solid #18304a;background:
-linear-gradient(90deg,#06111d 0%,rgba(6,17,29,.84) 25%,rgba(6,17,29,.20) 58%,rgba(6,17,29,.58) 100%),
-url('/big-games-hero.svg') center 42%/cover no-repeat}
-.sports-hero:after{content:"";position:absolute;inset:auto 0 0;height:70px;background:linear-gradient(180deg,transparent,#06111d)}
-.sports-hero-overlay{position:absolute;inset:0;background:linear-gradient(90deg,rgba(4,11,19,.80),rgba(4,11,19,.18) 52%,rgba(4,11,19,.36))}
-.sports-hero-copy{position:relative;z-index:2;padding:38px 48px 24px;max-width:690px}
-.hero-kicker{font-size:12px;font-weight:950;letter-spacing:2.2px;color:#d8e5f3}
-.sports-hero h1{margin:4px 0 8px;font-size:52px;line-height:.94;letter-spacing:-2.2px;font-weight:1000}.sports-hero h1 span{color:#2f9cff}
-.sports-hero p{margin:0 0 20px;color:#a8bbcf;font-size:14px}
-.hero-sports{display:flex;gap:9px;flex-wrap:wrap}
-.hero-sport{height:38px;padding:0 17px;border-radius:999px;border:1px solid #274766;background:#0a1826;color:#c9d7e4;font-size:12px;font-weight:900}
-.hero-sport.active{background:linear-gradient(135deg,#1b6ff0,#22a5ff);border-color:transparent;color:#fff;box-shadow:0 7px 18px rgba(29,117,242,.24)}
-.toolbar{top:74px;margin-top:0;grid-template-columns:minmax(330px,1.55fr) 150px 210px 165px auto;background:#0a1623!important;border-color:#1d344b!important;border-radius:14px;padding:10px;box-shadow:0 10px 28px rgba(0,0,0,.22)}
-.control{height:44px;background:#08131f!important;border-color:#29435f!important;border-radius:11px;color:#edf6ff}.control::placeholder{color:#71889e}.control:focus{border-color:#2f93ff!important;box-shadow:0 0 0 3px rgba(47,147,255,.13)!important}
-.btn{border-color:#29415a;background:#0f1d2d;color:#dfeaf4}.btn:hover{background:#14263a;border-color:#35597a}.btn.primary{background:linear-gradient(135deg,#1c77f2,#2ea6ff)!important;border-color:transparent!important;color:#fff!important;box-shadow:0 7px 18px rgba(31,120,240,.18)}
-.quickbar{margin:10px 0 12px}.chip{padding:7px 12px;background:#091521;border-color:#23394f;color:#9eb1c3}.chip.active{background:#102a47!important;border-color:#2d6ca6!important;color:#e6f3ff!important}
-.today-strip{grid-template-columns:1.7fr repeat(3,.6fr);gap:9px;margin-bottom:10px}.today-main,.stat{background:#0a1623!important;border-color:#1c344b!important;border-radius:12px;padding:10px 13px}.today-main strong{font-size:14px}.stat b{font-size:18px}
-.editorial-rail{gap:9px;margin-bottom:13px}.rail{background:#0a1623!important;border-color:#1c344b!important;border-radius:12px}.railhead strong{color:#dfeaf4}.railtime{color:#56aaff!important}
-.comp{background:#08131f!important;border-color:#1d344a!important;border-radius:14px;margin-bottom:12px;box-shadow:0 10px 24px rgba(0,0,0,.14)}
-.comphead{height:50px;background:linear-gradient(90deg,#0a1725,#0a1520)!important;border-bottom-color:#1d344a!important;padding:0 14px}
-.compname{font-size:12px;letter-spacing:.45px;text-transform:uppercase}.compcount{font-size:10px}
-.comp-logo{width:36px;height:36px;border-radius:10px;background:#0e1c2b!important;border-color:#294761!important}.comp-logo img{max-width:30px;max-height:30px}
-.event{grid-template-columns:80px minmax(330px,1.4fr) minmax(300px,.95fr) auto;min-height:68px;border-bottom-color:#172b3f!important;background:#08131f}
-.event:hover,.event.selected{background:#0d2033!important}
-.time{border-right-color:#172b3f!important}.time b{font-size:15px}.time small{color:#71879a}
-.match{padding:8px 15px;gap:9px}.team{font-size:13px}.team-logo{width:36px;height:36px;border-radius:10px;background:#0c1927!important;border-color:#294761!important}.team-logo img{max-width:30px;max-height:30px}.vs{color:#73879b}
-.odds{gap:7px;padding:8px 12px}.odd{height:40px;border-radius:9px;background:#0d1d2d!important;border-color:#294661!important}.odd span{color:#8096aa}.odd b{font-size:14px}.odd:hover{background:#122b45!important;border-color:#3a78b0!important}
-.actions{gap:7px;padding:8px 14px}.actions .btn{font-size:11px;min-height:36px;padding:7px 11px}.actions .markets{background:#0b1c28;border-color:#1e695a;color:#6de2bf}.actions .create{min-width:134px}
-.editorial{background:#2a2217;border-color:#5b4829;color:#ffd491}
-.drawer{background:#08131f!important;border-left-color:#20384e!important}.drawerhead{background:#0a1725;border-bottom-color:#1e344a}.drawerbody{background:#08131f}.marketgroup{border-color:#1f384e;background:#0a1725}.marketgroup summary{background:#0d1b2a}.market{background:#0d2031!important;border-color:#2a4760!important}.market b{color:#7ebfff!important}
-.modal{background:#08131f!important;border-color:#20394f!important}.modalhead{background:#0a1725}.seg{background:#07111c;border-color:#1d354b}.seg button.active{background:#142a42;color:#fff}.post{background:#0a1725!important;border-color:#1d354b}.postbody{font-size:13px;line-height:1.62}
-.studio{max-width:1100px}.studiohero{padding-top:42px}.studiohero h1{font-size:32px}.explore button,.searchrow{background:#0a1725!important;border-color:#1d354b!important}
-@media(max-width:1100px){.sports-hero{min-height:210px}.sports-hero h1{font-size:44px}.event{grid-template-columns:70px 1fr auto}.toolbar{grid-template-columns:1fr 140px 180px auto}.toolbar #countryFilter{display:none}}
-@media(max-width:780px){.app{padding:0 12px 40px}.sports-hero{margin:0 -12px 12px;min-height:190px}.sports-hero-copy{padding:28px 20px 18px}.sports-hero h1{font-size:38px}.topbar{margin:0 -12px;padding:0 14px}.toolbar{top:68px}.event{grid-template-columns:58px 1fr}.actions .btn{min-height:40px}.today-strip{grid-template-columns:1fr 1fr}.today-main{grid-column:1/-1}}
-@media(max-width:480px){.sports-hero{min-height:175px}.sports-hero p{font-size:12px}.sports-hero h1{font-size:34px}.hero-sport{height:34px;padding:0 12px}.toolbar{grid-template-columns:1fr}.comphead{height:46px}.event{min-height:64px}.odds{padding:7px 9px}.actions{padding:8px 9px}.actions .btn{font-size:11px}}
-</style>
-
-<style>
 :root{
-  --accent:#4f9dff;
-  --accent-strong:#2f7fe8;
-  --accent-soft:#143256;
+  --navy:#0b1f3a;--navy2:#102b4f;--blue:#1677e8;--blue2:#0f63c7;--sky:#eaf4ff;
+  --bg:#f4f7fb;--card:#ffffff;--soft:#f8fafc;--line:#dce5ef;--line2:#c8d5e3;
+  --text:#172a40;--muted:#6f8297;--success:#158566;--warn:#b87917;--danger:#c94e4e;
+  --r:14px;--shadow:0 8px 24px rgba(18,45,76,.08);--shadow-lg:0 20px 54px rgba(18,45,76,.18);
 }
-.brandmark,
-.btn.primary{
-  background:linear-gradient(145deg,var(--accent),var(--accent-strong)) !important;
-  border-color:var(--accent) !important;
-  color:#06172b !important;
-}
-.navbtn.active{box-shadow:inset 0 -2px var(--accent) !important}
-.eyebrow{color:#6db4ff !important}
-.control:focus{border-color:var(--accent) !important;box-shadow:0 0 0 3px rgba(79,157,255,.14) !important}
-.btn:focus-visible,.navbtn:focus-visible,.chip:focus-visible,.odd:focus-visible{outline-color:var(--accent) !important}
-.chip.active{background:#112b48 !important;border-color:#315d8b !important;color:#dceeff !important}
-.railtime{color:#6db4ff !important}
-.market b{color:#98caff !important}
-.editorial{color:#ffd28b !important}
-.event:hover,.event.selected{background:#10233a !important}
-.odd:hover{border-color:#3d6fa2 !important;background:#112944 !important}
-.comp,.today-main,.stat,.rail,.toolbar,.post,.explore button,.searchrow{background:var(--surface) !important}
-.drawer,.modal{background:#0a1624 !important}
-.activechip{background:#102238 !important;border-color:#2b4c6d !important;color:#d2deeb !important}
-.skeleton{background:linear-gradient(90deg,#0b1826 20%,#142941 38%,#0b1826 56%) !important;background-size:220% 100% !important}
+*{box-sizing:border-box}
+html{background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body{margin:0;background:var(--bg);min-height:100vh}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+.app{max-width:1600px;margin:0 auto;padding:0 24px 48px}
+.topbar{height:64px;margin:0 -24px;padding:0 30px;display:flex;align-items:center;justify-content:space-between;background:var(--navy);color:#fff;position:sticky;top:0;z-index:50;box-shadow:0 8px 24px rgba(7,26,48,.16)}
+.brand{display:flex;align-items:center;gap:10px;font-weight:900;letter-spacing:-.2px}
+.brandmark{width:32px;height:32px;border-radius:9px;background:linear-gradient(145deg,#2e9cff,#1665cf);display:grid;place-items:center;color:#fff;font-weight:1000}
+.brand small{color:#9fb7d0;font-weight:700}
+.nav{display:flex;gap:6px}
+.navbtn{border:0;background:transparent;color:#9eb6cf;padding:9px 14px;border-radius:9px;font-weight:800}
+.navbtn:hover,.navbtn.active{background:rgba(255,255,255,.09);color:#fff}
+.navbtn.active{box-shadow:inset 0 -2px #4aa8ff}
+.view{display:none}.view.active{display:block}
+.workspace-head{margin:22px 0 14px;padding:18px 20px;border-radius:16px;background:linear-gradient(120deg,#0d2a4d,#164f84);color:#fff;display:flex;align-items:center;justify-content:space-between;gap:18px;box-shadow:var(--shadow)}
+.workspace-head h1{margin:2px 0 4px;font-size:28px;letter-spacing:-.7px}.workspace-head p{margin:0;color:#c1d4e6;font-size:13px}.eyebrow{font-size:10px;letter-spacing:1.25px;font-weight:950;text-transform:uppercase;color:#64b4ff}
+.hero-sports{display:flex;gap:8px;flex-wrap:wrap}
+.hero-sport{height:36px;padding:0 14px;border-radius:999px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06);color:#dcecff;font-size:12px;font-weight:850}
+.hero-sport.active{background:#fff;color:#145f9d;border-color:#fff}
+.toolbar{display:grid;grid-template-columns:minmax(280px,1.55fr) 150px 200px 150px auto;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px;box-shadow:var(--shadow);position:sticky;top:76px;z-index:30}
+.control{height:42px;border:1px solid var(--line2);background:#fff;color:var(--text);border-radius:10px;padding:0 12px;outline:none;min-width:0}
+.control:focus{border-color:#6eaef0;box-shadow:0 0 0 3px rgba(22,119,232,.11)}
+.btn{min-height:38px;border:1px solid var(--line2);background:#fff;color:#294057;border-radius:9px;padding:8px 12px;font-weight:850}
+.btn:hover{background:#f1f6fb;border-color:#aebfd0}
+.btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}.btn.primary:hover{background:var(--blue2)}
+.btn.ghost{background:transparent}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+.quickbar{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:10px 1px 12px}
+.chip{border:1px solid var(--line2);background:#fff;color:#61758a;border-radius:999px;padding:7px 11px;font-size:11px;font-weight:850}
+.chip.active{background:#eaf4ff;border-color:#9cc7f1;color:#0f60ad}
+.filterchips{display:flex;gap:6px;flex-wrap:wrap;margin-left:5px}
+.activechip{font-size:10px;border-radius:999px;background:#eff6ff;border:1px solid #c9def3;color:#365b7c;padding:5px 8px;display:inline-flex;align-items:center;gap:5px}
+.activechip button{border:0;background:transparent;color:#8094a8;padding:0}
+.summary-grid{display:grid;grid-template-columns:1.6fr repeat(3,.65fr);gap:8px;margin-bottom:10px}
+.today-main,.stat{background:#fff;border:1px solid var(--line);border-radius:12px;padding:11px 13px}
+.today-main span,.stat span{display:block;color:var(--muted);font-size:9px;text-transform:uppercase;letter-spacing:.8px;font-weight:900}
+.today-main strong{display:block;margin-top:3px;font-size:14px}.stat b{display:block;margin-top:2px;font-size:18px}
+.editorial-rail{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.rail{background:#fff;border:1px solid var(--line);border-radius:12px;padding:9px 11px}
+.railhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}.railhead strong{font-size:10px;letter-spacing:.7px;color:#35536f}.railhead span{font-size:9px;color:var(--muted)}
+.railitem{display:flex;align-items:center;gap:7px;padding:3px 0;min-width:0;font-size:11px}.railtime{min-width:38px;color:#0c69c7;font-weight:900}.railname{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#2e455d}
+.comp{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-bottom:10px;box-shadow:0 3px 14px rgba(18,45,76,.04)}
+.comphead{height:48px;display:flex;align-items:center;gap:10px;padding:0 12px;background:#f8fbfe;border-bottom:1px solid var(--line)}
+.comphead button{border:0;background:transparent;color:inherit;padding:0}
+.comp-logo,.team-logo{display:grid;place-items:center;overflow:hidden;background:#fff;border:1px solid #d8e3ee;color:#58718a;font-weight:950;flex:0 0 auto}
+.comp-logo{width:34px;height:34px;border-radius:9px;font-size:8px}.team-logo{width:38px;height:38px;border-radius:10px;font-size:9px}
+.comp-logo img{max-width:28px;max-height:28px;width:auto;height:auto;object-fit:contain}.team-logo img{max-width:32px;max-height:32px;width:auto;height:auto;object-fit:contain}
+.compmeta{flex:1;min-width:0;text-align:left}.compname{font-size:12px;font-weight:950;letter-spacing:.2px;color:#183550}.compcount{font-size:10px;color:var(--muted);margin-top:2px}.collapse-comp{font-size:11px;color:#6f8297;padding:8px!important}
+.compbody.collapsed{display:none}
+.event{display:grid;grid-template-columns:78px minmax(330px,1.35fr) minmax(280px,.9fr) auto;align-items:center;min-height:70px;border-bottom:1px solid #e8eef5;transition:.14s;background:#fff}
+.event:last-child{border-bottom:0}.event:hover,.event.selected{background:#f6faff}
+.time{height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;border-right:1px solid #e8eef5}.time b{font-size:14px;color:#193958}.time small{font-size:9px;color:#8b9cae;margin-top:2px}
+.match{display:grid;grid-template-columns:minmax(0,1fr) 24px minmax(0,1fr);align-items:center;gap:8px;padding:8px 14px}.team{display:flex;align-items:center;gap:8px;min-width:0;font-size:13px;font-weight:900;color:#20384f}.team.away{justify-content:flex-end;text-align:right}.teamname{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.vs{font-size:9px;color:#95a5b5;text-align:center;font-weight:900}
+.odds{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:8px 12px}.odd{height:40px;border:1px solid #d7e3ef;background:#f8fbfe;color:#193753;border-radius:8px;display:flex;align-items:center;justify-content:space-between;padding:0 9px}.odd span{font-size:9px;color:#8193a5}.odd b{font-size:13px}.odd:hover{background:#edf6ff;border-color:#a8c9e9}
+.actions{display:flex;align-items:center;gap:6px;padding:8px 12px}.actions .btn{font-size:11px;white-space:nowrap}.editorial{font-size:9px;color:#9c6715;background:#fff4dc;border:1px solid #f0d7a4;padding:3px 6px;border-radius:999px}
+.empty,.error{border:1px dashed #cbd9e6;border-radius:14px;padding:34px;text-align:center;background:#fff;color:var(--muted)}.empty strong,.error strong{display:block;color:var(--text);font-size:15px;margin-bottom:5px}.error{border-color:#efc5c5;background:#fffafa}
+.skeleton{height:70px;border-bottom:1px solid #e8eef5;background:linear-gradient(90deg,#f5f8fb 20%,#eaf0f6 38%,#f5f8fb 56%);background-size:220% 100%;animation:shimmer 1.2s infinite}@keyframes shimmer{to{background-position:-220% 0}}
+.drawerback{position:fixed;inset:0;background:rgba(10,29,48,.34);z-index:60;opacity:0;pointer-events:none;transition:.16s}.drawerback.open{opacity:1;pointer-events:auto}
+.drawer{position:absolute;right:0;top:0;width:min(560px,94vw);height:100%;background:#fff;border-left:1px solid var(--line);box-shadow:var(--shadow-lg);transform:translateX(100%);transition:.18s;display:flex;flex-direction:column}.drawerback.open .drawer{transform:none}
+.drawerhead,.modalhead{padding:15px 18px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:12px;background:#f9fbfd}.drawerhead h2,.modalhead h2{margin:2px 0;font-size:18px}.drawerhead p,.modalhead p{margin:0;color:var(--muted);font-size:11px}.drawerbody{padding:14px 18px 28px;overflow:auto}
+.marketgroup{border:1px solid var(--line);border-radius:10px;margin-bottom:8px;overflow:hidden}.marketgroup summary{padding:10px 12px;background:#f7fafc;font-size:12px;font-weight:900;cursor:pointer;display:flex;justify-content:space-between;list-style:none}.marketgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;padding:8px}.market{display:flex;justify-content:space-between;gap:8px;border:1px solid #d9e5ef;background:#fbfdff;border-radius:8px;padding:8px 9px;font-size:11px}.market b{color:#1269c1}
+.drawer-loading{display:grid;gap:8px}.drawer-loading div{height:56px;border-radius:9px;background:#edf3f8}
+.modalback{position:fixed;inset:0;background:rgba(10,29,48,.38);z-index:70;display:none;align-items:flex-start;justify-content:center;padding:6vh 18px 40px;overflow:auto}.modalback.open{display:flex}
+.modal{width:min(1040px,100%);background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow-lg);overflow:hidden}.modalbody{padding:15px 18px}
+.gen-controls{display:grid;grid-template-columns:1fr 1fr 1fr 1fr auto;gap:8px;margin-bottom:14px}.seg{display:flex;gap:4px;background:#f4f7fa;border:1px solid var(--line);border-radius:9px;padding:4px}.seg button{flex:1;border:0;background:transparent;color:#6d8094;padding:7px;border-radius:6px;font-size:11px;font-weight:850}.seg button.active{background:#e4f1ff;color:#0f61ad}
+.generated{border-top:1px solid var(--line);padding-top:13px}.genbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}.genbar h3{margin:0;font-size:12px;text-transform:uppercase;letter-spacing:.8px}
+.post{border:1px solid var(--line);border-radius:10px;background:#fff;margin-bottom:9px;overflow:hidden}.posthead{display:flex;justify-content:space-between;align-items:center;padding:9px 11px;background:#f9fbfd;border-bottom:1px solid var(--line)}.posthead strong{font-size:12px}.postbody{padding:13px 14px;font-size:12px;line-height:1.58;white-space:pre-wrap;color:#2c435a}.post.collapsed .postbody,.post.collapsed .postfooter{display:none}.postfooter{display:flex;gap:6px;padding:0 12px 11px}.editarea{width:100%;min-height:220px;background:#fff;color:#20384f;border:1px solid var(--line2);border-radius:8px;padding:10px;resize:vertical}
+.studio{max-width:980px;margin:30px auto}.studiohero{text-align:center;padding:28px 12px}.studiohero h1{font-size:30px;margin:4px 0 6px}.studiohero p{color:var(--muted);font-size:13px}.studio-search{display:flex;gap:8px;max-width:720px;margin:18px auto}.studio-search input{flex:1}.searchresults{margin-top:12px}.searchrow{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:#fff;margin-bottom:6px}.searchrow b{font-size:12px}.searchrow span{display:block;color:var(--muted);font-size:10px;margin-top:2px}.explore{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:18px}.explore button{padding:20px;border:1px solid var(--line);border-radius:12px;background:#fff;color:#20384f;text-align:left;font-weight:900;box-shadow:0 3px 12px rgba(18,45,76,.04)}
+@media(max-width:1100px){.toolbar{grid-template-columns:1fr 140px 180px auto}.toolbar #countryFilter{display:none}.event{grid-template-columns:70px 1fr auto}.odds{grid-column:2}.actions{grid-column:3;grid-row:1/3;flex-direction:column}.gen-controls{grid-template-columns:1fr 1fr}.summary-grid{grid-template-columns:1fr repeat(3,.5fr)}}
+@media(max-width:780px){.app{padding:0 12px 38px}.topbar{margin:0 -12px;padding:0 14px}.brand small{display:none}.workspace-head{margin-top:14px;align-items:flex-start;flex-direction:column}.toolbar{top:72px;grid-template-columns:1fr 1fr}.toolbar .search{grid-column:1/-1}.summary-grid{grid-template-columns:1fr 1fr}.today-main{grid-column:1/-1}.editorial-rail{grid-template-columns:1fr}.event{grid-template-columns:60px 1fr}.odds{grid-column:1/-1;border-top:1px solid #e8eef5}.actions{grid-column:1/-1;grid-row:auto;flex-direction:row;justify-content:flex-end;border-top:1px solid #e8eef5}.gen-controls{grid-template-columns:1fr}.modalback{padding:12px}.explore{grid-template-columns:1fr}}
+@media(max-width:480px){.navbtn{padding:8px 9px;font-size:11px}.workspace-head h1{font-size:24px}.toolbar{grid-template-columns:1fr}.toolbar .search{grid-column:auto}.quickbar{overflow:auto;flex-wrap:nowrap}.match{grid-template-columns:1fr 20px 1fr}.team{flex-direction:column;text-align:center;gap:4px}.team.away{flex-direction:column-reverse}.team-logo{width:34px;height:34px}.team-logo img{max-width:28px;max-height:28px}.actions .btn{flex:1}.marketgrid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <div class="app">
 <header class="topbar">
-  <div class="brand"><div class="brandmark">B</div><span>Betandplay</span><span style="color:var(--muted);font-weight:700">Content Hub</span></div>
-  <nav class="nav" aria-label="Main navigation">
-    <button class="navbtn active" data-view="biggames">Big Games</button>
-    <button class="navbtn" data-view="studio">Content Studio</button>
-  </nav>
+  <div class="brand"><div class="brandmark">B</div><span>Betandplay</span><small>Content Hub</small></div>
+  <nav class="nav" aria-label="Main navigation"><button class="navbtn active" data-view="biggames">Big Games</button><button class="navbtn" data-view="studio">Content Studio</button></nav>
 </header>
-
 <main>
 <section id="biggames" class="view active">
-  <section class="sports-hero" aria-label="Big Games">
-    <div class="sports-hero-overlay"></div>
-    <div class="sports-hero-copy">
-      <div class="hero-kicker">UPCOMING</div>
-      <h1>BIG <span>GAMES</span></h1>
-      <p>Top teams. Major competitions. Ready for your content.</p>
-      <div class="hero-sports" aria-label="Sports">
-        <button class="hero-sport active" data-hero-sport="soccer">⚽ Football</button>
-        <button class="hero-sport" data-hero-sport="tennis">◉ Tennis</button>
-        <button class="hero-sport" data-hero-sport="basketball">◉ Basketball</button>
-      </div>
-    </div>
-  </section>
-  <div class="pagehead">
-    <div><div class="eyebrow">Sports editorial workstation</div><h1>Big Games</h1><p>Find what matters, check the market, create content.</p></div>
-    <div class="updated" id="lastUpdated">Live odds</div>
+  <div class="workspace-head">
+    <div><div class="eyebrow">Sports editorial workstation</div><h1>Big Games</h1><p>Find the important fixtures, check prices, create content fast.</p></div>
+    <div class="hero-sports" aria-label="Sports"><button class="hero-sport active" data-hero-sport="soccer">⚽ Football</button><button class="hero-sport" data-hero-sport="tennis">🎾 Tennis</button><button class="hero-sport" data-hero-sport="basketball">🏀 Basketball</button></div>
   </div>
   <div class="toolbar" role="search">
     <input id="search" class="control search" aria-label="Search team player or competition" placeholder="Search team, player or competition…">
     <select id="sportFilter" class="control" aria-label="Sport"><option value="soccer">Football</option><option value="tennis">Tennis</option><option value="basketball">Basketball</option></select>
     <select id="competitionFilter" class="control" aria-label="Competition"><option value="all">All competitions</option></select>
     <select id="countryFilter" class="control" aria-label="Country"><option value="all">All countries</option></select>
-    <button id="resetFilters" class="btn ghost">Reset filters</button>
+    <button id="resetFilters" class="btn ghost">Reset</button>
   </div>
-  <div class="quickbar" aria-label="Date filters">
-    <button class="chip" data-range="today">Today</button>
-    <button class="chip" data-range="tomorrow">Tomorrow</button>
-    <button class="chip" data-range="7">Next 7 days</button>
-    <button class="chip active" data-range="30">Next 30 days</button>
-    <div id="activeFilters" class="filterchips"></div>
-  </div>
-  <div id="todayStrip" class="today-strip"></div>
+  <div class="quickbar" aria-label="Date filters"><button class="chip" data-range="today">Today</button><button class="chip" data-range="tomorrow">Tomorrow</button><button class="chip" data-range="7">Next 7 days</button><button class="chip active" data-range="30">Next 30 days</button><div id="activeFilters" class="filterchips"></div></div>
+  <div id="todayStrip" class="summary-grid"></div>
   <div id="editorialRail" class="editorial-rail"></div>
-  <div id="events"><div class="comp"><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div></div></div>
+  <div id="events"><div class="comp"><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div></div></div>
+  <div class="updated" id="lastUpdated" style="margin:8px 2px;color:var(--muted);font-size:10px">Live odds</div>
 </section>
-
 <section id="studio" class="view">
   <div class="studio">
-    <div class="studiohero"><div class="eyebrow">Content Studio</div><h1>What do you want to create?</h1><p>Start with an event. We only show controls when they are useful.</p></div>
+    <div class="studiohero"><div class="eyebrow">Content Studio</div><h1>What do you want to create?</h1><p>Search an event first. The rest of the controls appear only when needed.</p></div>
     <div class="studio-search"><input id="studioSearch" class="control" placeholder="Search event, team, player or competition…"><button id="studioSearchBtn" class="btn primary">Search</button></div>
     <div id="studioResults" class="searchresults"></div>
     <div id="recentWrap" style="margin-top:18px;display:none"><div class="eyebrow" style="margin-bottom:8px">Recent</div><div id="recentList" class="searchresults"></div></div>
@@ -181,20 +122,15 @@ url('/big-games-hero.svg') center 42%/cover no-repeat}
 </section>
 </main>
 </div>
-
 <div id="marketBack" class="drawerback" aria-hidden="true"><aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="marketTitle"><div class="drawerhead"><div><div class="eyebrow">Markets</div><h2 id="marketTitle">Match markets</h2><p id="marketMeta"></p></div><button class="btn ghost closeDrawer" aria-label="Close markets">✕</button></div><div id="marketBody" class="drawerbody"></div></aside></div>
-
 <div id="createBack" class="modalback" aria-hidden="true"><section class="modal" role="dialog" aria-modal="true" aria-labelledby="createTitle"><div class="modalhead"><div><div class="eyebrow">Create content</div><h2 id="createTitle">Selected match</h2><p id="createMeta"></p></div><button class="btn ghost closeCreate" aria-label="Close content creator">✕</button></div><div class="modalbody">
-  <div class="gen-controls">
-    <div><label class="eyebrow">Channel</label><div class="seg" data-seg="channel"><button class="active">Telegram</button><button>Email</button><button>Push</button></div></div>
-    <div><label class="eyebrow">Language</label><div class="seg" data-seg="language"><button class="active">EN</button><button>DE</button><button>IT</button><button>ES</button></div></div>
-    <div><label class="eyebrow">Tone</label><div class="seg" data-seg="tone"><button class="active">Sports</button><button>Hype</button><button>Informative</button></div></div>
-    <div><label class="eyebrow">Content type</label><div class="seg" data-seg="contentType"><button class="active">Match Post</button><button>Value Bet</button><button>Acca</button></div></div>
-    <button id="generateSelected" class="btn primary">Generate 3 angles →</button>
-  </div>
-  <div id="generated"></div>
-</div></section></div>
-
+<div class="gen-controls">
+<div><label class="eyebrow">Channel</label><div class="seg" data-seg="channel"><button class="active">Telegram</button><button>Email</button><button>Push</button></div></div>
+<div><label class="eyebrow">Language</label><div class="seg" data-seg="language"><button class="active">EN</button><button>DE</button><button>IT</button><button>ES</button></div></div>
+<div><label class="eyebrow">Tone</label><div class="seg" data-seg="tone"><button class="active">Sports</button><button>Hype</button><button>Informative</button></div></div>
+<div><label class="eyebrow">Content type</label><div class="seg" data-seg="contentType"><button class="active">Match Post</button><button>Value Bet</button><button>Acca</button></div></div>
+<button id="generateSelected" class="btn primary">Generate 3 angles →</button>
+</div><div id="generated"></div></div></section></div>
 <script>
 const state={events:[],range:"30",selected:null,lastSuccess:null};
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
