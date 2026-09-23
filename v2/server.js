@@ -639,13 +639,13 @@ function toBigEvent(match) {
   const post = toPost(match);
   const category = match?.tournament?.category || {};
   const competitors=competitorEntries(match);
-  const teamNames=competitors.map(c=>c?.name).filter(Boolean);
+  const h2hCompetitors=post.isHeadToHead ? [competitorBySide(match,"home"),competitorBySide(match,"away")].filter(Boolean) : [];
   return {
     ...post,
     country: category?.country_code || category?.name || "",
     tournamentId: match?.tournament?.id || null,
-    teamNames,
-    teamLogos: competitors
+    teamNames: h2hCompetitors.map(c=>c?.name).filter(Boolean),
+    teamLogos: h2hCompetitors
       .filter(c=>c?.name)
       .map(c=>({name:c.name,url:extractOfficialLogo(c)})),
     competitionLogo: extractOfficialLogo(match?.tournament),
@@ -654,12 +654,16 @@ function toBigEvent(match) {
 }
 
 function toPost(match) {
-  const home = competitorBySide(match,"home")?.name || "";
-  const away = competitorBySide(match,"away")?.name || "";
+  const type=String(match?.type || "match");
+  const homeEntity=competitorBySide(match,"home");
+  const awayEntity=competitorBySide(match,"away");
   const competitors=competitorEntries(match).map(c=>c?.name).filter(Boolean);
-  const title = home && away
+  const isHeadToHead=type==="match" && Boolean(homeEntity?.name && awayEntity?.name);
+  const home=homeEntity?.name || "";
+  const away=awayEntity?.name || "";
+  const title=isHeadToHead
     ? home+" vs "+away
-    : (match?.name || competitors.slice(0,3).join(" · ") || match?.tournament?.name || "Sports event");
+    : (match?.name || match?.tournament?.name || competitors.slice(0,3).join(" · ") || "Sports event");
   const competition = match?.tournament?.name || "Sport";
   const time = match?.start_time
     ? new Intl.DateTimeFormat("en-GB", {
@@ -675,18 +679,19 @@ function toPost(match) {
   const odds = (match?.main_market?.outcomes || [])
     .filter(o => o?.active !== false && typeof o?.odds === "number")
     .slice(0, 3)
-    .map(o => ({ label: o.name, value: decimalOdd(o.odds) }));
+    .map(o => ({ label: o.name || o.label || "Selection", value: decimalOdd(o.odds) }));
 
   const secondary = (match?.secondary_market?.outcomes || [])
     .find(o => o?.active !== false && typeof o?.odds === "number");
 
-  if (secondary) {
-    odds.push({ label: secondary.name, value: decimalOdd(secondary.odds) });
+  if (secondary && odds.length < 3) {
+    odds.push({ label: secondary.name || secondary.label || "Selection", value: decimalOdd(secondary.odds) });
   }
 
   return {
     id: String(match.id),
     title,
+    isHeadToHead,
     competition,
     sport: match?.tournament?.sport?.name || match?.sport?.name || "Sport",
     sportKey: match?.tournament?.sport?.key || match?.sport?.key || "",
