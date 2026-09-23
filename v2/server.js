@@ -638,27 +638,29 @@ function extractOfficialLogo(entity) {
 function toBigEvent(match) {
   const post = toPost(match);
   const category = match?.tournament?.category || {};
-  const home=competitorBySide(match,"home");
-  const away=competitorBySide(match,"away");
-  const teamNames=[home?.name,away?.name].filter(Boolean);
+  const competitors=competitorEntries(match);
+  const teamNames=competitors.map(c=>c?.name).filter(Boolean);
   return {
     ...post,
     country: category?.country_code || category?.name || "",
     tournamentId: match?.tournament?.id || null,
     teamNames,
-    teamLogos: [
-      home?.name ? {name:home.name,url:extractOfficialLogo(home)} : null,
-      away?.name ? {name:away.name,url:extractOfficialLogo(away)} : null
-    ].filter(Boolean),
+    teamLogos: competitors
+      .filter(c=>c?.name)
+      .map(c=>({name:c.name,url:extractOfficialLogo(c)})),
     competitionLogo: extractOfficialLogo(match?.tournament),
     logoSource:"sportsbook-v3"
   };
 }
 
 function toPost(match) {
-  const home = competitorBySide(match,"home")?.name || "Home";
-  const away = competitorBySide(match,"away")?.name || "Away";
-  const competition = match?.tournament?.name || "Football";
+  const home = competitorBySide(match,"home")?.name || "";
+  const away = competitorBySide(match,"away")?.name || "";
+  const competitors=competitorEntries(match).map(c=>c?.name).filter(Boolean);
+  const title = home && away
+    ? home+" vs "+away
+    : (match?.name || competitors.slice(0,3).join(" · ") || match?.tournament?.name || "Sports event");
+  const competition = match?.tournament?.name || "Sport";
   const time = match?.start_time
     ? new Intl.DateTimeFormat("en-GB", {
         timeZone: "Europe/Malta",
@@ -684,7 +686,7 @@ function toPost(match) {
 
   return {
     id: String(match.id),
-    title: home + " vs " + away,
+    title,
     competition,
     sport: match?.tournament?.sport?.name || match?.sport?.name || "Sport",
     sportKey: match?.tournament?.sport?.key || match?.sport?.key || "",
@@ -1087,68 +1089,104 @@ async function getReportMatches(days) {
   });
 }
 
-async function getAvailableSports(start,end){
-  const key="available-sports|"+String(start).slice(0,10)+"|"+String(end).slice(0,10);
+async function getAvailableTournaments(start,end){
+  const key="available-tournaments-v3|"+String(start).slice(0,10)+"|"+String(end).slice(0,10);
   const hit=cached(key);
   if(hit) return hit;
-  const url=new URL(UPSTREAM+"/sports");
+
+  const rows=[];
+  for(let page=1;page<=6;page++){
+    const url=new URL(UPSTREAM+"/tournaments");
+    url.searchParams.set("bettable","true");
+    url.searchParams.set("match_status","0");
+    url.searchParams.set("start_from",start);
+    url.searchParams.set("start_to",end);
+    url.searchParams.set("limit","100");
+    url.searchParams.set("page",String(page));
+    const body=await fetchJson(url);
+    const data=Array.isArray(body?.data) ? body.data : Array.isArray(body) ? body : [];
+    rows.push(...data);
+
+    const totalPages=Number(body?.pagination?.total_pages || body?.pagination?.pages || 0);
+    if((totalPages && page>=totalPages) || data.length<100) break;
+  }
+
+  const deduped=[...new Map(rows.filter(t=>t?.id).map(t=>[String(t.id),t])).values()];
+  setCached(key,deduped);
+  return deduped;
+}
+
+function chunkArray(items,size){
+  const out=[];
+  for(let i=0;i<items.length;i+=size) out.push(items.slice(i,i+size));
+  return out;
+}
+
+async function getMatchesForTournamentIds(ids,start,end){
+  const url=new URL(UPSTREAM_V3+"/matches");
+  url.searchParams.set("bettable","true");
   url.searchParams.set("start_from",start);
   url.searchParams.set("start_to",end);
-  url.searchParams.set("match_status","0");
-  const body=await fetchJson(url);
-  const rows=Array.isArray(body?.data) ? body.data : Array.isArray(body) ? body : [];
-  const sports=rows.map(x=>({
-    id:x?.id,
-    name:x?.name || "",
-    key:x?.key || "",
-    raw:x
-  })).filter(x=>x.key);
-  setCached(key,sports);
-  return sports;
+  url.searchParams.set("limit","100");
+  for(const id of ids) url.searchParams.append("tournament_id",String(id));
+
+  const rows=[];
+  for(let page=1;page<=3;page++){
+    url.searchParams.set("page",String(page));
+    const body=await fetchJson(url);
+    const data=Array.isArray(body?.data) ? body.data : [];
+    rows.push(...data);
+    const totalPages=Number(body?.pagination?.total_pages || body?.pagination?.pages || 0);
+    if((totalPages && page>=totalPages) || data.length<100) break;
+  }
+  return rows;
 }
 
 async function getEditorialEvents(days=30){
   const start=new Date();
   const endLimit=new Date(start.getTime()+days*24*60*60*1000);
-  const sports=await getAvailableSports(start.toISOString(),endLimit.toISOString());
+  const startIso=start.toISOString();
+  const endIso=endLimit.toISOString();
 
-  const chunks=[];
-  for(const sport of sports){
-    let cursor=new Date(start);
-    while(cursor<endLimit){
-      const chunkEnd=new Date(Math.min(cursor.getTime()+5*24*60*60*1000,endLimit.getTime()));
-      try{
-        const batch=await getMatches({
-          start:cursor.toISOString(),
-          end:chunkEnd.toISOString(),
-          tournamentKey:"all",
-          excludeGermany:false,
-          sportKey:sport.key
-        });
-        for(const match of batch){
-          const def=editorialCompetitionFor(match);
-          if(def) chunks.push({match,def});
-        }
-      }catch{}
-      cursor=new Date(chunkEnd.getTime()+1000);
-    }
+  const tournaments=await getAvailableTournaments(startIso,endIso);
+  const selected=[];
+  const defByTournament=new Map();
+
+  for(const tournament of tournaments){
+    const def=editorialCompetitionFor({tournament,sport:tournament?.sport});
+    if(!def) continue;
+    const id=String(tournament?.id||"");
+    if(!id || defByTournament.has(id)) continue;
+    defByTournament.set(id,def);
+    selected.push(tournament);
   }
+
+  if(!selected.length) return [];
+
+  const batches=chunkArray(selected.map(t=>String(t.id)),18);
+  const settled=await Promise.allSettled(
+    batches.map(ids=>getMatchesForTournamentIds(ids,startIso,endIso))
+  );
+  const matches=settled.flatMap(x=>x.status==="fulfilled" ? x.value : []);
 
   const deduped=new Map();
-  for(const item of chunks){
-    const id=String(item.match?.id||"");
-    if(!id) continue;
-    const event=toBigEvent(item.match);
-    event.competitionKey=item.def.key;
-    event.competition=item.def.label;
-    event.competitionPriority=item.def.priority;
-    event.sportGroup=item.def.sport;
-    event.sportKey=String(item.match?.tournament?.sport?.key || item.match?.sport?.key || event.sportKey || "");
-    deduped.set(id,event);
+  for(const match of matches){
+    if(!match?.id || isWomensEvent(match)) continue;
+    const tournamentId=String(match?.tournament?.id||"");
+    const def=defByTournament.get(tournamentId) || editorialCompetitionFor(match);
+    if(!def) continue;
+
+    const event=toBigEvent(match);
+    event.competitionKey=def.key;
+    event.competition=def.label;
+    event.competitionPriority=def.priority;
+    event.sportGroup=def.sport;
+    event.sportKey=String(match?.tournament?.sport?.key || match?.sport?.key || event.sportKey || "");
+    deduped.set(String(match.id),event);
   }
 
+  const sportOrder=["Football","Ice Hockey","Basketball","American Football","Australian Rules","Rugby League","Rugby Union","Cricket","Motorsport","Tennis"];
   return [...deduped.values()].sort((a,b)=>{
-    const sportOrder=["Football","Ice Hockey","Basketball","American Football","Australian Rules","Rugby League","Rugby Union","Cricket","Motorsport","Tennis"];
     const sa=sportOrder.indexOf(a.sportGroup), sb=sportOrder.indexOf(b.sportGroup);
     if(sa!==sb) return (sa<0?999:sa)-(sb<0?999:sb);
     if(a.competitionPriority!==b.competitionPriority) return a.competitionPriority-b.competitionPriority;
