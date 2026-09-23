@@ -382,6 +382,17 @@ body{background:#f4f7fb!important;color:#15233a!important}
   background-repeat:no-repeat!important;
 }
 
+
+/* Competition card artwork alignment fix */
+.home-next-cards .next-competition-card{height:184px!important}
+.home-next-cards .next-competition-art{height:126px!important;border-radius:8px 8px 0 0!important;overflow:hidden!important}
+.competition-sprite-art{
+  background-image:url('/assets/competition-cards-user.webp')!important;
+  background-size:400% 300%!important;
+  background-repeat:no-repeat!important;
+  background-color:#07162a!important;
+}
+
 </style>
 </head>
 <body>
@@ -627,10 +638,11 @@ function daysUntil(value){
  return Math.max(0,Math.ceil((t-today)/86400000));
 }
 const COMPETITION_CARD_SPRITE={
- ucl:[0,0],bundesliga:[1,0],premier:[2,0],laliga:[3,0],
+ champions:[0,0],bundesliga:[1,0],premier:[2,0],laliga:[3,0],
  seriea:[0,1],ligue1:[1,1],europa:[2,1],conference:[3,1],
  facup:[0,2],coppa_italia:[1,2],dfbpokal:[2,2],carabao:[3,2]
 };
+const HOME_COMPETITION_ORDER=["champions","bundesliga","premier","laliga","seriea","ligue1","europa","conference","facup","coppa_italia","dfbpokal","carabao"];
 function competitionCardAsset(key){
  const safe=String(key||"").toLowerCase().replace(/[^a-z0-9_]/g,"");
  if(COMPETITION_CARD_SPRITE[safe]) return {type:"sprite",key:safe,pos:COMPETITION_CARD_SPRITE[safe]};
@@ -645,10 +657,13 @@ function renderNextCompetitions(){
    const key=e.competitionKey||e.competition;
    if(!by.has(key)||t<new Date(by.get(key).startTime).getTime())by.set(key,e);
  }
- const rows=[...by.values()].sort((a,b)=>
-   Number(a.competitionPriority||999)-Number(b.competitionPriority||999) ||
-   new Date(a.startTime)-new Date(b.startTime)
- );
+ const rows=[...by.values()]
+   .filter(e=>HOME_COMPETITION_ORDER.includes(String(e.competitionKey||"")))
+   .sort((a,b)=>
+     HOME_COMPETITION_ORDER.indexOf(String(a.competitionKey||""))-
+     HOME_COMPETITION_ORDER.indexOf(String(b.competitionKey||"")) ||
+     new Date(a.startTime)-new Date(b.startTime)
+   );
  root.innerHTML=rows.length?rows.map(e=>{
    const days=daysUntil(e.startTime);
    const art=competitionCardAsset(e.competitionKey||"");
