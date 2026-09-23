@@ -303,6 +303,35 @@ async function fetchJson(url) {
   }
 }
 
+async function fetchJsonWithTimeout(url, timeoutMs=5000) {
+  const controller=new AbortController();
+  const timer=setTimeout(()=>controller.abort(),timeoutMs);
+  try{
+    const response=await fetch(url,{
+      headers:{
+        Accept:"application/json, text/plain, */*",
+        "Accept-Language":"en",
+        "User-Agent":"Mozilla/5.0 Chrome/126 Safari/537.36",
+        Referer:"https://www.betandplay.com/",
+        Origin:"https://www.betandplay.com"
+      },
+      signal:controller.signal
+    });
+    const text=await response.text();
+    let body=text;
+    try{body=JSON.parse(text)}catch{}
+    if(!response.ok){
+      const error=new Error("upstream_"+response.status);
+      error.status=response.status;
+      error.body=body;
+      throw error;
+    }
+    return body;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 async function getMatches({ start, end, tournamentKey = "all", excludeGermany = true, sportKey = "soccer" }) {
   const key = JSON.stringify({ start, end, tournamentKey, excludeGermany, sportKey });
   const hit = cached(key);
@@ -1260,7 +1289,7 @@ app.get("/api/promotions", async (_req,res) => {
 
   const settled=await Promise.all(sources.map(async source=>{
     try{
-      const body=await fetchJson(source.url);
+      const body=await fetchJsonWithTimeout(source.url,5000);
       const rows=Array.isArray(body?.data) ? body.data : Array.isArray(body) ? body : Array.isArray(body?.bonuses) ? body.bonuses : [];
       return {type:source.type,ok:true,items:rows.map(item=>normalizePromotionItem(source.type,item)),meta:body?.snapshot?{snapshot:body.snapshot,isChanged:body?.is_changed}:undefined};
     }catch(error){
@@ -1309,8 +1338,15 @@ app.post("/api/generate-variants", async (req,res) => {
 
   try {
     const events=await getBigEvents(30);
-    const event=findBigEventById(events,matchId);
-    if(!event) return res.status(404).json({ok:false,error:"match_not_found"});
+    let event=findBigEventById(events,matchId);
+    if(!event){
+      try{
+        const match=await fetchJson(UPSTREAM_V3+"/matches/"+encodeURIComponent(matchId));
+        event=toBigEvent(match?.data || match);
+      }catch(error){
+        return res.status(error?.status===404?404:502).json({ok:false,error:"match_not_found"});
+      }
+    }
 
     try {
       const markets=await fetchMatchMarkets(matchId);
@@ -1396,7 +1432,7 @@ app.get("/api/search-matches", async (req, res) => {
 
   try {
     const url=new URL(UPSTREAM_V3+"/search");
-    url.searchParams.set("query",String(req.query.q||""));
+    url.searchParams.set("q",String(req.query.q||""));
     const body=await fetchJson(url);
     const raw=Array.isArray(body) ? body : Array.isArray(body?.data) ? body.data : [];
     const matches = stripWomensEvents(raw)
