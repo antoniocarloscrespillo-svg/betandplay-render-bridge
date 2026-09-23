@@ -23,15 +23,11 @@ button{cursor:pointer}
 .brandmark{width:32px;height:32px;border-radius:9px;background:linear-gradient(145deg,#2e9cff,#1665cf);display:grid;place-items:center;color:#fff;font-weight:1000}
 .brand small{color:#9fb7d0;font-weight:700}
 .nav{display:flex;gap:6px}
-.navbtn{border:0;background:transparent;color:#9eb6cf;padding:9px 14px;border-radius:9px;font-weight:800}
+.navbtn{border:0;background:transparent;color:#9eb6cf;padding:9px 14px;border-radius:9px;font-weight:650}
 .navbtn:hover,.navbtn.active{background:rgba(255,255,255,.09);color:#fff}
 .navbtn.active{box-shadow:inset 0 -2px #4aa8ff}
 .view{display:none}.view.active{display:block}
-.workspace-head{margin:22px 0 14px;padding:18px 20px;border-radius:16px;background:linear-gradient(120deg,#0d2a4d,#164f84);color:#fff;display:flex;align-items:center;justify-content:space-between;gap:18px;box-shadow:var(--shadow)}
-.workspace-head h1{margin:2px 0 4px;font-size:28px;letter-spacing:-.7px}.workspace-head p{margin:0;color:#c1d4e6;font-size:13px}.eyebrow{font-size:10px;letter-spacing:1.25px;font-weight:950;text-transform:uppercase;color:#64b4ff}
-.hero-sports{display:flex;gap:8px;flex-wrap:wrap}
-.hero-sport{height:36px;padding:0 14px;border-radius:999px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06);color:#dcecff;font-size:12px;font-weight:850}
-.hero-sport.active{background:#fff;color:#145f9d;border-color:#fff}
+.workspace-titlebar{margin:22px 0 12px;display:flex;align-items:flex-end;justify-content:space-between;gap:18px}.workspace-titlebar h1{margin:0;font-size:25px;line-height:1.1;letter-spacing:-.45px;font-weight:780;color:#163551}.workspace-titlebar p{margin:5px 0 0;color:#7a8da0;font-size:12px}.eyebrow{font-size:10px;letter-spacing:1.1px;font-weight:800;text-transform:uppercase;color:#4e9ce9}.sport-quick-filters{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.sport-quick{height:32px;padding:0 11px;border-radius:8px;border:1px solid #d8e3ed;background:#fff;color:#50677e;font-size:11px;font-weight:600}.sport-quick:hover{border-color:#a8c7e5;background:#f7fbff}.sport-quick.active{border-color:#8cbee9;background:#eaf4ff;color:#145f9f}
 .toolbar{display:grid;grid-template-columns:minmax(250px,1.45fr) 150px minmax(150px,.8fr) 210px 145px auto;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px;box-shadow:var(--shadow);position:sticky;top:76px;z-index:30}
 .control{height:42px;border:1px solid var(--line2);background:#fff;color:var(--text);border-radius:10px;padding:0 12px;outline:none;min-width:0}
 .control:focus{border-color:#6eaef0;box-shadow:0 0 0 3px rgba(22,119,232,.11)}
@@ -55,12 +51,12 @@ button{cursor:pointer}
 .railhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}.railhead strong{font-size:10px;letter-spacing:.7px;color:#35536f}.railhead span{font-size:9px;color:var(--muted)}
 .railitem{display:flex;align-items:center;gap:7px;padding:3px 0;min-width:0;font-size:11px}.railtime{min-width:38px;color:#0c69c7;font-weight:900}.railname{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#2e455d}
 .comp{background:#fff;border:1px solid #cfdae6;border-radius:15px;overflow:hidden;margin-bottom:18px;box-shadow:0 5px 18px rgba(18,45,76,.06)}
-.comphead{min-height:58px;display:flex;align-items:center;gap:12px;padding:8px 14px;background:linear-gradient(90deg,#eaf4ff,#f8fbfe);border-bottom:1px solid #cbdceb;border-left:4px solid var(--blue)}
+.comphead{min-height:52px;display:flex;align-items:center;gap:10px;padding:7px 12px;background:#f7fafc;border-bottom:1px solid #dce6ef;border-left:3px solid #7bb5ea}
 .comphead button{border:0;background:transparent;color:inherit;padding:0}
 .comp-logo,.team-logo{display:grid;place-items:center;overflow:visible;background:transparent;border:0;color:#58718a;font-weight:950;flex:0 0 auto}
 .comp-logo{width:34px;height:34px;font-size:8px}.team-logo{width:38px;height:38px;font-size:9px}
 .comp-logo img{max-width:28px;max-height:28px;width:auto;height:auto;object-fit:contain}.team-logo img{max-width:32px;max-height:32px;width:auto;height:auto;object-fit:contain}
-.compmeta{flex:1;min-width:0;text-align:left}.compname{font-size:14px;font-weight:950;letter-spacing:.1px;color:#123a60}.compcount{font-size:10px;color:#6e8398;margin-top:3px}.collapse-comp{font-size:11px;color:#6f8297;padding:8px!important}
+.compmeta{flex:1;min-width:0;text-align:left}.compname{font-size:13px;font-weight:700;letter-spacing:0;color:#183b5c}.compcount{font-size:10px;color:#7b8fa2;margin-top:3px;font-weight:500}.collapse-comp{font-size:11px;color:#6f8297;padding:8px!important}
 .compbody.collapsed{display:none}
 .event{display:grid;grid-template-columns:78px minmax(330px,1.35fr) minmax(280px,.9fr) auto;align-items:center;min-height:76px;border-bottom:1px solid #e5edf5;transition:.14s;background:#fff}.event:nth-child(even){background:#fbfdff}
 .event:last-child{border-bottom:0}.event:hover,.event.selected{background:#f6faff}
@@ -77,7 +73,7 @@ button{cursor:pointer}
 .drawer-loading{display:grid;gap:8px}.drawer-loading div{height:56px;border-radius:9px;background:#edf3f8}
 .modalback{position:fixed;inset:0;background:rgba(10,29,48,.38);z-index:70;display:none;align-items:flex-start;justify-content:center;padding:6vh 18px 40px;overflow:auto}.modalback.open{display:flex}
 .modal{width:min(1040px,100%);background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow-lg);overflow:hidden}.modalbody{padding:15px 18px}
-.gen-controls{display:grid;grid-template-columns:220px 220px auto;gap:10px;margin-bottom:14px;align-items:end}.creator-grid{display:grid;grid-template-columns:minmax(280px,1fr) 220px 220px;gap:10px;align-items:end;margin-bottom:12px}.content-selection{border:1px solid var(--line);background:#f8fbfe;border-radius:12px;padding:12px;margin-bottom:12px;max-height:260px;overflow:auto}.selection-title{font-size:11px;font-weight:900;color:#28445f;margin-bottom:8px}.selection-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.selection-item{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #e1e9f1;border-radius:8px;padding:8px 10px;font-size:11px}.selection-item input{accent-color:#1677e8}.creator-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.creator-actions span{font-size:10px;color:var(--muted)}.next-comp-list{display:grid;gap:8px;margin-top:14px}.next-comp{display:grid;grid-template-columns:40px minmax(180px,.7fr) minmax(260px,1fr) 110px auto;align-items:center;gap:12px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 12px}.next-comp .when{font-size:11px;color:#55708a}.next-comp .when b{display:block;color:#123a5f;font-size:13px}.next-comp .fixture{font-size:12px;font-weight:850;color:#243f58}.next-comp .comp-title{font-size:12px;font-weight:950;color:#173955}@media(max-width:800px){.creator-grid{grid-template-columns:1fr}.selection-grid{grid-template-columns:1fr}.next-comp{grid-template-columns:40px 1fr}.next-comp .fixture,.next-comp .when,.next-comp .btn{grid-column:2}}.seg{display:flex;gap:4px;background:#f4f7fa;border:1px solid var(--line);border-radius:9px;padding:4px}.seg button{flex:1;border:0;background:transparent;color:#6d8094;padding:7px;border-radius:6px;font-size:11px;font-weight:850}.seg button.active{background:#e4f1ff;color:#0f61ad}
+.gen-controls{display:grid;grid-template-columns:220px 220px auto;gap:10px;margin-bottom:14px;align-items:end}.creator-grid{display:grid;grid-template-columns:minmax(280px,1fr) 220px 220px;gap:10px;align-items:end;margin-bottom:12px}.content-selection{border:1px solid var(--line);background:#f8fbfe;border-radius:12px;padding:12px;margin-bottom:12px;max-height:260px;overflow:auto}.selection-title{font-size:11px;font-weight:900;color:#28445f;margin-bottom:8px}.selection-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.selection-item{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #e1e9f1;border-radius:8px;padding:8px 10px;font-size:11px}.selection-item input{accent-color:#1677e8}.creator-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.creator-actions span{font-size:10px;color:var(--muted)}.next-competition-page{max-width:1260px}.next-page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;padding:26px 2px 12px}.next-page-head h1{font-size:26px;font-weight:760;letter-spacing:-.4px;margin:0;color:#173955}.next-page-head p{margin:5px 0 0;color:var(--muted);font-size:12px}.next-sort{display:flex;align-items:center;gap:8px}.next-sort label{font-size:10px;color:#71869a;font-weight:700}.next-sort .control{height:36px;min-width:150px}.next-comp-list{display:grid;gap:0;margin-top:8px;background:#fff;border:1px solid var(--line);border-radius:13px;overflow:hidden}.next-sport-group+.next-sport-group{border-top:8px solid var(--bg)}.next-sport-head{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:#f7fafc;border-bottom:1px solid #e4ebf2}.next-sport-head strong{font-size:11px;font-weight:700;color:#34516b}.next-sport-head span{font-size:9px;color:#8798a9}.next-comp{display:grid;grid-template-columns:36px minmax(150px,.65fr) minmax(260px,1fr) 105px auto;align-items:center;gap:11px;background:#fff;border-bottom:1px solid #edf2f6;padding:9px 12px}.next-comp:last-child{border-bottom:0}.next-comp:hover{background:#fbfdff}.next-comp .when{font-size:10px;color:#667c91;text-align:right}.next-comp .when b{display:block;color:#244764;font-size:11px;font-weight:700}.next-comp .fixture{font-size:12px;font-weight:600;color:#2e475e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.next-comp .comp-title{font-size:12px;font-weight:650;color:#173955}.next-comp .btn{min-height:32px;padding:6px 10px;font-size:10px;font-weight:650}@media(max-width:800px){.creator-grid{grid-template-columns:1fr}.selection-grid{grid-template-columns:1fr}.next-page-head{align-items:flex-start;flex-direction:column}.next-comp{grid-template-columns:36px 1fr auto}.next-comp .fixture{grid-column:2/-1}.next-comp .when{grid-column:2;text-align:left}.next-comp .btn{grid-column:3;grid-row:1}}.seg{display:flex;gap:4px;background:#f4f7fa;border:1px solid var(--line);border-radius:9px;padding:4px}.seg button{flex:1;border:0;background:transparent;color:#6d8094;padding:7px;border-radius:6px;font-size:11px;font-weight:850}.seg button.active{background:#e4f1ff;color:#0f61ad}
 .generated{border-top:1px solid var(--line);padding-top:13px}.genbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}.genbar h3{margin:0;font-size:12px;text-transform:uppercase;letter-spacing:.8px}
 .post{border:1px solid var(--line);border-radius:10px;background:#fff;margin-bottom:9px;overflow:hidden}.posthead{display:flex;justify-content:space-between;align-items:center;padding:9px 11px;background:#f9fbfd;border-bottom:1px solid var(--line)}.posthead strong{font-size:12px}.postbody{padding:13px 14px;font-size:12px;line-height:1.58;white-space:pre-wrap;color:#2c435a}.post.collapsed .postbody,.post.collapsed .postfooter{display:none}.postfooter{display:flex;gap:6px;padding:0 12px 11px}.editarea{width:100%;min-height:220px;background:#fff;color:#20384f;border:1px solid var(--line2);border-radius:8px;padding:10px;resize:vertical}
 .studio{max-width:980px;margin:30px auto}.studio-direct{max-width:1380px}.studio-direct-head{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;padding:26px 4px 18px}.studio-direct-head h1{font-size:30px;letter-spacing:-.6px;margin:4px 0 6px}.studio-direct-head p{margin:0;color:var(--muted);font-size:13px}.studio-composer{background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px;box-shadow:var(--shadow)}.studio-creator-grid{grid-template-columns:minmax(340px,1.3fr) 260px 260px}.studio-selection{min-height:150px;max-height:430px}.studio-filter{display:flex;gap:8px;margin-bottom:10px}.studio-filter .control{flex:1}.studio-actions{border-top:1px solid var(--line);padding-top:16px;margin-top:4px}.studio-choice-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.studio-choice{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid #dfe8f1;border-radius:10px;background:#fff;font-size:11px}.studio-choice:hover{border-color:#a8c8e8;background:#f7fbff}.studio-choice strong{display:block;font-size:12px;color:#203b55}.studio-choice span{display:block;color:#7a8ea2;margin-top:2px}.studio-section-label{font-size:10px;color:var(--muted);font-weight:950;letter-spacing:.7px;margin:12px 0 7px}.studio-empty{padding:24px;text-align:center;color:var(--muted);font-size:12px}
@@ -85,9 +81,9 @@ button{cursor:pointer}
 .promo-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}.promo-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.promo-card{background:#fff;border:1px solid var(--line);border-radius:13px;padding:14px;box-shadow:0 3px 14px rgba(18,45,76,.04);min-width:0}.promo-card h3{margin:5px 0 7px;font-size:15px;line-height:1.25}.promo-actions{display:flex;justify-content:flex-end;margin-top:12px}.promo-actions .btn{font-size:11px}.promo-info-drawer{width:min(620px,96vw)}.promo-info-grid{display:grid;grid-template-columns:140px 1fr;gap:8px 12px;font-size:12px}.promo-info-grid dt{color:var(--muted);font-weight:800}.promo-info-grid dd{margin:0;color:var(--text);word-break:break-word}.promo-details{margin-top:16px;border-top:1px solid var(--line);padding-top:14px}.promo-details h3{font-size:12px;margin:0 0 10px}.promo-detail-row{padding:8px 0;border-bottom:1px solid #edf2f7;font-size:11px}.promo-detail-row b{display:block;color:#35536f;margin-bottom:3px}.promo-detail-row span{color:#61758a;white-space:pre-wrap;word-break:break-word}.promo-business{display:grid;gap:14px}.promo-business-section{border:1px solid var(--line);border-radius:11px;background:#fbfdff;padding:12px}.promo-business-section h3{font-size:11px;margin:0 0 9px;color:#173955;text-transform:uppercase;letter-spacing:.65px}.promo-kv{display:grid;grid-template-columns:180px 1fr;gap:7px 12px;font-size:11px}.promo-kv b{color:#60778e}.promo-kv span{color:#203c57}.boost-table{width:100%;border-collapse:collapse;font-size:11px}.boost-table th,.boost-table td{text-align:left;padding:7px 8px;border-bottom:1px solid #e8eef5}.boost-table th{color:#61778e;font-size:9px;text-transform:uppercase;letter-spacing:.5px}.boost-table td:last-child{font-weight:900;color:#1166b6}.localized-names{display:grid;grid-template-columns:70px 1fr;gap:5px 10px;font-size:11px}.localized-names b{color:#6f8396}.promo-linked{display:inline-flex;align-items:center;gap:5px;padding:4px 7px;border-radius:999px;background:#eaf7ef;color:#176d48;font-size:9px;font-weight:900;margin-left:7px}.promo-type{display:inline-flex;padding:4px 7px;border-radius:999px;background:#eaf4ff;color:#0f60ad;font-size:9px;font-weight:950;text-transform:uppercase;letter-spacing:.55px}.promo-meta{display:grid;gap:5px;margin-top:10px;font-size:11px;color:var(--muted)}.promo-meta b{color:#344e67}.promo-source{margin-top:12px;padding-top:10px;border-top:1px solid var(--line);font-size:9px;color:#8b9bab}.promo-empty{grid-column:1/-1}
 @media(max-width:1100px){.toolbar{grid-template-columns:1fr 140px 180px 180px auto}.toolbar #countryFilter{display:none}.event{grid-template-columns:70px 1fr auto}.odds{grid-column:2}.actions{grid-column:3;grid-row:1/3;flex-direction:column}.gen-controls{grid-template-columns:1fr 1fr}.summary-grid{grid-template-columns:1fr repeat(3,.5fr)}}
 @media(max-width:900px){.promo-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:780px){.app{padding:0 12px 38px}.topbar{margin:0 -12px;padding:0 14px}.brand small{display:none}.workspace-head{margin-top:14px;align-items:flex-start;flex-direction:column}.toolbar{top:72px;grid-template-columns:1fr 1fr}.toolbar .search{grid-column:1/-1}.summary-grid{grid-template-columns:1fr 1fr}.today-main{grid-column:1/-1}.editorial-rail{grid-template-columns:1fr}.event{grid-template-columns:60px 1fr}.odds{grid-column:1/-1;border-top:1px solid #e8eef5}.actions{grid-column:1/-1;grid-row:auto;flex-direction:row;justify-content:flex-end;border-top:1px solid #e8eef5}.gen-controls{grid-template-columns:1fr}.modalback{padding:12px}.explore{grid-template-columns:1fr}}
+@media(max-width:780px){.app{padding:0 12px 38px}.topbar{margin:0 -12px;padding:0 14px}.brand small{display:none}.workspace-titlebar{margin-top:14px;align-items:flex-start;flex-direction:column}.sport-quick-filters{justify-content:flex-start}.toolbar{top:72px;grid-template-columns:1fr 1fr}.toolbar .search{grid-column:1/-1}.summary-grid{grid-template-columns:1fr 1fr}.today-main{grid-column:1/-1}.editorial-rail{grid-template-columns:1fr}.event{grid-template-columns:60px 1fr}.odds{grid-column:1/-1;border-top:1px solid #e8eef5}.actions{grid-column:1/-1;grid-row:auto;flex-direction:row;justify-content:flex-end;border-top:1px solid #e8eef5}.gen-controls{grid-template-columns:1fr}.modalback{padding:12px}.explore{grid-template-columns:1fr}}
 @media(max-width:560px){.promo-grid{grid-template-columns:1fr}}
-@media(max-width:480px){.navbtn{padding:8px 9px;font-size:11px}.workspace-head h1{font-size:24px}.toolbar{grid-template-columns:1fr}.toolbar .search{grid-column:auto}.quickbar{overflow:auto;flex-wrap:nowrap}.match{grid-template-columns:1fr 20px 1fr}.team{flex-direction:column;text-align:center;gap:4px}.team.away{flex-direction:column-reverse}.team-logo{width:34px;height:34px}.team-logo img{max-width:28px;max-height:28px}.actions .btn{flex:1}.marketgrid{grid-template-columns:1fr}}
+@media(max-width:480px){.navbtn{padding:8px 9px;font-size:11px}.workspace-titlebar h1{font-size:23px}.toolbar{grid-template-columns:1fr}.toolbar .search{grid-column:auto}.quickbar{overflow:auto;flex-wrap:nowrap}.match{grid-template-columns:1fr 20px 1fr}.team{flex-direction:column;text-align:center;gap:4px}.team.away{flex-direction:column-reverse}.team-logo{width:34px;height:34px}.team-logo img{max-width:28px;max-height:28px}.actions .btn{flex:1}.marketgrid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -98,9 +94,9 @@ button{cursor:pointer}
 </header>
 <main>
 <section id="biggames" class="view active">
-  <div class="workspace-head">
-    <div><div class="eyebrow">Sports editorial workstation</div><h1>Big Games</h1><p>Find the important fixtures, check prices, create content fast.</p></div>
-    <div class="hero-sports" aria-label="Sports"><button class="hero-sport active" data-hero-sport="Football">⚽ Football</button><button class="hero-sport" data-hero-sport="Tennis">🎾 Tennis</button><button class="hero-sport" data-hero-sport="Basketball">🏀 Basketball</button></div>
+  <div class="workspace-titlebar">
+    <div><h1>Big Games</h1><p>Upcoming events by competition</p></div>
+    <div id="sportQuickFilters" class="sport-quick-filters" aria-label="Sports"></div>
   </div>
   <div class="toolbar" role="search">
     <input id="search" class="control search" aria-label="Search team player or competition" placeholder="Search team, player or competition…">
@@ -116,7 +112,7 @@ button{cursor:pointer}
   <div id="events"><div class="comp"><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div></div></div>
   <div class="updated" id="lastUpdated" style="margin:8px 2px;color:var(--muted);font-size:10px">Live odds</div>
 </section>
-<section id="nextcomps" class="view"><div class="studio"><div class="studiohero"><div class="eyebrow">Competition calendar</div><h1>Next match by competition</h1><p>Competitions ordered by the closest upcoming event.</p></div><div id="nextCompetitionList" class="next-comp-list"></div></div></section><section id="studio" class="view">
+<section id="nextcomps" class="view"><div class="studio next-competition-page"><div class="next-page-head"><div><h1>Next Games</h1><p>Next event from every competition</p></div><div class="next-sort"><label for="nextSort">Order by</label><select id="nextSort" class="control"><option value="date">Date</option><option value="sport">Sport priority</option></select></div></div><div id="nextCompetitionList" class="next-comp-list"></div></div></section><section id="studio" class="view">
   <div class="studio studio-direct">
     <div class="studio-direct-head">
       <div><div class="eyebrow">Create content</div><h1>Content Studio</h1><p>Choose the format, select the event or competition, and generate Telegram-ready content.</p></div>
@@ -180,16 +176,8 @@ function logo(url,name,cls){return '<span class="'+cls+'">'+(url?'<img src="'+es
 function teamLogo(e,name){const x=(e.teamLogos||[]).find(a=>a.name===name);return logo(x?.url,name,"team-logo")}
 function competitionLogo(e){return logo(e.competitionLogo,e.competition,"comp-logo")}
 function setView(id){$$(".navbtn").forEach(x=>x.classList.toggle("active",x.dataset.view===id));$$(".view").forEach(x=>x.classList.toggle("active",x.id===id));if((id==="biggames"||id==="nextcomps"||id==="studio")&&!state.events.length)loadEvents();if(id==="nextcomps")renderNextCompetitions();if(id==="studio")renderStudioComposer();if(id==="promotions")loadPromotions()}
-$$(".navbtn").forEach(b=>b.onclick=()=>setView(b.dataset.view));
-const heroSportBound=true;
-$$("[data-hero-sport]").forEach(b=>b.onclick=()=>{
-  const sport=b.dataset.heroSport;
-  const exists=[...$("#sportFilter").options].some(o=>o.value===sport);
-  if(!exists)return;
-  $("#sportFilter").value=sport;
-  $$("[data-hero-sport]").forEach(x=>x.classList.toggle("active",x===b));
-  render();
-});
+$(".navbtn").forEach(b=>b.onclick=()=>setView(b.dataset.view));
+$("#nextSort").onchange=renderNextCompetitions;
 
 function rangeOk(e){
  const k=localDate(e.startTime), now=Date.now(), t=new Date(e.startTime).getTime();
@@ -212,6 +200,16 @@ function filtered(){
    (!q||[e.title,e.competition,e.country,e.sportGroup,...(e.teamNames||[])].join(" ").toLowerCase().includes(q))
  ).sort((a,b)=>new Date(a.startTime)-new Date(b.startTime));
 }
+function sportIcon(name){
+ const map={"Football":"⚽","Tennis":"🎾","Basketball":"🏀","Ice Hockey":"🏒","American Football":"🏈","Australian Rules":"🏉","Rugby League":"🏉","Rugby Union":"🏉","Cricket":"🏏","Motorsport":"🏎️"};
+ return map[name]||"•";
+}
+function renderSportQuickFilters(sports){
+ const root=$("#sportQuickFilters");if(!root)return;
+ const current=$("#sportFilter")?.value||"all";
+ root.innerHTML='<button class="sport-quick '+(current==="all"?"active":"")+'" data-sport-quick="all">All</button>'+sports.map(s=>'<button class="sport-quick '+(current===s?"active":"")+'" data-sport-quick="'+esc(s)+'">'+sportIcon(s)+' '+esc(s)+'</button>').join("");
+ $("[data-sport-quick]").forEach(b=>b.onclick=()=>{const value=b.dataset.sportQuick;if([...$("#sportFilter").options].some(o=>o.value===value))$("#sportFilter").value=value;render();renderSportQuickFilters(sports)});
+}
 function fillFilters(){
  const sportOrder=["Football","Ice Hockey","Basketball","American Football","Australian Rules","Rugby League","Rugby Union","Cricket","Motorsport","Tennis"];
  const sports=[...new Set(state.events.map(e=>e.sportGroup).filter(Boolean))].sort((a,b)=>{
@@ -220,6 +218,7 @@ function fillFilters(){
  const currentSport=$("#sportFilter").value||"all";
  $("#sportFilter").innerHTML='<option value="all">All sports</option>'+sports.map(x=>'<option value="'+esc(x)+'">'+esc(x)+'</option>').join("");
  $("#sportFilter").value=sports.includes(currentSport)?currentSport:"all";
+ renderSportQuickFilters(sports);
 
  const groups=new Map();
  for(const e of state.events){
@@ -271,7 +270,31 @@ function editorialRail(list){
  const block=(title,items)=>'<div class="rail"><div class="railhead"><strong>'+title+'</strong><span>'+items.length+'</span></div>'+(items.length?items.map(e=>'<div class="railitem"><span class="railtime">'+esc(timeLabel(e.startTime))+'</span><span class="railname">'+esc(e.title)+'</span></div>').join(""):'<div class="railitem"><span class="railname" style="color:var(--muted)">No events</span></div>')+'</div>';
  $("#editorialRail").innerHTML=block("NOW",nowItems)+block("NEXT",nextItems)+block("TONIGHT",tonightItems);
 }
-function renderNextCompetitions(){const root=$("#nextCompetitionList");if(!root)return;const now=Date.now(),by=new Map();for(const e of state.events){const t=new Date(e.startTime).getTime();if(!Number.isFinite(t)||t<now)continue;const key=e.competitionKey||e.competition;if(!by.has(key)||t<new Date(by.get(key).startTime).getTime())by.set(key,e)}const rows=[...by.values()].sort((a,b)=>new Date(a.startTime)-new Date(b.startTime));root.innerHTML=rows.length?rows.map(e=>'<article class="next-comp">'+competitionLogo(e)+'<div class="comp-title">'+esc(e.competition)+'</div><div class="fixture">'+esc(e.title)+'</div><div class="when"><b>'+esc(compactDateLabel(e.startTime))+'</b>'+esc(timeLabel(e.startTime))+' CEST</div><button class="btn nextCompOpen" data-comp="'+esc(e.competitionKey||"")+'">View</button></article>').join(""):'<div class="empty"><strong>No upcoming competitions</strong></div>';$$(".nextCompOpen").forEach(b=>b.onclick=()=>{setView("biggames");$("#competitionFilter").value=b.dataset.comp;state.range="30";render()})}
+function renderNextCompetitions(){
+ const root=$("#nextCompetitionList");if(!root)return;
+ const now=Date.now(),by=new Map();
+ const sportOrder=["Football","Basketball","Ice Hockey","American Football","Tennis","Cricket","Rugby Union","Rugby League","Australian Rules","Motorsport"];
+ for(const e of state.events){
+   const t=new Date(e.startTime).getTime();if(!Number.isFinite(t)||t<now)continue;
+   const key=e.competitionKey||e.competition;
+   if(!by.has(key)||t<new Date(by.get(key).startTime).getTime())by.set(key,e);
+ }
+ let rows=[...by.values()];
+ const mode=$("#nextSort")?.value||"date";
+ if(mode==="sport"){
+   rows.sort((a,b)=>{
+     const ai=sportOrder.indexOf(a.sportGroup),bi=sportOrder.indexOf(b.sportGroup);
+     const ap=ai<0?999:ai,bp=bi<0?999:bi;
+     return ap-bp || Number(a.competitionPriority||999)-Number(b.competitionPriority||999) || new Date(a.startTime)-new Date(b.startTime);
+   });
+ }else{
+   rows.sort((a,b)=>new Date(a.startTime)-new Date(b.startTime)||Number(a.competitionPriority||999)-Number(b.competitionPriority||999));
+ }
+ const groups=new Map();
+ for(const e of rows){const sport=e.sportGroup||"Other";if(!groups.has(sport))groups.set(sport,[]);groups.get(sport).push(e)}
+ root.innerHTML=rows.length?[...groups.entries()].map(([sport,items])=>'<section class="next-sport-group"><header class="next-sport-head"><strong>'+sportIcon(sport)+' '+esc(sport)+'</strong><span>'+items.length+' competition'+(items.length===1?"":"s")+'</span></header>'+items.map(e=>'<article class="next-comp">'+competitionLogo(e)+'<div class="comp-title">'+esc(e.competition)+'</div><div class="fixture">'+esc(e.title)+'</div><div class="when"><b>'+esc(compactDateLabel(e.startTime))+'</b>'+esc(timeLabel(e.startTime))+' CEST</div><button class="btn nextCompOpen" data-comp="'+esc(e.competitionKey||"")+'">View</button></article>').join("")+'</section>').join(""):'<div class="empty"><strong>No upcoming competitions</strong></div>';
+ $$(".nextCompOpen").forEach(b=>b.onclick=()=>{setView("biggames");$("#competitionFilter").value=b.dataset.comp;state.range="30";render()});
+}
 function eventRow(e){
  const teams=(e.teamNames||[]).slice(0,2),h=teams[0],a=teams[1],od=(e.odds||[]).slice(0,3);
  const soon=new Date(e.startTime)-Date.now()>0&&new Date(e.startTime)-Date.now()<90*60000;
@@ -304,9 +327,9 @@ async function loadEvents(){
  try{const r=await apiFetch("/api/big-events",{cache:"no-store"},20000),d=await r.json();if(!r.ok)throw new Error(d.error||"api_error");state.events=d.events||[];state.lastSuccess=new Date();localStorage.setItem("bnp_big_events_cache",JSON.stringify({at:state.lastSuccess.toISOString(),events:state.events}));$("#lastUpdated").textContent=(d.cached?"Cached · ":"")+"Updated "+new Intl.DateTimeFormat("en-GB",{timeZone:"Europe/Malta",hour:"2-digit",minute:"2-digit"}).format(state.lastSuccess)+" CEST";fillFilters();render()}
  catch(e){let stale=null;try{stale=JSON.parse(localStorage.getItem("bnp_big_events_cache")||"null")}catch{}if(stale?.events?.length){state.events=stale.events;state.lastSuccess=new Date(stale.at);fillFilters();render();$("#lastUpdated").textContent="Stale data · "+new Intl.DateTimeFormat("en-GB",{timeZone:"Europe/Malta",hour:"2-digit",minute:"2-digit"}).format(state.lastSuccess)+" CEST";$("#events").insertAdjacentHTML("afterbegin",'<div class="error" style="padding:10px 12px;margin-bottom:8px"><strong style="display:inline;margin-right:6px">Live odds unavailable.</strong> Showing cached data. <button class="btn" id="retry" style="margin-left:8px">Retry</button></div>');$("#retry").onclick=loadEvents}else{$("#events").innerHTML='<div class="error"><strong>Live odds are temporarily unavailable</strong>Could not reach the sportsbook API.<br><button class="btn primary" id="retry" style="margin-top:12px">Retry</button></div>';$("#retry").onclick=loadEvents}}
 }
-function reset(){$("#search").value="";$("#competitionSearch").value="";$("#sportFilter").value="all";$("#competitionFilter").value="all";$("#countryFilter").value="all";state.range="30";$$("[data-range]").forEach(x=>x.classList.toggle("active",x.dataset.range==="30"));$$("[data-hero-sport]").forEach(x=>x.classList.remove("active"));render()}
+function reset(){$("#search").value="";$("#competitionSearch").value="";$("#sportFilter").value="all";$("#competitionFilter").value="all";$("#countryFilter").value="all";state.range="30";$$("[data-range]").forEach(x=>x.classList.toggle("active",x.dataset.range==="30"));render();const sports=[...new Set(state.events.map(e=>e.sportGroup).filter(Boolean))];renderSportQuickFilters(sports)}
 $("#resetFilters").onclick=reset;["search","competitionSearch","sportFilter","competitionFilter","countryFilter"].forEach(id=>$("#"+id).addEventListener((id==="search"||id==="competitionSearch")?"input":"change",()=>{
-  if(id==="sportFilter")$$("[data-hero-sport]").forEach(x=>x.classList.toggle("active",x.dataset.heroSport===$("#sportFilter").value));
+  if(id==="sportFilter"){const sports=[...new Set(state.events.map(e=>e.sportGroup).filter(Boolean))];renderSportQuickFilters(sports)}
   render();
 }));$$("[data-range]").forEach(b=>b.onclick=()=>{state.range=b.dataset.range;$$("[data-range]").forEach(x=>x.classList.toggle("active",x===b));render()});
 
