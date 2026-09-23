@@ -2644,8 +2644,11 @@ async function runStartupDiagnostics(){
       }:null
     };
 
-    if(events.length>=3){
-      const comboEvents=events.slice(0,6).map(e=>({...e}));
+    const footballEvents=events.filter(e=>e.sportGroup==="Football");
+    summary.footballEvents=footballEvents.length;
+    summary.homeCompetitionKeys=[...new Set(footballEvents.map(e=>e.competitionKey))].slice(0,20);
+    if(footballEvents.length>=3){
+      const comboEvents=footballEvents.slice(0,8).map(e=>({...e}));
       await Promise.all(comboEvents.map(async e=>{
         try{
           const markets=await fetchMatchMarkets(e.id);
