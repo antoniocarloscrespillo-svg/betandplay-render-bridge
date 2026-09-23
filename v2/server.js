@@ -1838,26 +1838,57 @@ function competitionCardSvg(key){
   const def=EDITORIAL_COMPETITIONS.find(x=>x.key===key);
   const label=def?.label||String(key||"Competition").replace(/_/g," ");
   const sport=def?.sport||"Sport";
-  const palettes={
-    Football:["#0B3155","#167FD9"],Tennis:["#174A35","#42A86C"],Basketball:["#713014","#E4772A"],
-    "Ice Hockey":["#213D66","#6F8FD2"],"American Football":["#283B57","#AD6238"],
-    "Australian Rules":["#213B64","#D34A55"],"Rugby League":["#174735","#42A66F"],
-    "Rugby Union":["#25456A","#6D89D2"],Cricket:["#49305F","#B45599"],Motorsport:["#1A1A1A","#D62828"]
+  const themes={
+    ucl:["#081B42","#2355D9","#7C4DFF","UCL"],
+    europa:["#17120A","#E86A00","#FFB23F","UEL"],
+    conference:["#112119","#28B46C","#74E5A1","UECL"],
+    premier:["#18072B","#5B0B79","#C532E6","PL"],
+    bundesliga:["#26080A","#DC0018","#FF5865","BL"],
+    bundesliga2:["#122F51","#1565B1","#61A8EA","2B"],
+    laliga:["#2A0808","#D8202A","#F05A64","LL"],
+    seriea:["#071D35","#1465B5","#28C6EE","SA"],
+    ligue1:["#071E25","#0B5460","#D8F000","L1"],
+    facup:["#15213A","#214A92","#4E8FFF","FA"],
+    carabao:["#102B1A","#1E7B47","#74D39A","EFL"],
+    dfbpokal:["#2B1D08","#B8750C","#F1C052","DFB"],
+    coppa_italia:["#15283C","#1976B8","#4BC0E8","CI"],
+    copa_del_rey:["#341608","#BD6317","#F2A44A","CDR"],
+    eredivisie:["#111F3B","#2056A4","#5B92DF","ERE"],
+    primeira_liga:["#163728","#2F8B5E","#75C99D","LP"],
+    saudi_pro:["#102E22","#16884F","#5DD38C","SPL"],
+    nations:["#171C3D","#334DC4","#7287F0","UNL"],
+    world_cup:["#2B1020","#8A254F","#D6588D","WC"],
+    formula1:["#240808","#E10600","#FF5A52","F1"],
+    nba:["#101A38","#17408B","#C9082A","NBA"],
+    nhl:["#101820","#45525F","#98A3AD","NHL"],
+    nfl:["#101A38","#013369","#D50A0A","NFL"],
+    afl:["#102744","#1E5A98","#D54E4E","AFL"],
+    nrl:["#0F2D22","#137A4C","#54C98A","NRL"],
+    cricket:["#143024","#237548","#75C997","CRI"],
+    tennis:["#173421","#3D8D58","#A4D65E","TEN"]
   };
-  const [c1,c2]=palettes[sport]||["#123B5A","#2B86D9"];
-  const mark=key==="champions"?"★":key==="formula1"?"F1":key==="bundesliga2"?"2B":label.split(/\s+/).map(x=>x[0]).join("").slice(0,4).toUpperCase();
+  const [c1,c2,c3,mark]=themes[key]||["#0B3155","#167FD9","#4BA5F0",String(label).split(/\s+/).map(x=>x[0]).join("").slice(0,4).toUpperCase()];
   const xe=v=>String(v).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-  return \`<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="650" viewBox="0 0 1200 650">
-  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="\${c1}"/><stop offset="1" stop-color="\${c2}"/></linearGradient></defs>
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="650" viewBox="0 0 1200 650">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="${c1}"/><stop offset=".58" stop-color="${c2}"/><stop offset="1" stop-color="${c3}"/></linearGradient>
+    <radialGradient id="r" cx=".78" cy=".18" r=".72"><stop stop-color="#fff" stop-opacity=".28"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+  </defs>
   <rect width="1200" height="650" rx="34" fill="url(#g)"/>
-  <circle cx="1035" cy="90" r="280" fill="#fff" opacity=".08"/><circle cx="120" cy="630" r="280" fill="#fff" opacity=".06"/>
-  <path d="M0 500 C240 430 420 575 690 475 S1000 410 1200 480 V650 H0Z" fill="#061523" opacity=".28"/>
-  <rect x="65" y="58" width="190" height="42" rx="21" fill="#fff" opacity=".13"/>
-  <text x="160" y="86" text-anchor="middle" font-family="Arial,sans-serif" font-size="20" font-weight="700" fill="#fff">\${xe(sport).toUpperCase()}</text>
-  <text x="70" y="325" font-family="Arial,sans-serif" font-size="130" font-weight="900" fill="#fff">\${xe(mark)}</text>
-  <text x="70" y="410" font-family="Arial,sans-serif" font-size="46" font-weight="800" fill="#fff">\${xe(label)}</text>
-  <text x="72" y="456" font-family="Arial,sans-serif" font-size="22" font-weight="600" fill="#fff" opacity=".72">CONTENT HUB · NEXT COMPETITION</text>
-  </svg>\`;
+  <rect width="1200" height="650" rx="34" fill="url(#r)"/>
+  <circle cx="1030" cy="95" r="280" fill="#fff" opacity=".08"/>
+  <circle cx="1140" cy="520" r="245" fill="#07131F" opacity=".17"/>
+  <path d="M0 505 C245 414 445 590 720 474 S1010 402 1200 470 V650 H0Z" fill="#061523" opacity=".30"/>
+  <path d="M760 0 L1200 0 L1200 650 L1000 650 C900 500 868 326 760 0Z" fill="#061523" opacity=".14"/>
+  <rect x="66" y="56" width="210" height="42" rx="21" fill="#fff" opacity=".13"/>
+  <text x="171" y="84" text-anchor="middle" font-family="Arial,sans-serif" font-size="18" font-weight="700" letter-spacing="2" fill="#fff">${xe(sport).toUpperCase()}</text>
+  <text x="70" y="330" font-family="Arial,sans-serif" font-size="128" font-weight="900" fill="#fff">${xe(mark)}</text>
+  <text x="72" y="414" font-family="Arial,sans-serif" font-size="46" font-weight="800" fill="#fff">${xe(label)}</text>
+  <text x="72" y="458" font-family="Arial,sans-serif" font-size="20" font-weight="600" letter-spacing="1.5" fill="#fff" opacity=".72">CONTENT HUB · NEXT COMPETITION</text>
+  <circle cx="1060" cy="360" r="98" fill="none" stroke="#fff" stroke-width="4" opacity=".18"/>
+  <circle cx="1060" cy="360" r="60" fill="none" stroke="#fff" stroke-width="3" opacity=".15"/>
+  <path d="M990 360 H1130 M1060 290 V430" stroke="#fff" stroke-width="3" opacity=".12"/>
+  </svg>`;
 }
 app.get("/api/competition-card/:key.svg",(req,res)=>{
   const key=String(req.params.key||"").toLowerCase().replace(/[^a-z0-9_]/g,"");
