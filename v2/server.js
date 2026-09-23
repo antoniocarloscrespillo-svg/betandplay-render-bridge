@@ -1729,6 +1729,49 @@ app.get("*", (_req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
+async function runTemporaryStartupQa(){
+  const started=Date.now();
+  try{
+    const events=await getEditorialEvents(30);
+    console.info("[startup-qa] editorial-events",{
+      ok:true,
+      count:events.length,
+      competitions:new Set(events.map(e=>e.competition)).size,
+      sports:new Set(events.map(e=>e.sportGroup)).size,
+      ms:Date.now()-started
+    });
+  }catch(error){
+    console.error("[startup-qa] editorial-events",{ok:false,error:String(error?.message||error),ms:Date.now()-started});
+  }
+
+  try{
+    const url=new URL(UPSTREAM_V3+"/search");
+    url.searchParams.set("q","Real Madrid");
+    const body=await fetchJson(url);
+    const raw=Array.isArray(body)?body:Array.isArray(body?.data)?body.data:[];
+    console.info("[startup-qa] search",{ok:true,count:raw.length});
+  }catch(error){
+    console.error("[startup-qa] search",{ok:false,error:String(error?.message||error),status:error?.status||null});
+  }
+
+  const promoSources=[
+    ["comboboost",UPSTREAM+"/bonuses/comboboosts?available=true&limit=5"],
+    ["hunting",UPSTREAM+"/bonuses/huntings?available=true&limit=5"],
+    ["lootbox",UPSTREAM+"/bonuses/lootboxes?available=true&limit=5"],
+    ["daycombo",UPSTREAM+"/bonuses/day-combos"]
+  ];
+  for(const [type,url] of promoSources){
+    try{
+      const body=await fetchJsonWithTimeout(url,5000);
+      const rows=Array.isArray(body?.data)?body.data:Array.isArray(body)?body:Array.isArray(body?.bonuses)?body.bonuses:[];
+      console.info("[startup-qa] promotion-source",{type,ok:true,count:rows.length});
+    }catch(error){
+      console.warn("[startup-qa] promotion-source",{type,ok:false,status:error?.status||null,error:String(error?.message||error)});
+    }
+  }
+}
+
 app.listen(PORT, "0.0.0.0", () => {
   console.log("Betandplay Content Hub V2 listening on port " + PORT);
+  runTemporaryStartupQa().catch(error=>console.error("[startup-qa] fatal",String(error?.message||error)));
 });
