@@ -1,1 +1,1 @@
-{"name":"content-hub-asset-host","version":"1.0.0","private":true,"scripts":{"start":"node server.js"}}
+{"name":"content-hub-assets","version":"1.0.0","private":true,"scripts":{"start":"node server.js"},"engines":{"node":">=18"}}
