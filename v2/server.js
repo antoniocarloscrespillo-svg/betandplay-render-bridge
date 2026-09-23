@@ -343,8 +343,6 @@ function marketOutcomeList(market){
   return Array.isArray(rows) ? rows : [];
 }
 
-function isGermanMarket
-
 function isGermanMarket(match) {
   const tournament = match?.tournament || {};
   const category = tournament?.category || {};
@@ -984,8 +982,6 @@ function toPost(match) {
     bettingOptions:[]
   };
 }
-
-function contentPrefs
 
 function contentPrefs(body={}) {
   return {
@@ -2073,8 +2069,6 @@ function copywriterMatchPost(e,variant=0,language="EN"){
     "⏰ "+when+"\n\n👉 Check every available market on Betandplay.";
 }
 
-function copywriterCompetitionPost
-
 function copywriterCompetitionPost(competition,items,variant=0,language="EN"){
   const games=items.slice(0,variant===2?6:4);
   const lines=games.map(e=>"• "+e.title+" · "+editorialDateTime(e,language));
@@ -2287,8 +2281,6 @@ function copywriterCombo(items,variant=0,language="EN",label="ACCA"){
     (combinedText?"\n\nCombined odds: "+combinedText:"")+
     "\n\n👉 Check every price on Betandplay before placing the ACCA.";
 }
-
-function copywriterCompetitionInfo
 
 function copywriterCompetitionInfo(competition,items,variant=0,language="EN"){
   const first=items[0], last=items[Math.min(items.length-1,5)];
