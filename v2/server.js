@@ -1961,11 +1961,21 @@ async function warmEditorialEvents(){
   if(hit) return hit;
   if(editorialEventsWarmPromise) return editorialEventsWarmPromise;
   editorialEventsWarmPromise=getEditorialEvents(30)
-    .then(async events=>{
-      let enriched=events;
-      try{enriched=await enrichBigEventsWithSofascore(events)}catch{}
-      cache.set("editorial-events-v2",{createdAt:Date.now(),value:enriched});
-      return enriched;
+    .then(events=>{
+      // Serve sportsbook data immediately. Visual enrichment is best-effort
+      // and runs in the background so logos can never block match data.
+      cache.set("editorial-events-v2",{createdAt:Date.now(),value:events});
+      const needsVisuals=events
+        .filter(e=>!e.competitionLogo || (e.teamLogos||[]).some(x=>!x.url))
+        .slice(0,80);
+      if(needsVisuals.length){
+        enrichBigEventsWithSofascore(needsVisuals).then(enriched=>{
+          const updates=new Map(enriched.map(e=>[String(e.id),e]));
+          const merged=events.map(e=>updates.get(String(e.id))||e);
+          cache.set("editorial-events-v2",{createdAt:Date.now(),value:merged});
+        }).catch(()=>{});
+      }
+      return events;
     })
     .finally(()=>{editorialEventsWarmPromise=null});
   return editorialEventsWarmPromise;
