@@ -1618,14 +1618,14 @@ app.get("/api/search-matches", async (req, res) => {
   try {
     const url=new URL(UPSTREAM_V3+"/search");
     url.searchParams.set("q",String(req.query.q||""));
-    url.searchParams.set("only_events_name","true");
     const body=await fetchJson(url);
     const raw=Array.isArray(body) ? body : Array.isArray(body?.data) ? body.data : [];
+    const now=Date.now();
     const matches = stripWomensEvents(raw)
-      .filter(m => matchSearchHaystack(m).includes(q))
       .filter(m => {
+        const status=Number(m?.status);
         const t=new Date(m?.start_time||0).getTime();
-        return Number.isFinite(t) && t>=start.getTime() && t<=end.getTime();
+        return status===1 || (Number.isFinite(t) && t>=now);
       })
       .sort((a,b)=>new Date(a?.start_time||0)-new Date(b?.start_time||0))
       .slice(0,20)
