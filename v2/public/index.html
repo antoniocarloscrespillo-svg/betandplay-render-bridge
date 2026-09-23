@@ -262,6 +262,71 @@ body{background:#071827}.hub-shell{min-height:100vh;display:grid;grid-template-c
 .next-competition-art .fallback-art:not([hidden]){display:grid}
 @media(max-width:720px){.next-competition-art{height:150px}}
 
+
+/* ===== Unified Home 2026-09-23 ===== */
+body{background:#030d1c}
+.hub-shell{grid-template-columns:68px minmax(0,1fr)!important;background:#030d1c}
+.context-panel{display:none!important}
+.app{background:#030d1c!important;padding:0 18px 44px!important}
+.topbar{display:none!important}
+.side-rail{background:#06101f!important;border-right:1px solid #11233b!important;padding-top:12px!important}
+.side-rail .navbtn{width:48px!important;height:48px!important;border-radius:9px!important;color:#8ea3bf!important}
+.side-rail .navbtn.active{background:linear-gradient(145deg,#1a48d8,#6732ee)!important;color:#fff!important}
+.side-rail .rail-label{font-size:7px!important}
+.home-view{max-width:1500px;margin:0 auto;padding:10px 0 28px}
+.home-topline{height:42px;display:flex;align-items:center;gap:14px;margin:0 0 9px}
+.home-search-wrap{position:relative;flex:1;max-width:660px;margin:0 auto}
+.home-search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);z-index:2;color:#9bb0cd;font-size:17px}
+.home-search{width:100%;height:34px!important;border-radius:20px!important;background:#06162b!important;border:1px solid #173356!important;color:#dce8f8!important;padding:0 16px 0 38px!important;font-size:11px!important}
+.home-search::placeholder{color:#7388a7}
+.home-create{height:34px!important;min-height:34px!important;border-radius:7px!important;padding:0 14px!important;font-size:10px!important;box-shadow:0 6px 18px rgba(0,116,255,.25)}
+.home-hero{height:260px;border:1px solid #102c55;border-radius:11px;overflow:hidden;position:relative;background:
+ linear-gradient(90deg,rgba(1,11,26,.25),rgba(2,11,26,.08) 45%,rgba(2,11,26,.12)),
+ url('/api/competition-card/ucl.svg') center/cover no-repeat,
+ radial-gradient(circle at 70% 50%,#143da8 0,#071d52 38%,#031126 78%);
+ box-shadow:0 16px 42px rgba(0,0,0,.28)}
+.home-hero:after{content:"MORE\A THAN A GAME";white-space:pre;position:absolute;right:26px;bottom:25px;color:#dceaff;font-size:16px;line-height:.9;text-align:right;font-weight:900;letter-spacing:-.5px;opacity:.92}
+.home-hero-copy{position:absolute;left:48px;top:34px;z-index:2;color:#fff;max-width:470px}
+.home-hero-kicker{font-size:13px;letter-spacing:3px;font-weight:800;color:#eaf3ff}
+.home-hero h1{font-size:42px;line-height:.86;margin:5px 0 10px;letter-spacing:-1.4px;font-weight:950;text-shadow:0 4px 20px rgba(0,0,0,.28)}
+.home-hero p{font-size:11px;color:#c3d1e5;margin:0 0 16px}
+.hero-create{height:34px!important;min-height:34px!important;padding:0 15px!important;border-radius:7px!important;font-size:10px!important;background:linear-gradient(90deg,#702cff,#008cff)!important;border:0!important}
+.hero-dots{position:absolute;bottom:13px;left:50%;transform:translateX(-50%);display:flex;gap:4px}.hero-dots span{width:5px;height:5px;border-radius:50%;background:#4e6c98}.hero-dots span.active{background:#fff}
+.home-section{margin-top:16px}.home-section-head{display:flex;justify-content:space-between;align-items:flex-end;gap:18px;margin:0 0 10px}
+.home-section-head h2{color:#f0f5fd;font-size:20px;line-height:1;margin:0;font-weight:850;letter-spacing:-.45px}
+.home-section-head p{color:#7086a4;font-size:10px;margin:4px 0 0}
+.home-link{height:30px;border-radius:18px;padding:0 14px;background:#07182c;border:1px solid #17365b;color:#d6e3f5;font-size:9px;font-weight:700}
+.home-next-cards{display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:8px!important;margin:0!important}
+.home-next-cards .next-competition-card{min-height:0!important;height:174px;border-radius:8px!important;border:1px solid #153150!important;background:#07162a!important;box-shadow:none!important;border-top-width:1px!important}
+.home-next-cards .next-competition-card:hover{transform:translateY(-2px);border-color:#285b8f;box-shadow:0 10px 24px rgba(0,0,0,.22)!important}
+.home-next-cards .next-competition-art{height:115px!important;background:#07162a!important}
+.home-next-cards .next-competition-info{padding:8px 10px 9px!important;background:#07162a!important;border-top:1px solid #0e2947}
+.home-next-cards .next-competition-name{display:none!important}
+.home-next-cards .next-competition-meta{display:grid!important;grid-template-columns:1fr!important;gap:4px!important}
+.home-next-cards .next-competition-date{font-size:9px!important;color:#c7d4e6!important;font-weight:650!important}
+.home-next-cards .next-competition-date:before{content:"▣ ";color:#869bb8}
+.home-next-cards .next-competition-countdown{font-size:8px!important;color:#00aaff!important;font-weight:800!important}
+.home-next-cards .next-competition-countdown:before{content:"◷ ";color:#00aaff}
+.home-next-cards .next-competition-card:nth-child(n+7){display:none!important}
+.big-head{align-items:center}
+.home-sport-filters{justify-content:flex-end!important}.home-sport-filters .sport-quick{height:27px!important;border-radius:15px!important;background:#07182c!important;border:1px solid #142e4d!important;color:#8fa3be!important;font-size:8px!important;padding:0 11px!important}.home-sport-filters .sport-quick.active{background:linear-gradient(90deg,#4d2cff,#117ff4)!important;color:#fff!important;border-color:transparent!important}
+.home-filters{display:none}
+.home-quickbar{display:none!important}
+.home-table{border:1px solid #122c49;border-radius:8px;overflow:hidden;background:#061426}
+.home-table-head{height:28px;display:grid;grid-template-columns:190px 100px minmax(330px,1.2fr) minmax(250px,.75fr) 36px;align-items:center;padding:0 10px;background:#081a30;border-bottom:1px solid #142f50;color:#7d92ad;font-size:7px;font-weight:750;letter-spacing:.25px}
+.home-game-row{min-height:58px!important;display:grid!important;grid-template-columns:190px 100px minmax(330px,1.2fr) minmax(250px,.75fr) 36px!important;align-items:center;background:#061426!important;border-bottom:1px solid #102740!important;color:#dbe7f7;transition:.15s}
+.home-game-row:last-child{border-bottom:0}.home-game-row:hover{background:#091a30!important}
+.home-comp-cell{display:flex;align-items:center;gap:9px;padding:0 10px;font-size:9px;font-weight:700;color:#d4e0ef}.home-comp-logo{width:24px;height:24px;display:grid;place-items:center;flex:0 0 auto}.home-comp-logo img{max-width:23px;max-height:23px;object-fit:contain}
+.home-time-cell{display:flex;flex-direction:column;gap:2px;color:#d8e4f3}.home-time-cell b{font-size:9px}.home-time-cell span{font-size:9px;color:#8ea2bc}
+.home-match{display:grid;grid-template-columns:minmax(0,1fr) 20px minmax(0,1fr);align-items:center;gap:5px;padding:0 12px}.home-match>span{display:flex;align-items:center;gap:7px;min-width:0}.home-match>span:last-child{justify-content:flex-end;text-align:right}.home-match b{font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#e2ebf8}.home-match em{font-style:normal;font-size:8px;color:#7187a3;text-align:center}.home-match .team-logo{width:25px!important;height:25px!important}.home-match .team-logo img{max-width:24px!important;max-height:24px!important}.home-match.generic{display:block}
+.home-odds{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;padding:0 8px}.home-odd{height:30px;border:0;border-radius:5px;background:#0a2340;color:#d8e6f8;display:flex;align-items:center;justify-content:space-between;padding:0 10px}.home-odd small{font-size:7px;color:#7d91ab}.home-odd b{font-size:9px}.home-odd:hover{background:#0d2d52}
+.home-row-actions{display:grid;place-items:center}.home-chevron{width:24px;height:28px;border:0;background:transparent;color:#7f97b6;font-size:22px;line-height:1}.home-chevron:hover{color:#fff}
+.home-events .event .time,.home-events .event>.match,.home-events .event>.odds,.home-events .event>.actions{display:none!important}
+#lastUpdated{color:#536d8e!important;font-size:8px!important;margin:7px 2px!important;text-align:right}
+.empty,.error{background:#07162a!important;border-color:#173453!important;color:#7f95b1!important}.empty strong,.error strong{color:#e0e9f6!important}
+@media(max-width:1250px){.home-next-cards{grid-template-columns:repeat(4,minmax(0,1fr))!important}.home-next-cards .next-competition-card:nth-child(n+5){display:none!important}.home-table-head,.home-game-row{grid-template-columns:150px 90px minmax(250px,1fr) minmax(220px,.7fr) 32px!important}}
+@media(max-width:900px){.hub-shell{display:block!important}.side-rail{display:none!important}.app{padding:0 10px 30px!important}.home-topline{padding-top:4px}.home-create{display:none}.home-hero{height:210px}.home-hero-copy{left:24px;top:28px}.home-hero h1{font-size:32px}.home-next-cards{grid-template-columns:repeat(2,minmax(0,1fr))!important}.home-next-cards .next-competition-card:nth-child(n+5){display:flex!important}.home-table{overflow-x:auto}.home-table-head,.home-game-row{min-width:860px}}
+
 </style>
 </head>
 <body>
@@ -269,8 +334,7 @@ body{background:#071827}.hub-shell{min-height:100vh;display:grid;grid-template-c
 <aside class="side-rail" aria-label="Main navigation">
   <div class="rail-brand" title="Content Hub"><div class="brandmark" aria-hidden="true"><span></span><span></span><span></span></div></div>
   <nav class="rail-nav">
-    <button class="navbtn active" data-view="biggames" title="Big Games"><span class="rail-icon">⚽</span><span class="rail-label">Big Games</span></button>
-    <button class="navbtn" data-view="nextcomps" title="Next Games"><span class="rail-icon">◷</span><span class="rail-label">Next Games</span></button>
+    <button class="navbtn active" data-view="biggames" title="Home"><span class="rail-icon">⌂</span><span class="rail-label">Home</span></button>
     <button class="navbtn" data-view="studio" title="Content Studio"><span class="rail-icon">✎</span><span class="rail-label">Studio</span></button>
     <button class="navbtn" data-view="promotions" title="Promotions"><span class="rail-icon">★</span><span class="rail-label">Promotions</span></button>
   </nav>
@@ -281,26 +345,51 @@ body{background:#071827}.hub-shell{min-height:100vh;display:grid;grid-template-c
   <div class="top-status"><span class="live-dot"></span><span>Live sportsbook data</span></div>
 </header>
 <main>
-<section id="biggames" class="view active">
-  <div class="workspace-titlebar">
-    <div><h1>Big Games</h1><p>Upcoming events by competition</p></div>
-    <div id="sportQuickFilters" class="sport-quick-filters" aria-label="Sports"></div>
+<section id="biggames" class="view active home-view">
+  <div class="home-topline">
+    <div class="home-search-wrap"><span class="home-search-icon">⌕</span><input id="search" class="control home-search" aria-label="Search team player or competition" placeholder="Search for teams, competitions, matches…"></div>
+    <button class="btn primary home-create" id="homeCreatePost">＋ Create Post</button>
   </div>
-  <div class="toolbar" role="search">
-    <input id="search" class="control search" aria-label="Search team player or competition" placeholder="Search team, player or competition…">
-    <select id="sportFilter" class="control" aria-label="Sport"><option value="all">All sports</option></select>
-    <input id="competitionSearch" class="control" aria-label="Search competition" placeholder="Find competition…">
-    <select id="competitionFilter" class="control" aria-label="Competition"><option value="all">All competitions</option></select>
-    <select id="countryFilter" class="control" aria-label="Country"><option value="all">All countries</option></select>
-    <button id="resetFilters" class="btn ghost">Reset</button>
-  </div>
-  <div class="quickbar" aria-label="Date filters"><button class="chip" data-range="today">Today</button><button class="chip" data-range="tomorrow">Tomorrow</button><button class="chip" data-range="7">Next 7 days</button><button class="chip active" data-range="30">Next 30 days</button><div id="activeFilters" class="filterchips"></div></div>
-  <div id="todayStrip" class="summary-grid"></div>
-  <div id="editorialRail" class="editorial-rail"></div>
-  <div id="events"><div class="comp"><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div></div></div>
-  <div class="updated" id="lastUpdated" style="margin:8px 2px;color:var(--muted);font-size:10px">Live odds</div>
+
+  <section class="home-hero" aria-label="Featured competition">
+    <div class="home-hero-copy">
+      <div class="home-hero-kicker">UEFA</div>
+      <h1>CHAMPIONS<br>LEAGUE</h1>
+      <p>The biggest stage. The best teams. Unmissable nights.</p>
+      <button class="btn primary hero-create" id="heroCreatePost">Create Champions League Post →</button>
+    </div>
+    <div class="hero-dots"><span></span><span class="active"></span><span></span><span></span></div>
+  </section>
+
+  <section class="home-section next-home-section">
+    <div class="home-section-head">
+      <div><h2>Next by Competition</h2><p>Key dates. Top competitions. Stay ahead.</p></div>
+      <button class="home-link" id="showAllCompetitions">View all competitions →</button>
+    </div>
+    <div id="nextCompetitionList" class="next-comp-list next-comp-cards home-next-cards"></div>
+  </section>
+
+  <section class="home-section big-home-section">
+    <div class="home-section-head big-head">
+      <div><h2>Big Games</h2><p>The most important matches, all in one place.</p></div>
+      <div id="sportQuickFilters" class="sport-quick-filters home-sport-filters" aria-label="Sports"></div>
+    </div>
+
+    <div class="home-filters">
+      <select id="sportFilter" class="control" aria-label="Sport"><option value="all">All sports</option></select>
+      <input id="competitionSearch" class="control" aria-label="Search competition" placeholder="Find competition…">
+      <select id="competitionFilter" class="control" aria-label="Competition"><option value="all">All competitions</option></select>
+      <select id="countryFilter" class="control" aria-label="Country"><option value="all">All countries</option></select>
+      <button id="resetFilters" class="btn ghost">Reset</button>
+    </div>
+    <div class="quickbar home-quickbar" aria-label="Date filters"><button class="chip" data-range="today">Today</button><button class="chip" data-range="tomorrow">Tomorrow</button><button class="chip" data-range="7">Next 7 days</button><button class="chip active" data-range="30">Next 30 days</button><div id="activeFilters" class="filterchips"></div></div>
+    <div id="todayStrip" class="summary-grid" hidden></div>
+    <div id="editorialRail" class="editorial-rail" hidden></div>
+    <div id="events" class="home-events"><div class="home-table"><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div></div></div>
+    <div class="updated" id="lastUpdated">Live odds</div>
+  </section>
 </section>
-<section id="nextcomps" class="view"><div class="studio next-competition-page"><div class="next-page-head"><div><h1>Next by Competition</h1><p>Próxima fecha de las principales competiciones</p></div></div><div id="nextCompetitionList" class="next-comp-list next-comp-cards"></div></div></section><section id="studio" class="view">
+<section id="studio" class="view">
   <div class="studio studio-direct">
     <div class="studio-direct-head">
       <div><div class="eyebrow">Create content</div><h1>Content Studio</h1><p>Choose the format, select the event or competition, and generate Telegram-ready content.</p></div>
@@ -547,19 +636,29 @@ function renderContextPanel(list){
  const odds=(next.odds||[]).slice(0,3);
  spot.innerHTML='<div class="spotlight"><div class="spotlight-comp">'+esc(next.competition)+'</div><h3>'+esc(next.title)+'</h3><div class="spotlight-time">'+esc(compactDateLabel(next.startTime))+' · '+esc(timeLabel(next.startTime))+' CEST</div>'+(odds.length?'<div class="spotlight-odds">'+odds.map(o=>'<div class="spotlight-odd"><span>'+esc(o.label||"")+'</span><b>'+esc(o.value||"—")+'</b></div>').join("")+'</div>':'')+'</div>';
 }
+function homeEventRow(e){
+ const teams=(e.teamNames||[]).slice(0,2),h=teams[0],a=teams[1],od=(e.odds||[]).slice(0,3);
+ const logoHtml=e.competitionLogo?'<img src="'+esc(e.competitionLogo)+'" alt="" loading="lazy">':esc(initials(e.competition));
+ const match=e.isHeadToHead!==false&&h&&a
+   ? '<div class="home-match"><span>'+teamLogo(e,h)+'<b>'+esc(h)+'</b></span><em>vs</em><span>'+teamLogo(e,a)+'<b>'+esc(a)+'</b></span></div>'
+   : '<div class="home-match generic"><b>'+esc(e.title||e.competition)+'</b></div>';
+ const odds=od.length?od.map(o=>'<button class="home-odd" aria-label="'+esc((o.label||"Selection")+" "+(o.value||""))+'"><small>'+esc(o.label||"")+'</small><b>'+esc(o.value||"—")+'</b></button>').join(""):'<span class="home-no-odds">—</span>';
+ return '<article class="home-game-row event" tabindex="0" data-event="'+esc(e.id)+'">'+
+  '<div class="home-comp-cell"><span class="home-comp-logo">'+logoHtml+'</span><span>'+esc(e.competition)+'</span></div>'+
+  '<div class="home-time-cell"><b>'+esc(dayLabel(e.startTime))+'</b><span>'+esc(timeLabel(e.startTime))+'</span></div>'+
+  match+
+  '<div class="home-odds">'+odds+'</div>'+
+  '<div class="home-row-actions"><button class="home-chevron markets" data-id="'+esc(e.id)+'" aria-label="View markets">›</button></div>'+
+ '</article>';
+}
 function render(){
- const list=filtered();activeChips();todaySummary(list);editorialRail(list);renderContextPanel(list);
- if(!list.length){$("#events").innerHTML='<div class="empty"><strong>No matches found</strong>Try removing some filters.<br><button class="btn primary" style="margin-top:12px" id="emptyReset">Reset filters</button></div>';$("#emptyReset").onclick=reset;return}
- const groups=new Map();for(const e of list){if(!groups.has(e.competition))groups.set(e.competition,[]);groups.get(e.competition).push(e)}
- const orderedGroups=[...groups.entries()].sort((a,b)=>{
-   const ae=a[1][0],be=b[1][0];
-   const sportOrder=["Football","Ice Hockey","Basketball","American Football","Australian Rules","Rugby League","Rugby Union","Cricket","Motorsport","Tennis"];
-   const ai=sportOrder.indexOf(ae.sportGroup),bi=sportOrder.indexOf(be.sportGroup);
-   return (ai<0?999:ai)-(bi<0?999:bi) ||
-     Number(ae.competitionPriority||999)-Number(be.competitionPriority||999) ||
-     new Date(ae.startTime)-new Date(be.startTime);
- });
- $("#events").innerHTML=orderedGroups.map(([name,items])=>{const e=items[0];return '<section class="comp" data-sport="'+esc(e.sportGroup||"Sport")+'"><header class="comphead">'+competitionLogo(e)+'<button class="compmeta filterComp" data-comp="'+esc(e.competitionKey||"")+'"><div class="compname">'+esc(name)+'</div><div class="compcount">'+items.length+' match'+(items.length===1?"":"es")+'</div></button><button class="collapse-comp" aria-label="Collapse '+esc(name)+'">Collapse</button></header><div class="compbody">'+items.map(eventRow).join("")+'</div></section>'}).join("");
+ const list=filtered();activeChips();renderNextCompetitions();
+ const prioritized=[...list].sort((a,b)=>
+   Number(a.competitionPriority||999)-Number(b.competitionPriority||999) ||
+   new Date(a.startTime)-new Date(b.startTime)
+ );
+ if(!prioritized.length){$("#events").innerHTML='<div class="empty"><strong>No matches found</strong>Try removing some filters.<br><button class="btn primary" style="margin-top:12px" id="emptyReset">Reset filters</button></div>';$("#emptyReset").onclick=reset;return}
+ $("#events").innerHTML='<div class="home-table"><div class="home-table-head"><span>COMPETITION</span><span>TIME</span><span>MATCH</span><span>1 &nbsp;&nbsp;&nbsp; X &nbsp;&nbsp;&nbsp; 2</span><span></span></div>'+prioritized.slice(0,12).map(homeEventRow).join("")+'</div>';
  bindRows();
 }
 function bindRows(){
@@ -742,6 +841,11 @@ async function loadPromotions(force=false){const root=$("#promotionGrid"),status
 $("#refreshPromotions").onclick=()=>{delete $("#promotionGrid").dataset.loaded;loadPromotions(true)};
 $(".closePromoInfo").onclick=()=>closeDrawer($("#promoInfoBack"));
 $("#promoInfoBack").onclick=e=>{if(e.target===e.currentTarget)closeDrawer(e.currentTarget)};
+
+const homeCreate=()=>setView("studio");
+$("#homeCreatePost").onclick=homeCreate;
+$("#heroCreatePost").onclick=()=>{setView("studio");setTimeout(()=>{const s=$("#studioCompetitionSearch");if(s){s.value="Champions League";s.dispatchEvent(new Event("input"))}},0)};
+$("#showAllCompetitions").onclick=()=>{document.querySelector(".next-home-section")?.scrollIntoView({behavior:"smooth",block:"start"})};
 
 let keyboardIndex=-1;
 document.addEventListener("keydown",e=>{const typing=/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName);if(e.key==="Escape"){closeDrawer($("#marketBack"));closeDrawer($("#createBack"));closeDrawer($("#promoInfoBack"));return}if(typing)return;if(e.key==="/"){e.preventDefault();$("#search").focus();return}const rows=$$(".event");if((e.key==="ArrowDown"||e.key==="ArrowUp")&&rows.length){e.preventDefault();keyboardIndex=e.key==="ArrowDown"?Math.min(rows.length-1,keyboardIndex+1):Math.max(0,keyboardIndex-1);rows[keyboardIndex].focus();state.selected=eventById(rows[keyboardIndex].dataset.event);return}if(e.key==="Enter"&&document.activeElement?.classList?.contains("event")){openCreate(document.activeElement.dataset.event);return}if(e.key.toLowerCase()==="g"&&state.selected)openCreate(state.selected.id)});
