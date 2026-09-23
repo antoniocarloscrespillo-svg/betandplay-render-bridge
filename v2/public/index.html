@@ -32,7 +32,7 @@ button{cursor:pointer}
 .hero-sports{display:flex;gap:8px;flex-wrap:wrap}
 .hero-sport{height:36px;padding:0 14px;border-radius:999px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06);color:#dcecff;font-size:12px;font-weight:850}
 .hero-sport.active{background:#fff;color:#145f9d;border-color:#fff}
-.toolbar{display:grid;grid-template-columns:minmax(280px,1.55fr) 150px 200px 150px auto;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px;box-shadow:var(--shadow);position:sticky;top:76px;z-index:30}
+.toolbar{display:grid;grid-template-columns:minmax(250px,1.45fr) 150px minmax(150px,.8fr) 210px 145px auto;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px;box-shadow:var(--shadow);position:sticky;top:76px;z-index:30}
 .control{height:42px;border:1px solid var(--line2);background:#fff;color:var(--text);border-radius:10px;padding:0 12px;outline:none;min-width:0}
 .control:focus{border-color:#6eaef0;box-shadow:0 0 0 3px rgba(22,119,232,.11)}
 .btn{min-height:38px;border:1px solid var(--line2);background:#fff;color:#294057;border-radius:9px;padding:8px 12px;font-weight:850}
@@ -82,7 +82,7 @@ button{cursor:pointer}
 .post{border:1px solid var(--line);border-radius:10px;background:#fff;margin-bottom:9px;overflow:hidden}.posthead{display:flex;justify-content:space-between;align-items:center;padding:9px 11px;background:#f9fbfd;border-bottom:1px solid var(--line)}.posthead strong{font-size:12px}.postbody{padding:13px 14px;font-size:12px;line-height:1.58;white-space:pre-wrap;color:#2c435a}.post.collapsed .postbody,.post.collapsed .postfooter{display:none}.postfooter{display:flex;gap:6px;padding:0 12px 11px}.editarea{width:100%;min-height:220px;background:#fff;color:#20384f;border:1px solid var(--line2);border-radius:8px;padding:10px;resize:vertical}
 .studio{max-width:980px;margin:30px auto}.studiohero{text-align:center;padding:28px 12px}.studiohero h1{font-size:30px;margin:4px 0 6px}.studiohero p{color:var(--muted);font-size:13px}.studio-search{display:flex;gap:8px;max-width:720px;margin:18px auto}.studio-search input{flex:1}.searchresults{margin-top:12px}.searchrow{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:#fff;margin-bottom:6px}.searchrow b{font-size:12px}.searchrow span{display:block;color:var(--muted);font-size:10px;margin-top:2px}.explore{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:18px}.explore button{padding:20px;border:1px solid var(--line);border-radius:12px;background:#fff;color:#20384f;text-align:left;font-weight:900;box-shadow:0 3px 12px rgba(18,45,76,.04)}
 .promo-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}.promo-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.promo-card{background:#fff;border:1px solid var(--line);border-radius:13px;padding:14px;box-shadow:0 3px 14px rgba(18,45,76,.04);min-width:0}.promo-card h3{margin:5px 0 7px;font-size:15px;line-height:1.25}.promo-type{display:inline-flex;padding:4px 7px;border-radius:999px;background:#eaf4ff;color:#0f60ad;font-size:9px;font-weight:950;text-transform:uppercase;letter-spacing:.55px}.promo-meta{display:grid;gap:5px;margin-top:10px;font-size:11px;color:var(--muted)}.promo-meta b{color:#344e67}.promo-source{margin-top:12px;padding-top:10px;border-top:1px solid var(--line);font-size:9px;color:#8b9bab}.promo-empty{grid-column:1/-1}
-@media(max-width:1100px){.toolbar{grid-template-columns:1fr 140px 180px auto}.toolbar #countryFilter{display:none}.event{grid-template-columns:70px 1fr auto}.odds{grid-column:2}.actions{grid-column:3;grid-row:1/3;flex-direction:column}.gen-controls{grid-template-columns:1fr 1fr}.summary-grid{grid-template-columns:1fr repeat(3,.5fr)}}
+@media(max-width:1100px){.toolbar{grid-template-columns:1fr 140px 180px 180px auto}.toolbar #countryFilter{display:none}.event{grid-template-columns:70px 1fr auto}.odds{grid-column:2}.actions{grid-column:3;grid-row:1/3;flex-direction:column}.gen-controls{grid-template-columns:1fr 1fr}.summary-grid{grid-template-columns:1fr repeat(3,.5fr)}}
 @media(max-width:900px){.promo-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:780px){.app{padding:0 12px 38px}.topbar{margin:0 -12px;padding:0 14px}.brand small{display:none}.workspace-head{margin-top:14px;align-items:flex-start;flex-direction:column}.toolbar{top:72px;grid-template-columns:1fr 1fr}.toolbar .search{grid-column:1/-1}.summary-grid{grid-template-columns:1fr 1fr}.today-main{grid-column:1/-1}.editorial-rail{grid-template-columns:1fr}.event{grid-template-columns:60px 1fr}.odds{grid-column:1/-1;border-top:1px solid #e8eef5}.actions{grid-column:1/-1;grid-row:auto;flex-direction:row;justify-content:flex-end;border-top:1px solid #e8eef5}.gen-controls{grid-template-columns:1fr}.modalback{padding:12px}.explore{grid-template-columns:1fr}}
 @media(max-width:560px){.promo-grid{grid-template-columns:1fr}}
@@ -99,11 +99,12 @@ button{cursor:pointer}
 <section id="biggames" class="view active">
   <div class="workspace-head">
     <div><div class="eyebrow">Sports editorial workstation</div><h1>Big Games</h1><p>Find the important fixtures, check prices, create content fast.</p></div>
-    <div class="hero-sports" aria-label="Sports"><button class="hero-sport active" data-hero-sport="soccer">⚽ Football</button><button class="hero-sport" data-hero-sport="tennis">🎾 Tennis</button><button class="hero-sport" data-hero-sport="basketball">🏀 Basketball</button></div>
+    <div class="hero-sports" aria-label="Sports"><button class="hero-sport active" data-hero-sport="Football">⚽ Football</button><button class="hero-sport" data-hero-sport="Tennis">🎾 Tennis</button><button class="hero-sport" data-hero-sport="Basketball">🏀 Basketball</button></div>
   </div>
   <div class="toolbar" role="search">
     <input id="search" class="control search" aria-label="Search team player or competition" placeholder="Search team, player or competition…">
-    <select id="sportFilter" class="control" aria-label="Sport"><option value="soccer">Football</option><option value="tennis">Tennis</option><option value="basketball">Basketball</option></select>
+    <select id="sportFilter" class="control" aria-label="Sport"><option value="all">All sports</option></select>
+    <input id="competitionSearch" class="control" aria-label="Search competition" placeholder="Find competition…">
     <select id="competitionFilter" class="control" aria-label="Competition"><option value="all">All competitions</option></select>
     <select id="countryFilter" class="control" aria-label="Country"><option value="all">All countries</option></select>
     <button id="resetFilters" class="btn ghost">Reset</button>
@@ -120,7 +121,7 @@ button{cursor:pointer}
     <div class="studio-search"><input id="studioSearch" class="control" placeholder="Search event, team, player or competition…"><button id="studioSearchBtn" class="btn primary">Search</button></div>
     <div id="studioResults" class="searchresults"></div>
     <div id="recentWrap" style="margin-top:18px;display:none"><div class="eyebrow" style="margin-bottom:8px">Recent</div><div id="recentList" class="searchresults"></div></div>
-    <div class="explore"><button data-explore="soccer">⚽<br>Football</button><button data-explore="tennis">🎾<br>Tennis</button><button data-explore="basketball">🏀<br>Basketball</button></div>
+    <div class="explore"><button data-explore="Football">⚽<br>Football</button><button data-explore="Tennis">🎾<br>Tennis</button><button data-explore="Basketball">🏀<br>Basketball</button></div>
   </div>
 </section>
 <section id="promotions" class="view">
@@ -174,24 +175,61 @@ function rangeOk(e){
  const days=Number(state.range);return t>=now&&t<=now+days*86400000;
 }
 function filtered(){
- const q=$("#search").value.trim().toLowerCase(), sport=$("#sportFilter").value, comp=$("#competitionFilter").value,country=$("#countryFilter").value;
- return state.events.filter(e=>(e.sportKey||"").toLowerCase()===sport&&rangeOk(e)&&(comp==="all"||e.competition===comp)&&(country==="all"||e.country===country)&&(!q||[e.title,e.competition,e.country,...(e.teamNames||[])].join(" ").toLowerCase().includes(q)));
+ const q=$("#search").value.trim().toLowerCase();
+ const sport=$("#sportFilter").value;
+ const comp=$("#competitionFilter").value;
+ const compQ=$("#competitionSearch").value.trim().toLowerCase();
+ const country=$("#countryFilter").value;
+ return state.events.filter(e=>
+   (sport==="all"||e.sportGroup===sport)&&
+   rangeOk(e)&&
+   (comp==="all"||e.competitionKey===comp)&&
+   (country==="all"||e.country===country)&&
+   (!compQ||String(e.competition||"").toLowerCase().includes(compQ))&&
+   (!q||[e.title,e.competition,e.country,e.sportGroup,...(e.teamNames||[])].join(" ").toLowerCase().includes(q))
+ );
 }
 function fillFilters(){
- const comps=[...new Set(state.events.map(e=>e.competition).filter(Boolean))].sort(), countries=[...new Set(state.events.map(e=>e.country).filter(Boolean))].sort();
- $("#competitionFilter").innerHTML='<option value="all">All competitions</option>'+comps.map(x=>'<option>'+esc(x)+'</option>').join("");
+ const sportOrder=["Football","Ice Hockey","Basketball","American Football","Australian Rules","Rugby League","Rugby Union","Cricket","Motorsport","Tennis"];
+ const sports=[...new Set(state.events.map(e=>e.sportGroup).filter(Boolean))].sort((a,b)=>{
+   const ai=sportOrder.indexOf(a),bi=sportOrder.indexOf(b);return (ai<0?999:ai)-(bi<0?999:bi);
+ });
+ const currentSport=$("#sportFilter").value||"all";
+ $("#sportFilter").innerHTML='<option value="all">All sports</option>'+sports.map(x=>'<option value="'+esc(x)+'">'+esc(x)+'</option>').join("");
+ $("#sportFilter").value=sports.includes(currentSport)?currentSport:"all";
+
+ const groups=new Map();
+ for(const e of state.events){
+   if(!e.competitionKey||!e.competition)continue;
+   const group=e.sportGroup||"Other";
+   if(!groups.has(group))groups.set(group,new Map());
+   if(!groups.get(group).has(e.competitionKey))groups.get(group).set(e.competitionKey,{label:e.competition,priority:Number(e.competitionPriority||999)});
+ }
+ let compHtml='<option value="all">All competitions</option>';
+ for(const sport of sportOrder.filter(x=>groups.has(x)).concat([...groups.keys()].filter(x=>!sportOrder.includes(x)))){
+   const items=[...groups.get(sport).entries()].sort((a,b)=>a[1].priority-b[1].priority||a[1].label.localeCompare(b[1].label));
+   compHtml+='<optgroup label="'+esc(sport)+'">'+items.map(([key,v])=>'<option value="'+esc(key)+'">'+esc(v.label)+'</option>').join("")+'</optgroup>';
+ }
+ const currentComp=$("#competitionFilter").value||"all";
+ $("#competitionFilter").innerHTML=compHtml;
+ if([...$("#competitionFilter").options].some(o=>o.value===currentComp))$("#competitionFilter").value=currentComp;
+
+ const countries=[...new Set(state.events.map(e=>e.country).filter(Boolean))].sort();
  $("#countryFilter").innerHTML='<option value="all">All countries</option>'+countries.map(x=>'<option>'+esc(x)+'</option>').join("");
 }
 function activeChips(){
- const a=[{label:$("#sportFilter").selectedOptions[0]?.text||"Football",type:"sport"}];
- if($("#competitionFilter").value!=="all")a.push({label:$("#competitionFilter").value,type:"competition"});
+ const a=[];
+ if($("#sportFilter").value!=="all")a.push({label:$("#sportFilter").selectedOptions[0]?.text||$("#sportFilter").value,type:"sport"});
+ if($("#competitionFilter").value!=="all")a.push({label:$("#competitionFilter").selectedOptions[0]?.text||$("#competitionFilter").value,type:"competition"});
+ if($("#competitionSearch").value.trim())a.push({label:"Competition: "+$("#competitionSearch").value.trim(),type:"competitionSearch"});
  if($("#countryFilter").value!=="all")a.push({label:$("#countryFilter").value,type:"country"});
  if($("#search").value.trim())a.push({label:"Search: "+$("#search").value.trim(),type:"search"});
  $("#activeFilters").innerHTML=a.map(x=>'<span class="activechip">'+esc(x.label)+'<button data-clear="'+x.type+'" aria-label="Clear '+esc(x.label)+'">×</button></span>').join("");
  $$("[data-clear]").forEach(b=>b.onclick=()=>{
    const t=b.dataset.clear;
-   if(t==="sport")$("#sportFilter").value="soccer";
+   if(t==="sport")$("#sportFilter").value="all";
    if(t==="competition")$("#competitionFilter").value="all";
+   if(t==="competitionSearch")$("#competitionSearch").value="";
    if(t==="country")$("#countryFilter").value="all";
    if(t==="search")$("#search").value="";
    render();
@@ -235,8 +273,8 @@ async function loadEvents(){
  catch(e){let stale=null;try{stale=JSON.parse(localStorage.getItem("bnp_big_events_cache")||"null")}catch{}if(stale?.events?.length){state.events=stale.events;state.lastSuccess=new Date(stale.at);fillFilters();render();$("#lastUpdated").textContent="Stale data · "+new Intl.DateTimeFormat("en-GB",{timeZone:"Europe/Malta",hour:"2-digit",minute:"2-digit"}).format(state.lastSuccess)+" CEST";$("#events").insertAdjacentHTML("afterbegin",'<div class="error" style="padding:10px 12px;margin-bottom:8px"><strong style="display:inline;margin-right:6px">Live odds unavailable.</strong> Showing cached data. <button class="btn" id="retry" style="margin-left:8px">Retry</button></div>');$("#retry").onclick=loadEvents}else{$("#events").innerHTML='<div class="error"><strong>Live odds are temporarily unavailable</strong>Could not reach the sportsbook API.<br><button class="btn primary" id="retry" style="margin-top:12px">Retry</button></div>';$("#retry").onclick=loadEvents}}
 }
 function reset(){$("#search").value="";$("#sportFilter").value="soccer";$("#competitionFilter").value="all";$("#countryFilter").value="all";state.range="30";$("[data-range]").forEach(x=>x.classList.toggle("active",x.dataset.range==="30"));$$("[data-hero-sport]").forEach(x=>x.classList.toggle("active",x.dataset.heroSport==="soccer"));render()}
-$("#resetFilters").onclick=reset;["search","sportFilter","competitionFilter","countryFilter"].forEach(id=>$("#"+id).addEventListener(id==="search"?"input":"change",()=>{
-  if(id==="sportFilter")$$("[data-hero-sport]").forEach(x=>x.classList.toggle("active",x.dataset.heroSport===$("#sportFilter").value));
+$("#resetFilters").onclick=reset;["search","competitionSearch","sportFilter","competitionFilter","countryFilter"].forEach(id=>$("#"+id).addEventListener((id==="search"||id==="competitionSearch")?"input":"change",()=>{
+  if(id==="sportFilter")$("[data-hero-sport]").forEach(x=>x.classList.toggle("active",x.dataset.heroSport===$("#sportFilter").value));
   render();
 }));$$("[data-range]").forEach(b=>b.onclick=()=>{state.range=b.dataset.range;$$("[data-range]").forEach(x=>x.classList.toggle("active",x===b));render()});
 
