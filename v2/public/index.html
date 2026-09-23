@@ -372,7 +372,7 @@ body{background:#f4f7fb!important;color:#15233a!important}
 
 /* User-provided competition artwork: 4x3 sprite */
 .competition-sprite-art{
-  background-image:url('/assets/competition-cards-user-v2.jpg?v=20260923b')!important;
+  background-image:url('/assets/competition-cards-hq.webp?v=20260923-hq?v=20260923b')!important;
   background-size:400% 300%!important;
   background-repeat:no-repeat!important;
   background-color:#07162a!important;
@@ -387,7 +387,7 @@ body{background:#f4f7fb!important;color:#15233a!important}
 .home-next-cards .next-competition-card{height:184px!important}
 .home-next-cards .next-competition-art{height:126px!important;border-radius:8px 8px 0 0!important;overflow:hidden!important;background-color:#07162a!important}
 .competition-sprite-art{
-  background-image:url('/assets/competition-cards-user-v2.jpg?v=20260923c')!important;
+  background-image:url('/assets/competition-cards-hq.webp?v=20260923-hq?v=20260923c')!important;
   background-size:400% 300%!important;
   background-repeat:no-repeat!important;
   background-color:#07162a!important;
@@ -408,10 +408,21 @@ body{background:#f4f7fb!important;color:#15233a!important}
 \n
 /* Critical image fix: do not let the generic card background shorthand erase sprite artwork. */
 .home-next-cards .next-competition-art.competition-sprite-art{
-  background-image:url('/assets/competition-cards-user-v2.jpg?v=20260923-imagefix')!important;
+  background-image:url('/assets/competition-cards-hq.webp?v=20260923-hq')!important;
   background-size:400% 300%!important;
   background-repeat:no-repeat!important;
   background-color:#07162a!important;
+}
+
+
+/* High-resolution competition cards */
+.home-next-cards .next-competition-art.competition-sprite-art,
+.competition-sprite-art{
+  background-image:url('/assets/competition-cards-hq.webp?v=20260923-hq')!important;
+  background-size:400% 300%!important;
+  background-repeat:no-repeat!important;
+  background-color:#07162a!important;
+  image-rendering:auto;
 }
 
 </style>
@@ -691,7 +702,7 @@ function renderNextCompetitions(){
    let artHtml='<div class="next-competition-art"><span class="fallback-art">'+esc(initials(e.competition))+'</span></div>';
    if(art?.type==="sprite"){
      const x=[0,33.333,66.667,100][art.pos[0]],y=[0,50,100][art.pos[1]];
-     const bg="/assets/competition-cards-user-v2.jpg?v=20260923-fixed";
+     const bg="/assets/competition-cards-hq.webp?v=20260923-hq";
      artHtml='<div class="next-competition-art competition-sprite-art" role="img" aria-label="'+esc(e.competition)+'" style="background-image:url(\''+bg+'\');background-size:400% 300%;background-repeat:no-repeat;background-position:'+x+'% '+y+'%;background-color:#07162a"></div>';
    }else if(art?.type==="fallback"){
      artHtml='<div class="next-competition-art"><img class="nextCompetitionImage" src="'+esc(art.url)+'" alt="'+esc(e.competition)+'" loading="lazy"><span class="fallback-art" hidden>'+esc(initials(e.competition))+'</span></div>';
