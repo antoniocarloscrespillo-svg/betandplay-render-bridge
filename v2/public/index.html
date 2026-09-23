@@ -3,8 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#0b1f3a">
-<title>Betandplay Content Hub</title>
+<meta name="theme-color" content="#071a2d">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<title>Content Hub</title>
 <style>
 :root{
   --navy:#0b1f3a;--navy2:#102b4f;--blue:#1677e8;--blue2:#0f63c7;--sky:#eaf4ff;
@@ -117,12 +118,120 @@ body{background:linear-gradient(180deg,#e9f0f6 0,#f4f7fa 170px,#eef3f8 430px)}
 @media(max-width:1100px){.event{grid-template-columns:70px minmax(260px,1.25fr) minmax(220px,.8fr)}.actions{grid-column:2/-1;justify-content:flex-end;padding-top:0}.sport-quick-filters{max-width:100%;justify-content:flex-start}}
 @media(max-width:780px){.app{padding:0 14px 36px}.topbar{margin:0 -14px;padding:0 14px;height:auto;min-height:62px;gap:8px;flex-wrap:wrap}.nav{order:3;width:100%;overflow:auto;padding-bottom:6px}.navbtn{white-space:nowrap}.workspace-titlebar{align-items:flex-start;flex-direction:column}.sport-quick-filters{width:100%}.summary-grid{grid-template-columns:1fr 1fr}.today-main{grid-column:1/-1}.editorial-rail{grid-template-columns:1fr}.event{grid-template-columns:62px 1fr}.match{grid-column:2}.odds{grid-column:1/-1;border-top:1px solid #edf2f6}.actions{grid-column:1/-1}}
 
+
+/* ===== Modern Sports Board v3 ===== */
+body{background:#e9eff5}
+.app{max-width:none;padding:0 26px 54px}
+.topbar{
+  margin:0 -26px;height:66px;padding:0 28px;
+  background:linear-gradient(90deg,#06182b 0%,#0a2340 68%,#0c2e52 100%);
+  border-bottom:0;box-shadow:0 8px 26px rgba(5,22,39,.18)
+}
+.brand{font-size:17px;letter-spacing:-.35px;gap:10px}
+.brandmark{
+  width:30px;height:30px;border-radius:8px;background:#147ce5;
+  display:grid;place-content:center;gap:2px;transform:none;box-shadow:0 4px 12px rgba(20,124,229,.28)
+}
+.brandmark span{display:block;width:15px;height:3px;border-radius:3px;background:#fff}
+.brandmark span:nth-child(2){width:11px}
+.brandmark span:nth-child(3){width:7px}
+.nav{height:100%;align-items:center}
+.navbtn{height:100%;border-radius:0;padding:0 15px;font-size:11px;color:#8da8c1}
+.navbtn:hover{background:rgba(255,255,255,.04)}
+.navbtn.active{background:transparent;box-shadow:none;color:#fff}
+.navbtn.active:after{bottom:0;left:14px;right:14px;height:3px;background:#2d9cff}
+
+.workspace-titlebar{margin:22px 0 11px;align-items:center}
+.workspace-titlebar>div:first-child{border:0;padding:0}
+.workspace-titlebar h1{font-size:23px;letter-spacing:-.5px}
+.workspace-titlebar p{font-size:10px}
+.sport-quick-filters{background:#dce6ef;border:0;padding:3px;border-radius:8px}
+.sport-quick{height:29px;padding:0 10px;font-size:9px;border-radius:6px}
+.sport-quick.active{background:#fff;color:#0c4f8a;box-shadow:0 2px 8px rgba(16,51,80,.1)}
+
+.toolbar{
+  top:77px;border:0;border-radius:9px;padding:7px;
+  background:#fff;box-shadow:0 4px 15px rgba(13,42,68,.07)
+}
+.control{height:37px;background:#f4f7fa;border:1px solid transparent;border-radius:6px}
+.control:hover{border-color:#cbd8e4}
+.quickbar{margin:8px 0 12px}
+.chip{border:0;background:transparent;padding:6px 9px}
+.chip:hover{background:#dde8f2}
+.chip.active{background:#0d2d4b}
+
+.summary-grid{gap:7px}
+.today-main{background:linear-gradient(105deg,#0a2947,#0d3b66)}
+.stat{border:0;border-left:3px solid #69aee8}
+.editorial-rail{gap:7px}
+.rail{border:0;background:#fff}
+
+#events{display:grid;gap:12px}
+.comp{margin:0;border-radius:10px;box-shadow:0 3px 12px rgba(9,38,64,.06);overflow:hidden}
+.comphead{
+  min-height:45px;background:#0b2947;padding:6px 10px;
+  border-left:4px solid #1987eb
+}
+.comphead:before{display:none}
+.comp-logo{width:29px;height:29px}
+.comp-logo img{max-width:27px;max-height:27px}
+.compname{font-size:11px;letter-spacing:.15px}
+.compcount{font-size:8px;background:#173d5e}
+.event{
+  min-height:67px;grid-template-columns:68px minmax(320px,1.4fr) minmax(270px,.82fr) auto;
+  border-bottom:1px solid #e8eef4
+}
+.event:last-child{border-bottom:0}
+.event:nth-child(even){background:#fafcfe}
+.event:hover{background:#eef6fd}
+.time{background:#f1f5f8}
+.time b{font-size:14px}
+.match{padding:7px 14px}
+.team{font-size:12px}
+.team-logo{width:31px;height:31px}
+.team-logo img{max-width:29px;max-height:29px}
+.odds{padding:7px 9px}
+.odd{height:38px;background:#f2f6fa;border:0;border-bottom:2px solid #d8e4ee}
+.odd:hover{border-bottom-color:#1682e6;background:#e9f4ff}
+.odd b{font-size:12px}
+.actions{padding:7px 9px}
+.actions .btn{min-height:31px;font-size:9px}
+.actions .primary{background:#167de4;border-color:#167de4}
+
+/* board-style secondary pages */
+.next-competition-page,.studio-direct,#promotions .studio{max-width:1500px!important;margin:0 auto}
+.next-page-head,.studio-direct-head,#promotions .studiohero{
+  background:transparent!important;border-bottom:0!important;padding:22px 0 10px!important
+}
+.next-page-head h1,.studio-direct-head h1,#promotions .studiohero h1{font-size:23px!important}
+.next-comp-list{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}
+.next-sport-group{border:0;box-shadow:0 3px 12px rgba(9,38,64,.06)}
+.next-sport-head{background:#0b2947;padding:7px 10px}
+.next-comp{min-height:51px}
+.studio-composer{display:grid;grid-template-columns:minmax(0,1fr);gap:0}
+.studio-creator-grid{background:#0b2947;border-radius:10px 10px 0 0;padding:12px}
+.content-selection.studio-selection{border:0}
+.studio-actions{border:0;border-top:1px solid #e3ebf2}
+.promo-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+.promo-card{border:0;border-radius:9px;box-shadow:0 3px 12px rgba(9,38,64,.06)}
+.promo-card:before{height:3px}
+
+/* stronger visual rhythm inspired by sports control rooms */
+.view{animation:boardIn .18s ease-out}
+@keyframes boardIn{from{opacity:.35;transform:translateY(3px)}to{opacity:1;transform:none}}
+.updated{letter-spacing:.15px}
+.eyebrow{letter-spacing:.9px;font-size:8px}
+.drawer,.modal{border-radius:14px 0 0 14px}
+.modal{border-radius:14px}
+@media(max-width:1200px){.next-comp-list{grid-template-columns:1fr}.promo-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:780px){.app{padding:0 12px 36px}.topbar{margin:0 -12px;padding:0 12px}.promo-grid{grid-template-columns:1fr}}
+
 </style>
 </head>
 <body>
 <div class="app">
 <header class="topbar">
-  <div class="brand"><div class="brandmark">B</div><span>Betandplay</span><small>Content Hub</small></div>
+  <div class="brand"><div class="brandmark" aria-hidden="true"><span></span><span></span><span></span></div><span>Content Hub</span></div>
   <nav class="nav" aria-label="Main navigation"><button class="navbtn active" data-view="biggames">Big Games</button><button class="navbtn" data-view="nextcomps">Next by Competition</button><button class="navbtn" data-view="studio">Content Studio</button><button class="navbtn" data-view="promotions">Promotions</button></nav>
 </header>
 <main>
