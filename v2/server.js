@@ -2365,7 +2365,10 @@ app.post("/api/content-builder", async (req,res) => {
         const items=selected.filter(e=>e.competitionKey===comp);
         copies.push({contentType:"Competition information",copy:copywriterCompetitionInfo(items[0]?.competition||"Competition",items,v,language)});
       }else if(mode==="combo"){
-        copies.push({contentType:"Combo",copy:copywriterCombo(selected,v,language)});
+        const labels=language==="DE"
+          ? ["Ausgewogene Kombi","Tore & Märkte","Ergebnis-Mix"]
+          : ["Balanced ACCA","Goals & Markets ACCA","Result-focused ACCA"];
+        copies.push({contentType:labels[v%labels.length],copy:copywriterCombo(selected,v,language)});
       }
     }
     res.json({ok:true,variants:copies});
