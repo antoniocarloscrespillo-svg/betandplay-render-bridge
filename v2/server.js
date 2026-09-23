@@ -319,9 +319,31 @@ function setCached(key, value) {
 }
 
 function decimalOdd(value) {
-  if (typeof value !== "number") return "";
-  return (value / 1000).toFixed(3).replace(/0+$/, "").replace(/\.$/, "");
+  const n=Number(value);
+  if(!Number.isFinite(n) || n<=0) return "";
+  const dec=n>100 ? n/1000 : n;
+  return dec.toFixed(3).replace(/0+$/,"").replace(/\.$/,"");
 }
+
+function outcomeOddValue(outcome){
+  if(!outcome || typeof outcome!=="object") return "";
+  const raw=
+    outcome.odds ??
+    outcome.decimal_odds ??
+    outcome.decimalOdds ??
+    outcome.price ??
+    outcome.value ??
+    outcome.coefficient;
+  return decimalOdd(raw);
+}
+
+function marketOutcomeList(market){
+  if(!market || typeof market!=="object") return [];
+  const rows=market.outcomes || market.selections || market.options || market.results || [];
+  return Array.isArray(rows) ? rows : [];
+}
+
+function isGermanMarket
 
 function isGermanMarket(match) {
   const tournament = match?.tournament || {};
@@ -799,88 +821,171 @@ function sportsbookLogoUrl(raw="") {
   return SPORTSBOOK_ORIGIN + "/" + value.replace(/^\/+/, "");
 }
 
+function normalizedCompetitorEntity(entity){
+  if(!entity) return null;
+  if(typeof entity==="string") return {name:entity};
+  if(entity.competitor && typeof entity.competitor==="object") return entity.competitor;
+  if(entity.team && typeof entity.team==="object") return entity.team;
+  return entity;
+}
+
 function competitorEntries(match) {
-  if(Array.isArray(match?.competitors)) return match.competitors.filter(Boolean);
-  return [match?.competitors?.home,match?.competitors?.away].filter(Boolean);
+  const candidates=[];
+  const push=v=>{
+    if(Array.isArray(v)) v.forEach(push);
+    else {
+      const e=normalizedCompetitorEntity(v);
+      if(e && (e.name || e.id)) candidates.push(e);
+    }
+  };
+
+  const c=match?.competitors;
+  if(Array.isArray(c)) push(c);
+  else if(c && typeof c==="object"){
+    push(c.home); push(c.away); push(c.host); push(c.guest);
+    push(c.home_team); push(c.away_team);
+    push(c.homeTeam); push(c.awayTeam);
+    for(const v of Object.values(c)) push(v);
+  }
+
+  push(match?.home_competitor); push(match?.away_competitor);
+  push(match?.home_team); push(match?.away_team);
+  push(match?.homeTeam); push(match?.awayTeam);
+  push(match?.home); push(match?.away);
+  push(match?.teams?.home); push(match?.teams?.away);
+
+  const seen=new Set();
+  return candidates.filter(e=>{
+    const key=String(e.id ?? e.urn_id ?? e.name ?? "").toLowerCase();
+    if(!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 }
 
 function competitorBySide(match,side) {
-  if(match?.competitors?.[side]) return match.competitors[side];
+  const c=match?.competitors;
+  const direct=side==="home"
+    ? [c?.home,c?.host,c?.home_team,c?.homeTeam,match?.home_competitor,match?.home_team,match?.homeTeam,match?.home,match?.teams?.home]
+    : [c?.away,c?.guest,c?.away_team,c?.awayTeam,match?.away_competitor,match?.away_team,match?.awayTeam,match?.away,match?.teams?.away];
+  for(const raw of direct){
+    const e=normalizedCompetitorEntity(raw);
+    if(e?.name) return e;
+  }
+
   const list=competitorEntries(match);
-  if(side==="home") return list.find(c=>/home/i.test(String(c?.type||c?.side||c?.qualifier||""))) || list[0] || null;
-  return list.find(c=>/away/i.test(String(c?.type||c?.side||c?.qualifier||""))) || list[1] || null;
+  const patterns=side==="home"
+    ? /^(home|host|1)$/i
+    : /^(away|guest|2)$/i;
+  const byQualifier=list.find(e=>patterns.test(String(e?.type ?? e?.side ?? e?.qualifier ?? e?.position ?? "")));
+  if(byQualifier) return byQualifier;
+  return side==="home" ? (list[0]||null) : (list[1]||null);
+}
+
+function matchNameTeams(match){
+  const name=String(match?.name || match?.title || "").trim();
+  if(!name) return [];
+  const parts=name.split(/\s+(?:vs\.?|v\.?|-|–|—)\s+/i).map(x=>x.trim()).filter(Boolean);
+  return parts.length===2 ? parts : [];
 }
 
 function extractOfficialLogo(entity) {
-  return sportsbookLogoUrl(entity?.logo || entity?.logo_url || entity?.image || entity?.image_url || "");
+  return sportsbookLogoUrl(entity?.logo || entity?.logo_url || entity?.logoUrl || entity?.image || entity?.image_url || entity?.imageUrl || "");
+}
+
+function mainMarketForMatch(match){
+  if(match?.main_market) return match.main_market;
+  if(match?.mainMarket) return match.mainMarket;
+  if(match?.markets?.main) return match.markets.main;
+  if(Array.isArray(match?.markets)){
+    const result=match.markets.find(m=>/^(1x2|match result|moneyline|winner|full time result)$/i.test(String(m?.name||m?.label||m?.key||"")));
+    return result || match.markets[0] || null;
+  }
+  return null;
 }
 
 function toBigEvent(match) {
-  const post = toPost(match);
-  const category = match?.tournament?.category || {};
-  const competitors=competitorEntries(match);
-  const h2hCompetitors=post.isHeadToHead ? [competitorBySide(match,"home"),competitorBySide(match,"away")].filter(Boolean) : [];
+  const post=toPost(match);
+  const category=match?.tournament?.category || {};
+  const homeEntity=competitorBySide(match,"home");
+  const awayEntity=competitorBySide(match,"away");
+  const logoEntities=[homeEntity,awayEntity];
+
   return {
     ...post,
-    country: category?.country_code || category?.name || "",
+    country: category?.country_code || category?.countryCode || category?.name || "",
     tournamentId: match?.tournament?.id || null,
-    teamNames: h2hCompetitors.map(c=>c?.name).filter(Boolean),
-    teamLogos: h2hCompetitors
-      .filter(c=>c?.name)
-      .map(c=>({name:c.name,url:extractOfficialLogo(c)})),
+    teamNames:post.teamNames||[],
+    teamLogos:(post.teamNames||[]).map((name,i)=>({
+      name,
+      url:extractOfficialLogo(logoEntities[i])
+    })),
     competitionLogo: extractOfficialLogo(match?.tournament),
     logoSource:"sportsbook-v3"
   };
 }
 
 function toPost(match) {
-  const type=String(match?.type || "match");
   const homeEntity=competitorBySide(match,"home");
   const awayEntity=competitorBySide(match,"away");
-  const competitors=competitorEntries(match).map(c=>c?.name).filter(Boolean);
-  const isHeadToHead=type==="match" && Boolean(homeEntity?.name && awayEntity?.name);
-  const home=homeEntity?.name || "";
-  const away=awayEntity?.name || "";
+  const namedPair=matchNameTeams(match);
+  const home=String(homeEntity?.name || namedPair[0] || "").trim();
+  const away=String(awayEntity?.name || namedPair[1] || "").trim();
+  const isHeadToHead=Boolean(home && away);
   const title=isHeadToHead
     ? home+" vs "+away
-    : (match?.name || match?.tournament?.name || competitors.slice(0,3).join(" · ") || "Sports event");
-  const competition = match?.tournament?.name || "Sport";
-  const time = match?.start_time
-    ? new Intl.DateTimeFormat("en-GB", {
-        timeZone: "Europe/Malta",
-        day: "2-digit",
-        month: "short",
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false
-      }).format(new Date(match.start_time)).replace(",", " ·") + " CEST"
+    : (match?.name || match?.title || match?.tournament?.name || "Sports event");
+  const competition=match?.tournament?.name || match?.competition?.name || "Sport";
+  const startTime=match?.start_time || match?.startTime || match?.starts_at || match?.startsAt || null;
+  const time=startTime
+    ? new Intl.DateTimeFormat("en-GB",{
+        timeZone:"Europe/Malta",
+        day:"2-digit",
+        month:"short",
+        hour:"2-digit",
+        minute:"2-digit",
+        hour12:false
+      }).format(new Date(startTime)).replace(","," ·")+" CEST"
     : "";
 
-  const odds = (match?.main_market?.outcomes || [])
-    .filter(o => o?.active !== false && typeof o?.odds === "number")
-    .slice(0, 3)
-    .map(o => ({ label: o.name || o.label || "Selection", value: decimalOdd(o.odds) }));
+  const mainMarket=mainMarketForMatch(match);
+  const odds=marketOutcomeList(mainMarket)
+    .filter(o=>o?.active!==false)
+    .map(o=>({
+      label:o?.name || o?.label || o?.selection_name || o?.selectionName || "Selection",
+      value:outcomeOddValue(o)
+    }))
+    .filter(o=>o.value)
+    .slice(0,3);
 
-  const secondary = (match?.secondary_market?.outcomes || [])
-    .find(o => o?.active !== false && typeof o?.odds === "number");
-
-  if (secondary && odds.length < 3) {
-    odds.push({ label: secondary.name || secondary.label || "Selection", value: decimalOdd(secondary.odds) });
+  const secondaryMarket=match?.secondary_market || match?.secondaryMarket || match?.markets?.secondary;
+  if(odds.length<3){
+    const secondary=marketOutcomeList(secondaryMarket)
+      .filter(o=>o?.active!==false)
+      .map(o=>({
+        label:o?.name || o?.label || o?.selection_name || o?.selectionName || "Selection",
+        value:outcomeOddValue(o)
+      }))
+      .find(o=>o.value);
+    if(secondary) odds.push(secondary);
   }
 
   return {
-    id: String(match.id),
+    id:String(match?.id ?? match?.match_id ?? ""),
     title,
     isHeadToHead,
     competition,
-    sport: match?.tournament?.sport?.name || match?.sport?.name || "Sport",
-    sportKey: match?.tournament?.sport?.key || match?.sport?.key || "",
-    startTime: match?.start_time || null,
+    sport:match?.tournament?.sport?.name || match?.sport?.name || match?.sport_name || "Sport",
+    sportKey:match?.tournament?.sport?.key || match?.sport?.key || match?.sport_key || "",
+    startTime,
     time,
+    teamNames:isHeadToHead ? [home,away] : [],
     odds,
-    bettingOptions: []
+    bettingOptions:[]
   };
 }
+
+function contentPrefs
 
 function contentPrefs(body={}) {
   return {
@@ -1929,32 +2034,47 @@ function editorialDateTime(e,language="EN"){
   return new Intl.DateTimeFormat(locale,{timeZone:"Europe/Malta",weekday:"short",day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit",hour12:false}).format(new Date(e.startTime))+" CEST";
 }
 function copywriterMatchPost(e,variant=0,language="EN"){
-  const main=(e.odds||[]).slice(0,3);
-  const extras=(e.bettingOptions||[]).filter(x=>Number.isFinite(Number(x?.value))).slice(0,6);
+  const main=(e.odds||[]).filter(o=>o?.value).slice(0,3);
+  const extras=(e.bettingOptions||[]).filter(o=>o?.value).slice(0,6);
   const mainText=main.map(o=>"• "+o.label+" — "+o.value).join("\n");
   const extraText=extras.slice(0,3).map(o=>"• "+o.market+": "+o.label+" @ "+o.value).join("\n");
   const when=editorialDateTime(e,language);
 
   if(language==="DE"){
-    const opens=[
-      "🔥 "+e.title+" steht heute im Fokus.",
-      "🎯 "+e.title+" — mehr als nur der 1X2-Markt.",
-      "👀 "+e.title+" ist eines der Spiele, die Du im Blick haben solltest."
-    ];
-    if(variant%3===0) return opens[0]+"\n\n⏰ "+when+"\n🏆 "+e.competition+"\n\n"+(mainText?"HAUPTQUOTEN\n"+mainText+"\n\n":"")+(extras[0]?"ALTERNATIVER MARKT\n• "+extras[0].market+": "+extras[0].label+" @ "+extras[0].value+"\n\n":"")+"👉 Checke alle Märkte vor Anpfiff bei Betandplay.";
-    if(variant%3===1) return opens[1]+"\n\n⏰ "+when+"\n\n"+(extraText?"MÄRKTE IM BLICK\n"+extraText+"\n\n":"")+(mainText?"Zum Vergleich:\n"+mainText+"\n\n":"")+"👉 Welche Richtung passt zu Deinem Tipp?";
-    return opens[2]+"\n\n"+e.competition+" · "+when+"\n\n"+(mainText?"Der Hauptmarkt:\n"+mainText+"\n\n":"")+(extraText?"Andere mögliche Ansätze:\n"+extraText+"\n\n":"")+"👉 Alle aktuellen Quoten findest Du bei Betandplay.";
+    if(variant%3===0){
+      return "⚽ "+e.title+" steht als Nächstes in der "+e.competition+" an.\n\n⏰ "+when+
+        (mainText?"\n\nHAUPTQUOTEN\n"+mainText:"")+
+        "\n\n👉 Checke vor dem Anpfiff alle aktuellen Märkte bei Betandplay.";
+    }
+    if(variant%3===1){
+      return "🎯 "+e.title+" — MEHR ALS NUR 1X2\n\n⏰ "+when+
+        (extraText?"\n\nMÄRKTE IM BLICK\n"+extraText:"\n\nAktuell sind keine zusätzlichen Märkte verfügbar.")+
+        "\n\n👉 Öffne das Spiel bei Betandplay und vergleiche die Optionen.";
+    }
+    return "🔥 "+e.competition+": "+e.title+"\n\nEin Spiel für Deine Watchlist. Die Hauptquoten geben den ersten Überblick, während alternative Märkte einen anderen Ansatz ermöglichen.\n\n"+
+      (mainText?"HAUPTQUOTEN\n"+mainText+"\n\n":"")+
+      (extraText?"ALTERNATIVE MÄRKTE\n"+extraText+"\n\n":"")+
+      "⏰ "+when+"\n\n👉 Alle Quoten und Märkte bei Betandplay checken.";
   }
 
-  const opens=[
-    "🔥 "+e.title+" takes centre stage.",
-    "🎯 "+e.title+" — there is more here than just the 1X2.",
-    "👀 "+e.title+" is one of the fixtures to have on the radar."
-  ];
-  if(variant%3===0) return opens[0]+"\n\n⏰ "+when+"\n🏆 "+e.competition+"\n\n"+(mainText?"MAIN ODDS\n"+mainText+"\n\n":"")+(extras[0]?"ALTERNATIVE MARKET\n• "+extras[0].market+": "+extras[0].label+" @ "+extras[0].value+"\n\n":"")+"👉 Check the full market before kick-off on Betandplay.";
-  if(variant%3===1) return opens[1]+"\n\n⏰ "+when+"\n\n"+(extraText?"MARKETS TO WATCH\n"+extraText+"\n\n":"")+(mainText?"For comparison:\n"+mainText+"\n\n":"")+"👉 Which angle fits your view of the game?";
-  return opens[2]+"\n\n"+e.competition+" · "+when+"\n\n"+(mainText?"The main market:\n"+mainText+"\n\n":"")+(extraText?"Other ways into the game:\n"+extraText+"\n\n":"")+"👉 Check every current price on Betandplay.";
+  if(variant%3===0){
+    return "⚽ "+e.title+" is next up in the "+e.competition+".\n\n⏰ "+when+
+      (mainText?"\n\nMAIN ODDS\n"+mainText:"")+
+      "\n\n👉 Check the latest prices and full market on Betandplay before kick-off.";
+  }
+  if(variant%3===1){
+    return "🎯 "+e.title+" — BEYOND THE 1X2\n\n⏰ "+when+
+      (extraText?"\n\nMARKETS TO WATCH\n"+extraText:"\n\nNo additional markets are currently available.")+
+      "\n\n👉 Open the match on Betandplay and compare the available angles.";
+  }
+  return "🔥 "+e.competition+": "+e.title+"\n\nOne for the watchlist. The main prices give the basic shape of the market, while the alternative markets offer a different way into the game.\n\n"+
+    (mainText?"MAIN ODDS\n"+mainText+"\n\n":"")+
+    (extraText?"ALTERNATIVE MARKETS\n"+extraText+"\n\n":"")+
+    "⏰ "+when+"\n\n👉 Check every available market on Betandplay.";
 }
+
+function copywriterCompetitionPost
+
 function copywriterCompetitionPost(competition,items,variant=0,language="EN"){
   const games=items.slice(0,variant===2?6:4);
   const lines=games.map(e=>"• "+e.title+" · "+editorialDateTime(e,language));
@@ -2037,11 +2157,139 @@ function buildComboVariant(items,variant=0,language="EN"){
   return title+"\n\n"+lines.join("\n")+"\n\n📊 Combined odds: "+total+"\n\nEach option deliberately uses a different mix of markets and risk level. Prices can move.\n\n👉 Check every price on Betandplay before placing the bet.";
 }
 
-function copywriterCombo(items,variant=0,language="EN",label="ACCA"){
-  return buildComboVariant(items,variant,language) || (language==="DE"
-    ? "Für diese Auswahl konnten nicht genügend sinnvolle Kombi-Legs mit verfügbaren Quoten gefunden werden."
-    : "Not enough suitable priced selections were available to build a sensible acca from this set.");
+function numericOdd(value){
+  const n=Number(value);
+  return Number.isFinite(n) && n>1 ? n : null;
 }
+
+function comboCandidates(event){
+  const extras=(event.bettingOptions||[])
+    .map(o=>({
+      title:event.title,
+      market:o.market || "Market",
+      label:o.label || "Selection",
+      value:String(o.value||""),
+      odd:numericOdd(o.value),
+      family:o.family || marketFamily(o.market||"")
+    }))
+    .filter(o=>o.odd);
+
+  const mains=(event.odds||[])
+    .map(o=>({
+      title:event.title,
+      market:"Match Result",
+      label:o.label || "Selection",
+      value:String(o.value||""),
+      odd:numericOdd(o.value),
+      family:"result"
+    }))
+    .filter(o=>o.odd);
+
+  return [...extras,...mains];
+}
+
+function isDrawLabel(label=""){
+  return /(^|\b)(draw|x|tie)(\b|$)/i.test(String(label));
+}
+
+function selectComboPick(event,strategy,usedFamilies,legIndex){
+  const all=comboCandidates(event);
+  if(!all.length) return null;
+
+  const preferences={
+    balanced:["double_chance","goals_total","btts","draw_no_bet","team_total","result","handicap","corners"],
+    goals:["goals_total","btts","team_total","corners","result","double_chance","handicap"],
+    results:["draw_no_bet","double_chance","handicap","result","goals_total","btts","team_total"]
+  }[strategy] || ["double_chance","goals_total","btts","result"];
+
+  const sensible=all.filter(x=>x.odd>=1.15 && x.odd<=3.25);
+  const pool=sensible.length?sensible:all.filter(x=>x.odd<=4.5);
+  const resultPool=pool.filter(x=>x.family!=="result" || !isDrawLabel(x.label));
+
+  for(const family of preferences){
+    let rows=resultPool.filter(x=>x.family===family);
+    if(!rows.length) continue;
+    // Prefer medium prices and avoid repeating exactly the same market family across every leg.
+    rows.sort((a,b)=>Math.abs(a.odd-1.7)-Math.abs(b.odd-1.7));
+    if(usedFamilies.has(family) && rows.length>1) rows=rows.slice(1).concat(rows[0]);
+    const pick=rows[legIndex%rows.length];
+    if(pick) return pick;
+  }
+
+  return resultPool.sort((a,b)=>Math.abs(a.odd-1.7)-Math.abs(b.odd-1.7))[0] || pool[0] || null;
+}
+
+function buildComboLegs(items,variant=0){
+  const strategies=["balanced","goals","results"];
+  const strategy=strategies[variant%strategies.length];
+  const rotated=[...items.slice(variant),...items.slice(0,variant)];
+  const usedFamilies=new Set();
+  const legs=[];
+  const usedMatches=new Set();
+
+  for(let i=0;i<rotated.length && legs.length<4;i++){
+    const e=rotated[i];
+    if(!e?.id || usedMatches.has(String(e.id))) continue;
+    const pick=selectComboPick(e,strategy,usedFamilies,i);
+    if(!pick) continue;
+    usedMatches.add(String(e.id));
+    usedFamilies.add(pick.family);
+    legs.push({...pick,eventId:String(e.id)});
+  }
+
+  if(legs.length<3){
+    for(const e of rotated){
+      if(legs.length>=3) break;
+      if(!e?.id || usedMatches.has(String(e.id))) continue;
+      const pick=comboCandidates(e).sort((a,b)=>Math.abs(a.odd-1.7)-Math.abs(b.odd-1.7))[0];
+      if(!pick) continue;
+      usedMatches.add(String(e.id));
+      legs.push({...pick,eventId:String(e.id)});
+    }
+  }
+  return {strategy,legs};
+}
+
+function copywriterCombo(items,variant=0,language="EN",label="ACCA"){
+  const {strategy,legs}=buildComboLegs(items,variant);
+  if(!legs.length){
+    return language==="DE"
+      ? "Keine sinnvolle Kombi konnte mit den aktuell verfügbaren Märkten erstellt werden."
+      : "No sensible ACCA could be built from the currently available markets.";
+  }
+
+  const combined=legs.reduce((n,x)=>n*(x.odd||1),1);
+  const combinedText=combined>1 ? combined.toFixed(2) : "";
+  const lines=legs.map(x=>"• "+x.title+" — "+x.market+": "+x.label+" @ "+x.value);
+  const strategyLabel={
+    balanced:language==="DE"?"Ausgewogene Kombi":"Balanced ACCA",
+    goals:language==="DE"?"Tore & Spielverlauf":"Goals & game-flow ACCA",
+    results:language==="DE"?"Ergebnisorientierte Kombi":"Result-focused ACCA"
+  }[strategy];
+
+  if(language==="DE"){
+    const opens=[
+      "🔥 KOMBI-IDEE DES TAGES",
+      "⚽ TORE & MÄRKTE — KOMBI-IDEE",
+      "🎯 ERGEBNIS-MIX FÜR DEN WETTSCHEIN"
+    ];
+    return opens[variant%3]+"\n"+strategyLabel+"\n\n"+lines.join("\n")+
+      (combinedText?"\n\nKombinierte Quote: "+combinedText:"")+
+      "\n\n👉 Prüfe alle Quoten noch einmal bei Betandplay, bevor Du die Kombi abgibst.";
+  }
+
+  const opens=[
+    "🔥 TODAY'S ACCA IDEA",
+    "⚽ GOALS & MARKETS ACCA",
+    "🎯 RESULT-FOCUSED BETSLIP"
+  ];
+  return opens[variant%3]+"\n"+strategyLabel+"\n\n"+lines.join("\n")+
+    (combinedText?"\n\nCombined odds: "+combinedText:"")+
+    "\n\n👉 Check every price on Betandplay before placing the ACCA.";
+}
+
+function copywriterCompetitionInfo
+
 function copywriterCompetitionInfo(competition,items,variant=0,language="EN"){
   const first=items[0], last=items[Math.min(items.length-1,5)];
   const fixtures=items.slice(0,5).map(e=>"• "+e.title+" · "+editorialDateTime(e,language)).join("\n");
