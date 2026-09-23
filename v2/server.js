@@ -1833,6 +1833,39 @@ async function warmEditorialEvents(){
   return editorialEventsWarmPromise;
 }
 
+
+function competitionCardSvg(key){
+  const def=EDITORIAL_COMPETITIONS.find(x=>x.key===key);
+  const label=def?.label||String(key||"Competition").replace(/_/g," ");
+  const sport=def?.sport||"Sport";
+  const palettes={
+    Football:["#0B3155","#167FD9"],Tennis:["#174A35","#42A86C"],Basketball:["#713014","#E4772A"],
+    "Ice Hockey":["#213D66","#6F8FD2"],"American Football":["#283B57","#AD6238"],
+    "Australian Rules":["#213B64","#D34A55"],"Rugby League":["#174735","#42A66F"],
+    "Rugby Union":["#25456A","#6D89D2"],Cricket:["#49305F","#B45599"],Motorsport:["#1A1A1A","#D62828"]
+  };
+  const [c1,c2]=palettes[sport]||["#123B5A","#2B86D9"];
+  const mark=key==="champions"?"★":key==="formula1"?"F1":key==="bundesliga2"?"2B":label.split(/\s+/).map(x=>x[0]).join("").slice(0,4).toUpperCase();
+  const xe=v=>String(v).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  return \`<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="650" viewBox="0 0 1200 650">
+  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="\${c1}"/><stop offset="1" stop-color="\${c2}"/></linearGradient></defs>
+  <rect width="1200" height="650" rx="34" fill="url(#g)"/>
+  <circle cx="1035" cy="90" r="280" fill="#fff" opacity=".08"/><circle cx="120" cy="630" r="280" fill="#fff" opacity=".06"/>
+  <path d="M0 500 C240 430 420 575 690 475 S1000 410 1200 480 V650 H0Z" fill="#061523" opacity=".28"/>
+  <rect x="65" y="58" width="190" height="42" rx="21" fill="#fff" opacity=".13"/>
+  <text x="160" y="86" text-anchor="middle" font-family="Arial,sans-serif" font-size="20" font-weight="700" fill="#fff">\${xe(sport).toUpperCase()}</text>
+  <text x="70" y="325" font-family="Arial,sans-serif" font-size="130" font-weight="900" fill="#fff">\${xe(mark)}</text>
+  <text x="70" y="410" font-family="Arial,sans-serif" font-size="46" font-weight="800" fill="#fff">\${xe(label)}</text>
+  <text x="72" y="456" font-family="Arial,sans-serif" font-size="22" font-weight="600" fill="#fff" opacity=".72">CONTENT HUB · NEXT COMPETITION</text>
+  </svg>\`;
+}
+app.get("/api/competition-card/:key.svg",(req,res)=>{
+  const key=String(req.params.key||"").toLowerCase().replace(/[^a-z0-9_]/g,"");
+  res.set("Content-Type","image/svg+xml; charset=utf-8");
+  res.set("Cache-Control","public, max-age=86400");
+  res.send(competitionCardSvg(key));
+});
+
 app.get("/api/big-events", async (_req, res) => {
   try {
     const hit=cached("editorial-events-v2");
