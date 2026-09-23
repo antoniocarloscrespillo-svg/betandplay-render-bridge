@@ -340,7 +340,14 @@ function filtered(){
    (country==="all"||e.country===country)&&
    (!compQ||String(e.competition||"").toLowerCase().includes(compQ))&&
    (!q||[e.title,e.competition,e.country,e.sportGroup,...(e.teamNames||[])].join(" ").toLowerCase().includes(q))
- ).sort((a,b)=>new Date(a.startTime)-new Date(b.startTime));
+ ).sort((a,b)=>{
+   const sportOrder=["Football","Ice Hockey","Basketball","American Football","Australian Rules","Rugby League","Rugby Union","Cricket","Motorsport","Tennis"];
+   const ai=sportOrder.indexOf(a.sportGroup),bi=sportOrder.indexOf(b.sportGroup);
+   const as=ai<0?999:ai,bs=bi<0?999:bi;
+   return as-bs ||
+     Number(a.competitionPriority||999)-Number(b.competitionPriority||999) ||
+     new Date(a.startTime)-new Date(b.startTime);
+ });
 }
 function sportIcon(name){
  const map={"Football":"⚽","Tennis":"🎾","Basketball":"🏀","Ice Hockey":"🏒","American Football":"🏈","Australian Rules":"🏉","Rugby League":"🏉","Rugby Union":"🏉","Cricket":"🏏","Motorsport":"🏎️"};
@@ -453,7 +460,15 @@ function render(){
  const list=filtered();activeChips();todaySummary(list);editorialRail(list);
  if(!list.length){$("#events").innerHTML='<div class="empty"><strong>No matches found</strong>Try removing some filters.<br><button class="btn primary" style="margin-top:12px" id="emptyReset">Reset filters</button></div>';$("#emptyReset").onclick=reset;return}
  const groups=new Map();for(const e of list){if(!groups.has(e.competition))groups.set(e.competition,[]);groups.get(e.competition).push(e)}
- $("#events").innerHTML=[...groups.entries()].map(([name,items])=>{const e=items[0];return '<section class="comp" data-sport="'+esc(e.sportGroup||"Sport")+'"><header class="comphead">'+competitionLogo(e)+'<button class="compmeta filterComp" data-comp="'+esc(e.competitionKey||"")+'"><div class="compname">'+esc(name)+'</div><div class="compcount">'+items.length+' match'+(items.length===1?"":"es")+'</div></button><button class="collapse-comp" aria-label="Collapse '+esc(name)+'">Collapse</button></header><div class="compbody">'+items.map(eventRow).join("")+'</div></section>'}).join("");
+ const orderedGroups=[...groups.entries()].sort((a,b)=>{
+   const ae=a[1][0],be=b[1][0];
+   const sportOrder=["Football","Ice Hockey","Basketball","American Football","Australian Rules","Rugby League","Rugby Union","Cricket","Motorsport","Tennis"];
+   const ai=sportOrder.indexOf(ae.sportGroup),bi=sportOrder.indexOf(be.sportGroup);
+   return (ai<0?999:ai)-(bi<0?999:bi) ||
+     Number(ae.competitionPriority||999)-Number(be.competitionPriority||999) ||
+     new Date(ae.startTime)-new Date(be.startTime);
+ });
+ $("#events").innerHTML=orderedGroups.map(([name,items])=>{const e=items[0];return '<section class="comp" data-sport="'+esc(e.sportGroup||"Sport")+'"><header class="comphead">'+competitionLogo(e)+'<button class="compmeta filterComp" data-comp="'+esc(e.competitionKey||"")+'"><div class="compname">'+esc(name)+'</div><div class="compcount">'+items.length+' match'+(items.length===1?"":"es")+'</div></button><button class="collapse-comp" aria-label="Collapse '+esc(name)+'">Collapse</button></header><div class="compbody">'+items.map(eventRow).join("")+'</div></section>'}).join("");
  bindRows();
 }
 function bindRows(){
