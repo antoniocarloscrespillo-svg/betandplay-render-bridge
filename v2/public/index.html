@@ -282,7 +282,7 @@ body{background:#030d1c}
 .home-create{height:34px!important;min-height:34px!important;border-radius:7px!important;padding:0 14px!important;font-size:10px!important;box-shadow:0 6px 18px rgba(0,116,255,.25)}
 .home-hero{height:260px;border:1px solid #102c55;border-radius:11px;overflow:hidden;position:relative;background:
  linear-gradient(90deg,rgba(1,11,26,.25),rgba(2,11,26,.08) 45%,rgba(2,11,26,.12)),
- url('/api/competition-card/ucl.svg') center/cover no-repeat,
+ url('/api/competition-card/champions.svg') center/cover no-repeat,
  radial-gradient(circle at 70% 50%,#143da8 0,#071d52 38%,#031126 78%);
  box-shadow:0 16px 42px rgba(0,0,0,.28)}
 .home-hero:after{content:"MORE\A THAN A GAME";white-space:pre;position:absolute;right:26px;bottom:25px;color:#dceaff;font-size:16px;line-height:.9;text-align:right;font-weight:900;letter-spacing:-.5px;opacity:.92}
@@ -393,7 +393,20 @@ body{background:#f4f7fb!important;color:#15233a!important}
   background-color:#07162a!important;
 }
 
-</style>
+
+/* Reliability fixes: competition art is set inline; keep the container deterministic. */
+.home-next-cards .competition-sprite-art{
+  background-size:400% 300%!important;
+  background-repeat:no-repeat!important;
+  background-color:#07162a!important;
+  background-position:var(--card-pos,center)!important;
+}
+.home-next-cards .next-competition-art{
+  min-height:126px!important;
+  background-color:#07162a!important;
+}
+.home-events .home-game-row{display:grid!important}
+\n</style>
 </head>
 <body>
 <div class="hub-shell">
@@ -670,7 +683,8 @@ function renderNextCompetitions(){
    let artHtml='<div class="next-competition-art"><span class="fallback-art">'+esc(initials(e.competition))+'</span></div>';
    if(art?.type==="sprite"){
      const x=[0,33.333,66.667,100][art.pos[0]],y=[0,50,100][art.pos[1]];
-     artHtml='<div class="next-competition-art competition-sprite-art" role="img" aria-label="'+esc(e.competition)+'" style="background-position:'+x+'% '+y+'%"></div>';
+     const bg="/assets/competition-cards-user-v2.jpg?v=20260923-fixed";
+     artHtml='<div class="next-competition-art competition-sprite-art" role="img" aria-label="'+esc(e.competition)+'" style="background-image:url(\''+bg+'\');background-size:400% 300%;background-repeat:no-repeat;background-position:'+x+'% '+y+'%;background-color:#07162a"></div>';
    }else if(art?.type==="fallback"){
      artHtml='<div class="next-competition-art"><img class="nextCompetitionImage" src="'+esc(art.url)+'" alt="'+esc(e.competition)+'" loading="lazy"><span class="fallback-art" hidden>'+esc(initials(e.competition))+'</span></div>';
    }
@@ -752,7 +766,7 @@ function bindRows(){
 }
 async function loadEvents(){
  $("#events").innerHTML='<div class="comp">'+Array(6).fill('<div class="skeleton"></div>').join("")+'</div>';
- try{const r=await apiFetch("/api/big-events",{cache:"no-store"},20000),d=await r.json();if(!r.ok)throw new Error(d.error||"api_error");state.events=d.events||[];state.lastSuccess=new Date();localStorage.setItem("bnp_big_events_cache",JSON.stringify({at:state.lastSuccess.toISOString(),events:state.events}));$("#lastUpdated").textContent=(d.cached?"Cached · ":"")+"Updated "+new Intl.DateTimeFormat("en-GB",{timeZone:"Europe/Malta",hour:"2-digit",minute:"2-digit"}).format(state.lastSuccess)+" CEST";fillFilters();render()}
+ try{const r=await apiFetch("/api/big-events",{cache:"no-store"},20000),d=await r.json();if(!r.ok)throw new Error(d.error||"api_error");state.events=(d.events||[]).filter(e=>e&&e.id&&e.startTime);state.lastSuccess=new Date();localStorage.setItem("bnp_big_events_cache",JSON.stringify({at:state.lastSuccess.toISOString(),events:state.events}));$("#lastUpdated").textContent=(d.cached?"Cached · ":"")+state.events.length+" events · Updated "+new Intl.DateTimeFormat("en-GB",{timeZone:"Europe/Malta",hour:"2-digit",minute:"2-digit"}).format(state.lastSuccess)+" CEST";fillFilters();render();renderStudioComposer()}
  catch(e){let stale=null;try{stale=JSON.parse(localStorage.getItem("bnp_big_events_cache")||"null")}catch{}if(stale?.events?.length){state.events=stale.events;state.lastSuccess=new Date(stale.at);fillFilters();render();$("#lastUpdated").textContent="Stale data · "+new Intl.DateTimeFormat("en-GB",{timeZone:"Europe/Malta",hour:"2-digit",minute:"2-digit"}).format(state.lastSuccess)+" CEST";$("#events").insertAdjacentHTML("afterbegin",'<div class="error" style="padding:10px 12px;margin-bottom:8px"><strong style="display:inline;margin-right:6px">Live odds unavailable.</strong> Showing cached data. <button class="btn" id="retry" style="margin-left:8px">Retry</button></div>');$("#retry").onclick=loadEvents}else{$("#events").innerHTML='<div class="error"><strong>Live odds are temporarily unavailable</strong>Could not reach the sportsbook API.<br><button class="btn primary" id="retry" style="margin-top:12px">Retry</button></div>';$("#retry").onclick=loadEvents}}
 }
 function reset(){$("#search").value="";$("#competitionSearch").value="";$("#sportFilter").value="all";$("#competitionFilter").value="all";$("#countryFilter").value="all";state.range="30";$$("[data-range]").forEach(x=>x.classList.toggle("active",x.dataset.range==="30"));render();const sports=[...new Set(state.events.map(e=>e.sportGroup).filter(Boolean))];renderSportQuickFilters(sports)}
