@@ -1929,22 +1929,31 @@ function editorialDateTime(e,language="EN"){
   return new Intl.DateTimeFormat(locale,{timeZone:"Europe/Malta",weekday:"short",day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit",hour12:false}).format(new Date(e.startTime))+" CEST";
 }
 function copywriterMatchPost(e,variant=0,language="EN"){
-  const odds=(e.odds||[]).slice(0,3);
-  const oddsText=odds.map(o=>"• "+o.label+" — "+o.value).join("\n");
-  const enOpen=[
-    "🔥 "+e.title+" takes centre stage in the "+e.competition+".",
-    "⚽ One to watch: "+e.title+". A big "+e.competition+" fixture is coming up.",
-    "👀 "+e.title+" is on the Betandplay radar. Ready for this "+e.competition+" clash?"
+  const main=(e.odds||[]).slice(0,3);
+  const extras=(e.bettingOptions||[]).filter(x=>Number.isFinite(Number(x?.value))).slice(0,6);
+  const mainText=main.map(o=>"• "+o.label+" — "+o.value).join("\n");
+  const extraText=extras.slice(0,3).map(o=>"• "+o.market+": "+o.label+" @ "+o.value).join("\n");
+  const when=editorialDateTime(e,language);
+
+  if(language==="DE"){
+    const opens=[
+      "🔥 "+e.title+" steht heute im Fokus.",
+      "🎯 "+e.title+" — mehr als nur der 1X2-Markt.",
+      "👀 "+e.title+" ist eines der Spiele, die Du im Blick haben solltest."
+    ];
+    if(variant%3===0) return opens[0]+"\n\n⏰ "+when+"\n🏆 "+e.competition+"\n\n"+(mainText?"HAUPTQUOTEN\n"+mainText+"\n\n":"")+(extras[0]?"ALTERNATIVER MARKT\n• "+extras[0].market+": "+extras[0].label+" @ "+extras[0].value+"\n\n":"")+"👉 Checke alle Märkte vor Anpfiff bei Betandplay.";
+    if(variant%3===1) return opens[1]+"\n\n⏰ "+when+"\n\n"+(extraText?"MÄRKTE IM BLICK\n"+extraText+"\n\n":"")+(mainText?"Zum Vergleich:\n"+mainText+"\n\n":"")+"👉 Welche Richtung passt zu Deinem Tipp?";
+    return opens[2]+"\n\n"+e.competition+" · "+when+"\n\n"+(mainText?"Der Hauptmarkt:\n"+mainText+"\n\n":"")+(extraText?"Andere mögliche Ansätze:\n"+extraText+"\n\n":"")+"👉 Alle aktuellen Quoten findest Du bei Betandplay.";
+  }
+
+  const opens=[
+    "🔥 "+e.title+" takes centre stage.",
+    "🎯 "+e.title+" — there is more here than just the 1X2.",
+    "👀 "+e.title+" is one of the fixtures to have on the radar."
   ];
-  const deOpen=[
-    "🔥 "+e.title+" steht in der "+e.competition+" im Mittelpunkt.",
-    "⚽ Ein Spiel, das Du im Blick haben solltest: "+e.title+".",
-    "👀 "+e.title+" steht bei Betandplay auf dem Programm. Bereit für dieses "+e.competition+"-Duell?"
-  ];
-  const open=(language==="DE"?deOpen:enOpen)[variant%3];
-  const cta=language==="DE"?"👉 Checke alle Quoten und Märkte bei Betandplay.":"👉 Check the full market and all available odds on Betandplay.";
-  const label=language==="DE"?"Aktuelle Hauptquoten":"Main odds";
-  return open+"\n\n⏰ "+editorialDateTime(e,language)+"\n\n"+(oddsText?label+":\n"+oddsText+"\n\n":"")+cta;
+  if(variant%3===0) return opens[0]+"\n\n⏰ "+when+"\n🏆 "+e.competition+"\n\n"+(mainText?"MAIN ODDS\n"+mainText+"\n\n":"")+(extras[0]?"ALTERNATIVE MARKET\n• "+extras[0].market+": "+extras[0].label+" @ "+extras[0].value+"\n\n":"")+"👉 Check the full market before kick-off on Betandplay.";
+  if(variant%3===1) return opens[1]+"\n\n⏰ "+when+"\n\n"+(extraText?"MARKETS TO WATCH\n"+extraText+"\n\n":"")+(mainText?"For comparison:\n"+mainText+"\n\n":"")+"👉 Which angle fits your view of the game?";
+  return opens[2]+"\n\n"+e.competition+" · "+when+"\n\n"+(mainText?"The main market:\n"+mainText+"\n\n":"")+(extraText?"Other ways into the game:\n"+extraText+"\n\n":"")+"👉 Check every current price on Betandplay.";
 }
 function copywriterCompetitionPost(competition,items,variant=0,language="EN"){
   const games=items.slice(0,variant===2?6:4);
@@ -1964,19 +1973,74 @@ function copywriterCompetitionPost(competition,items,variant=0,language="EN"){
   ];
   return opens[variant%3]+"\n\n"+lines.join("\n")+"\n\n👉 Pick your favourites, check the latest odds and follow the action on Betandplay.";
 }
-function copywriterCombo(items,variant=0,language="EN",label="ACCA"){
-  const selected=items.slice(0,Math.min(5,items.length));
-  const picks=selected.map((e,i)=>{
-    const options=(e.odds||[]).filter(o=>o?.value);
-    const o=options.length?options[(variant+i)%options.length]:null;
-    return "• "+e.title+(o?" — "+o.label+" @ "+o.value:"");
-  });
-  if(language==="DE"){
-    const opens=["🔥 KOMBI-IDEe DES TAGES","🎯 DEINE NÄCHSTE KOMBI?","⚡ KOMBI AUF DEM RADAR"];
-    return opens[variant%3]+"\n\n"+picks.join("\n")+"\n\n👉 Alle Quoten vor der Abgabe noch einmal bei Betandplay checken.";
+function comboMarketCandidates(e){
+  const extras=(e.bettingOptions||[]).map(o=>({
+    market:o.market||o.family||"Market",
+    label:o.label,
+    value:Number(o.value),
+    family:o.family||marketFamily(o.market||"")
+  }));
+  const main=(e.odds||[]).map(o=>({
+    market:"Match Result",
+    label:o.label,
+    value:Number(o.value),
+    family:"result"
+  }));
+  return [...extras,...main].filter(o=>o.label&&Number.isFinite(o.value)&&o.value>1.01&&o.value<8);
+}
+
+function comboPickForEvent(e,variant=0,usedFamilies=new Map()){
+  const profiles=[
+    {min:1.35,max:2.05,families:["double_chance","draw_no_bet","goals_total","btts","team_total","result","handicap"]},
+    {min:1.55,max:2.45,families:["goals_total","btts","handicap","team_total","draw_no_bet","result","corners"]},
+    {min:1.80,max:3.40,families:["handicap","result","goals_total","btts","team_total","corners","cards"]}
+  ];
+  const p=profiles[variant%profiles.length];
+  const target=(p.min+p.max)/2;
+  const candidates=comboMarketCandidates(e)
+    .filter(o=>o.value>=p.min&&o.value<=p.max)
+    .map(o=>{
+      const familyIndex=p.families.indexOf(o.family);
+      const familyScore=familyIndex<0?20:familyIndex;
+      const repetition=(usedFamilies.get(o.family)||0)*3;
+      return {...o,score:familyScore+repetition+Math.abs(o.value-target)};
+    })
+    .sort((a,b)=>a.score-b.score);
+  return candidates[0] || comboMarketCandidates(e)
+    .filter(o=>o.value>=1.25&&o.value<=3.80)
+    .sort((a,b)=>Math.abs(a.value-target)-Math.abs(b.value-target))[0] || null;
+}
+
+function buildComboVariant(items,variant=0,language="EN"){
+  const unique=[...new Map(items.filter(e=>e?.id).map(e=>[String(e.id),e])).values()];
+  const desired=Math.min(5,Math.max(3,unique.length));
+  const start=variant%Math.max(1,unique.length);
+  const rotated=[...unique.slice(start),...unique.slice(0,start)];
+  const usedFamilies=new Map(),legs=[];
+  for(const e of rotated){
+    const pick=comboPickForEvent(e,variant,usedFamilies);
+    if(!pick) continue;
+    usedFamilies.set(pick.family,(usedFamilies.get(pick.family)||0)+1);
+    legs.push({event:e,pick});
+    if(legs.length>=desired) break;
   }
-  const opens=["🔥 TODAY'S ACCA IDEA","🎯 ONE FOR THE BETSLIP?","⚡ ACCA ON THE RADAR"];
-  return opens[variant%3]+"\n\n"+picks.join("\n")+"\n\n👉 Check every price on Betandplay before placing your bet.";
+  if(legs.length<2) return null;
+  const combined=legs.reduce((n,x)=>n*x.pick.value,1);
+  const title=language==="DE"
+    ? ["🔥 KOMBI DES TAGES","🎯 AUSGEWOGENE KOMBI","⚡ MUTIGERE KOMBI"][variant%3]
+    : ["🔥 TODAY'S ACCA","🎯 BALANCED ACCA","⚡ BOLDER ACCA"][variant%3];
+  const lines=legs.map(x=>"• "+x.event.title+" — "+x.pick.label+" @ "+x.pick.value.toFixed(2));
+  const total=(Math.round(combined*100)/100).toFixed(2);
+  if(language==="DE"){
+    return title+"\n\n"+lines.join("\n")+"\n\n📊 Kombinierte Quote: "+total+"\n\nDie Varianten nutzen bewusst unterschiedliche Märkte und Risikoprofile. Quoten können sich ändern.\n\n👉 Vor Abgabe alle Preise bei Betandplay prüfen.";
+  }
+  return title+"\n\n"+lines.join("\n")+"\n\n📊 Combined odds: "+total+"\n\nEach option deliberately uses a different mix of markets and risk level. Prices can move.\n\n👉 Check every price on Betandplay before placing the bet.";
+}
+
+function copywriterCombo(items,variant=0,language="EN",label="ACCA"){
+  return buildComboVariant(items,variant,language) || (language==="DE"
+    ? "Für diese Auswahl konnten nicht genügend sinnvolle Kombi-Legs mit verfügbaren Quoten gefunden werden."
+    : "Not enough suitable priced selections were available to build a sensible acca from this set.");
 }
 function copywriterCompetitionInfo(competition,items,variant=0,language="EN"){
   const first=items[0], last=items[Math.min(items.length-1,5)];
@@ -2004,14 +2068,27 @@ app.post("/api/content-builder", async (req,res) => {
       selected=all.filter(e=>competitionKeys.includes(String(e.competitionKey)));
     }else if(mode==="combo"){
       const byEvents=all.filter(e=>eventIds.includes(String(e.id)));
-      const byCompetitions=all.filter(e=>competitionKeys.includes(String(e.competitionKey)));
+      const byCompetitions=competitionKeys.flatMap(key=>
+        all.filter(e=>String(e.competitionKey)===String(key))
+          .sort((a,b)=>Number(a.competitionPriority||999)-Number(b.competitionPriority||999)||new Date(a.startTime)-new Date(b.startTime))
+          .slice(0,4)
+      );
       const map=new Map([...byEvents,...byCompetitions].map(e=>[String(e.id),e]));
-      selected=[...map.values()];
+      selected=[...map.values()].slice(0,12);
     }else{
       return res.status(400).json({ok:false,error:"invalid_content_mode"});
     }
     selected.sort((a,b)=>new Date(a.startTime)-new Date(b.startTime));
     if(!selected.length) return res.status(400).json({ok:false,error:"nothing_selected"});
+
+    if(mode==="combo"){
+      await Promise.all(selected.slice(0,10).map(async e=>{
+        try{
+          const markets=await fetchMatchMarkets(e.id);
+          e.bettingOptions=chooseBettingOptions(markets);
+        }catch{}
+      }));
+    }
 
     const copies=[];
     for(let v=0;v<count;v++){
