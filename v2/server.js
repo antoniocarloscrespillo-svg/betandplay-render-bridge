@@ -16,6 +16,7 @@ const __dirname = path.dirname(__filename);
 
 const cache = new Map();
 const wikiImageCache = new Map();
+const logoBinaryCache = new Map();
 const BIG_EVENTS_ENRICHED_TTL_MS = 10 * 60 * 1000;
 
 const TEAM_VISUAL_ALIASES = {
@@ -1062,11 +1063,11 @@ function bestSofascoreEvent(sourceEvent,candidates) {
 }
 
 function sofascoreTeamImage(teamId) {
-  return teamId ? "https://img.sofascore.com/api/v1/team/"+encodeURIComponent(teamId)+"/image" : "";
+  return teamId ? "/api/logo/team/"+encodeURIComponent(teamId) : "";
 }
 
 function sofascoreTournamentImage(tournamentId) {
-  return tournamentId ? "https://api.sofascore.com/api/v1/unique-tournament/"+encodeURIComponent(tournamentId)+"/image/dark" : "";
+  return tournamentId ? "/api/logo/tournament/"+encodeURIComponent(tournamentId) : "";
 }
 
 async function enrichBigEventsWithSofascore(events) {
@@ -1119,6 +1120,48 @@ app.use(express.static(path.join(__dirname, "public"), {
   etag: true,
   maxAge: "1h"
 }));
+
+app.get("/api/logo/:kind/:id", async (req,res) => {
+  const kind=String(req.params.kind||"");
+  const id=String(req.params.id||"");
+  if(!/^(team|tournament)$/.test(kind) || !/^\d+$/.test(id)) return res.status(400).end();
+
+  const cacheKey=kind+"|"+id;
+  const cachedLogo=logoBinaryCache.get(cacheKey);
+  if(cachedLogo && Date.now()-cachedLogo.createdAt < 24*60*60*1000){
+    res.set("Content-Type",cachedLogo.contentType);
+    res.set("Cache-Control","public, max-age=86400");
+    return res.send(cachedLogo.buffer);
+  }
+
+  const sources=kind==="team"
+    ? [
+        "https://img.sofascore.com/api/v1/team/"+id+"/image",
+        "https://api.sofascore.com/api/v1/team/"+id+"/image"
+      ]
+    : [
+        "https://img.sofascore.com/api/v1/unique-tournament/"+id+"/image/dark",
+        "https://api.sofascore.com/api/v1/unique-tournament/"+id+"/image/dark",
+        "https://img.sofascore.com/api/v1/unique-tournament/"+id+"/image"
+      ];
+
+  for(const source of sources){
+    try{
+      const response=await fetch(source,{headers:{Accept:"image/*","User-Agent":"BetandplayContentHub/2.0"}});
+      if(!response.ok) continue;
+      const contentType=response.headers.get("content-type") || "image/png";
+      if(!contentType.startsWith("image/")) continue;
+      const buffer=Buffer.from(await response.arrayBuffer());
+      if(!buffer.length) continue;
+      logoBinaryCache.set(cacheKey,{createdAt:Date.now(),contentType,buffer});
+      res.set("Content-Type",contentType);
+      res.set("Cache-Control","public, max-age=86400");
+      return res.send(buffer);
+    } catch {}
+  }
+
+  return res.status(404).end();
+});
 
 app.get("/health", (_req, res) => {
   res.json({
