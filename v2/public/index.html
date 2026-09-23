@@ -372,7 +372,7 @@ body{background:#f4f7fb!important;color:#15233a!important}
 
 /* User-provided competition artwork: 4x3 sprite */
 .competition-sprite-art{
-  background-image:url('/assets/competition-cards-user.webp')!important;
+  background-image:url('/assets/competition-cards-user-v2.jpg?v=20260923b')!important;
   background-size:400% 300%!important;
   background-repeat:no-repeat!important;
   background-color:#07162a!important;
@@ -732,7 +732,8 @@ function homeEventRow(e){
  '</article>';
 }
 function render(){
- const list=filtered();activeChips();renderNextCompetitions();
+ const list=filtered();activeChips();
+ try{renderNextCompetitions()}catch(err){console.error("[next-competitions]",err);const root=$("#nextCompetitionList");if(root)root.innerHTML='<div class="error"><strong>Competition cards unavailable</strong>Big Games is still available below.</div>'}
  const prioritized=[...list].sort((a,b)=>
    Number(a.competitionPriority||999)-Number(b.competitionPriority||999) ||
    new Date(a.startTime)-new Date(b.startTime)
@@ -815,7 +816,7 @@ $("#generateSelected").onclick=async()=>{
  finally{btn.disabled=false;btn.textContent="Generate "+count+" post"+(count===1?"":"s")+" →"}
 };
 
-function bindPosts(vars){$("#collapseAll").onclick=()=>$$(".post").forEach(x=>x.classList.add("collapsed"));$("#expandAll").onclick=()=>$$(".post").forEach(x=>x.classList.remove("collapsed"));$$(".collapsePost").forEach(b=>b.onclick=()=>{const p=b.closest(".post");p.classList.toggle("collapsed");b.textContent=p.classList.contains("collapsed")?"Expand":"Collapse"});$$(".copyPost").forEach((b,i)=>b.onclick=async()=>{const body=b.closest(".post").querySelector(".postbody");await navigator.clipboard.writeText(body.textContent);const old=b.textContent;b.textContent="✓ Copied";setTimeout(()=>b.textContent=old,1200)});$$(".editPost").forEach((b,i)=>b.onclick=()=>{const p=b.closest(".post"),body=p.querySelector(".postbody");if(body.querySelector("textarea"))return;const t=document.createElement("textarea");t.className="editarea";t.value=body.textContent;body.textContent="";body.appendChild(t);t.focus();b.textContent="Done";b.onclick=()=>{body.textContent=t.value;b.textContent="Edit";bindPosts(vars)}})}
+function bindPosts(vars){const collapseAll=$("#collapseAll"),expandAll=$("#expandAll");if(collapseAll)collapseAll.onclick=()=>$(".post").forEach(x=>x.classList.add("collapsed"));if(expandAll)expandAll.onclick=()=>$(".post").forEach(x=>x.classList.remove("collapsed"));$(".collapsePost").forEach(b=>b.onclick=()=>{const p=b.closest(".post");p.classList.toggle("collapsed");b.textContent=p.classList.contains("collapsed")?"Expand":"Collapse"});$$(".copyPost").forEach((b,i)=>b.onclick=async()=>{const body=b.closest(".post").querySelector(".postbody");await navigator.clipboard.writeText(body.textContent);const old=b.textContent;b.textContent="✓ Copied";setTimeout(()=>b.textContent=old,1200)});$$(".editPost").forEach((b,i)=>b.onclick=()=>{const p=b.closest(".post"),body=p.querySelector(".postbody");if(body.querySelector("textarea"))return;const t=document.createElement("textarea");t.className="editarea";t.value=body.textContent;body.textContent="";body.appendChild(t);t.focus();b.textContent="Done";b.onclick=()=>{body.textContent=t.value;b.textContent="Edit";bindPosts(vars)}})}
 function studioCompetitionChoices(){
  return availableCompetitions();
 }
