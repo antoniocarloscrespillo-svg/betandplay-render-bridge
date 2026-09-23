@@ -226,13 +226,31 @@ body{background:#e9eff5}
 @media(max-width:1200px){.next-comp-list{grid-template-columns:1fr}.promo-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:780px){.app{padding:0 12px 36px}.topbar{margin:0 -12px;padding:0 12px}.promo-grid{grid-template-columns:1fr}}
 
+
+/* ===== Control Room Layout v4 ===== */
+body{background:#071827}.hub-shell{min-height:100vh;display:grid;grid-template-columns:76px minmax(0,1fr) 278px;background:#071827}.side-rail{position:sticky;top:0;height:100vh;z-index:80;display:flex;flex-direction:column;align-items:center;background:#08213a;border-right:1px solid rgba(255,255,255,.06);padding:15px 9px;box-shadow:8px 0 28px rgba(1,12,23,.15)}.rail-brand{height:50px;display:grid;place-items:center;margin-bottom:10px}.rail-brand .brandmark{width:36px;height:36px;border-radius:10px}.rail-nav{display:flex;flex-direction:column;width:100%;gap:8px;margin-top:8px}.side-rail .navbtn{width:58px;height:56px;padding:0;margin:0 auto;border-radius:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:#7893ab;background:transparent}.side-rail .navbtn:after{display:none}.side-rail .navbtn:hover{background:#103456;color:#fff}.side-rail .navbtn.active{background:linear-gradient(145deg,#1077df,#5d43e6);color:#fff;box-shadow:0 8px 18px rgba(32,104,214,.28)}.rail-icon{font-size:17px;line-height:1}.rail-label{font-size:7px;font-weight:700;letter-spacing:.2px}
+.app{max-width:none;margin:0;padding:0 24px 54px;min-width:0;background:#eef3f8}.topbar{margin:0 -24px;height:64px;padding:0 24px;background:#fff;color:#102a43;border-bottom:1px solid #dfe7ef;box-shadow:none;position:sticky;top:0;z-index:55}.topbar .brand{font-size:17px;color:#102f4b;gap:7px}.topbar .brand small{font-size:9px;color:#8597a9;font-weight:600}.top-status{display:flex;align-items:center;gap:7px;font-size:9px;color:#698093;font-weight:650}.live-dot{width:7px;height:7px;border-radius:50%;background:#1bb978;box-shadow:0 0 0 4px rgba(27,185,120,.1)}
+.context-panel{position:sticky;top:0;height:100vh;overflow:auto;background:#f8fafc;border-left:1px solid #dbe4ec;padding:16px 14px;z-index:45}.context-card{background:#fff;border:1px solid #dde6ee;border-radius:12px;padding:13px;margin-bottom:12px;box-shadow:0 4px 14px rgba(9,38,64,.05)}.context-kicker{font-size:8px;letter-spacing:.8px;text-transform:uppercase;color:#71869a;font-weight:800;margin-bottom:10px}.side-competitions{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.side-comp{min-height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px solid #e2e9f0;border-radius:9px;background:#fbfdff;padding:5px;cursor:pointer;transition:.15s}.side-comp:hover{background:#eef6fd;border-color:#aad0f0}.side-comp-logo{width:28px;height:28px;display:grid;place-items:center;margin-bottom:3px}.side-comp-logo img{max-width:27px;max-height:27px;object-fit:contain}.side-comp span{font-size:7px;color:#526b81;text-align:center;line-height:1.1}.spotlight{background:linear-gradient(155deg,#0a2d51,#0b4478);border-radius:10px;padding:13px;color:#fff;min-height:145px;position:relative;overflow:hidden}.spotlight:after{content:"";position:absolute;width:120px;height:120px;border-radius:50%;background:rgba(55,153,244,.16);right:-35px;top:-35px}.spotlight-comp{font-size:8px;color:#83c0f2;font-weight:800;text-transform:uppercase;letter-spacing:.6px}.spotlight h3{font-size:14px;line-height:1.25;margin:9px 0 5px;max-width:190px}.spotlight-time{font-size:9px;color:#b8cde0}.spotlight-odds{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-top:12px}.spotlight-odd{background:rgba(255,255,255,.09);border-radius:6px;padding:6px 4px;text-align:center}.spotlight-odd span{display:block;font-size:6px;color:#a9c3d9}.spotlight-odd b{font-size:10px}
+.workspace-titlebar{margin:18px 0 10px}.workspace-titlebar h1{font-size:21px}.toolbar{top:74px}.summary-grid{grid-template-columns:1.35fr repeat(3,.55fr)}#events{gap:10px}.comp{border-radius:8px}.comphead{min-height:42px}.event{min-height:62px;grid-template-columns:62px minmax(300px,1.35fr) minmax(240px,.8fr) auto}.time b{font-size:13px}.match{padding:6px 11px}.team{font-size:11px}.team-logo{width:29px;height:29px}.team-logo img{max-width:27px;max-height:27px}.odd{height:35px}.odd b{font-size:11px}.actions .btn{min-height:29px}.comphead,.today-main,.next-sport-head,.studio-creator-grid,.drawerhead,.modalhead{background:#0a2b4c}
+@media(max-width:1350px){.hub-shell{grid-template-columns:68px minmax(0,1fr)}.context-panel{display:none}}@media(max-width:800px){.hub-shell{display:block}.side-rail{position:sticky;top:0;height:auto;display:block;padding:0;background:#08213a}.rail-brand{display:none}.rail-nav{display:flex;flex-direction:row;margin:0;gap:0;overflow:auto}.side-rail .navbtn{width:auto;min-width:86px;height:50px;border-radius:0;margin:0;padding:0 10px}.side-rail .navbtn.active{box-shadow:none;background:#10385e}.app{padding:0 12px 36px}.topbar{margin:0 -12px;padding:0 12px}}
+
 </style>
 </head>
 <body>
+<div class="hub-shell">
+<aside class="side-rail" aria-label="Main navigation">
+  <div class="rail-brand" title="Content Hub"><div class="brandmark" aria-hidden="true"><span></span><span></span><span></span></div></div>
+  <nav class="rail-nav">
+    <button class="navbtn active" data-view="biggames" title="Big Games"><span class="rail-icon">⚽</span><span class="rail-label">Big Games</span></button>
+    <button class="navbtn" data-view="nextcomps" title="Next Games"><span class="rail-icon">◷</span><span class="rail-label">Next Games</span></button>
+    <button class="navbtn" data-view="studio" title="Content Studio"><span class="rail-icon">✎</span><span class="rail-label">Studio</span></button>
+    <button class="navbtn" data-view="promotions" title="Promotions"><span class="rail-icon">★</span><span class="rail-label">Promotions</span></button>
+  </nav>
+</aside>
 <div class="app">
 <header class="topbar">
-  <div class="brand"><div class="brandmark" aria-hidden="true"><span></span><span></span><span></span></div><span>Content Hub</span></div>
-  <nav class="nav" aria-label="Main navigation"><button class="navbtn active" data-view="biggames">Big Games</button><button class="navbtn" data-view="nextcomps">Next by Competition</button><button class="navbtn" data-view="studio">Content Studio</button><button class="navbtn" data-view="promotions">Promotions</button></nav>
+  <div class="brand"><span>Content Hub</span><small>Sports workspace</small></div>
+  <div class="top-status"><span class="live-dot"></span><span>Live sportsbook data</span></div>
 </header>
 <main>
 <section id="biggames" class="view active">
@@ -283,6 +301,11 @@ body{background:#e9eff5}
   </div>
 </section>
 </main>
+</div>
+<aside class="context-panel" aria-label="Sports context">
+  <section class="context-card"><div class="context-kicker">Top competitions</div><div id="sideCompetitions" class="side-competitions"></div></section>
+  <section class="context-card spotlight-card"><div class="context-kicker">Next spotlight</div><div id="sideSpotlight"></div></section>
+</aside>
 </div>
 <div id="marketBack" class="drawerback" aria-hidden="true"><aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="marketTitle"><div class="drawerhead"><div><div class="eyebrow">Markets</div><h2 id="marketTitle">Match markets</h2><p id="marketMeta"></p></div><button class="btn ghost closeDrawer" aria-label="Close markets">✕</button></div><div id="marketBody" class="drawerbody"></div></aside></div>
 <div id="promoInfoBack" class="drawerback" aria-hidden="true"><aside class="drawer promo-info-drawer" role="dialog" aria-modal="true" aria-labelledby="promoInfoTitle"><div class="drawerhead"><div><div class="eyebrow">Promotion details</div><h2 id="promoInfoTitle">Promotion</h2><p id="promoInfoMeta"></p></div><button class="btn ghost closePromoInfo" aria-label="Close promotion details">✕</button></div><div id="promoInfoBody" class="drawerbody"></div></aside></div>
@@ -456,8 +479,19 @@ function eventRow(e){
  return '<article class="event" tabindex="0" data-event="'+esc(e.id)+'"><div class="time"><span class="date">'+esc(compactDateLabel(e.startTime))+'</span><b>'+esc(timeLabel(e.startTime))+'</b><small>CEST</small></div>'+matchBlock+'<div class="odds">'+oddsBlock+'</div><div class="actions">'+(soon?'<span class="editorial">⚡ Soon</span>':'')+'<button class="btn markets" data-id="'+esc(e.id)+'">View Markets</button><button class="btn primary create" data-id="'+esc(e.id)+'">Create Content →</button></div></article>';
 }
 
+function renderContextPanel(list){
+ const compRoot=$("#sideCompetitions"),spot=$("#sideSpotlight");if(!compRoot||!spot)return;
+ const comps=new Map();for(const e of list){const key=e.competitionKey||e.competition;if(!comps.has(key))comps.set(key,e)}
+ const top=[...comps.values()].sort((a,b)=>Number(a.competitionPriority||999)-Number(b.competitionPriority||999)||new Date(a.startTime)-new Date(b.startTime)).slice(0,12);
+ compRoot.innerHTML=top.map(e=>'<button class="side-comp" data-side-comp="'+esc(e.competitionKey||"")+'"><span class="side-comp-logo">'+(e.competitionLogo?'<img src="'+esc(e.competitionLogo)+'" alt="" loading="lazy">':initials(e.competition))+'</span><span>'+esc(e.competition)+'</span></button>').join("");
+ $$(".side-comp").forEach(b=>b.onclick=()=>{if([...$("#competitionFilter").options].some(o=>o.value===b.dataset.sideComp))$("#competitionFilter").value=b.dataset.sideComp;render()});
+ const next=[...list].filter(e=>new Date(e.startTime)>new Date()).sort((a,b)=>Number(a.competitionPriority||999)-Number(b.competitionPriority||999)||new Date(a.startTime)-new Date(b.startTime))[0];
+ if(!next){spot.innerHTML='<div class="studio-empty">No upcoming spotlight.</div>';return}
+ const odds=(next.odds||[]).slice(0,3);
+ spot.innerHTML='<div class="spotlight"><div class="spotlight-comp">'+esc(next.competition)+'</div><h3>'+esc(next.title)+'</h3><div class="spotlight-time">'+esc(compactDateLabel(next.startTime))+' · '+esc(timeLabel(next.startTime))+' CEST</div>'+(odds.length?'<div class="spotlight-odds">'+odds.map(o=>'<div class="spotlight-odd"><span>'+esc(o.label||"")+'</span><b>'+esc(o.value||"—")+'</b></div>').join("")+'</div>':'')+'</div>';
+}
 function render(){
- const list=filtered();activeChips();todaySummary(list);editorialRail(list);
+ const list=filtered();activeChips();todaySummary(list);editorialRail(list);renderContextPanel(list);
  if(!list.length){$("#events").innerHTML='<div class="empty"><strong>No matches found</strong>Try removing some filters.<br><button class="btn primary" style="margin-top:12px" id="emptyReset">Reset filters</button></div>';$("#emptyReset").onclick=reset;return}
  const groups=new Map();for(const e of list){if(!groups.has(e.competition))groups.set(e.competition,[]);groups.get(e.competition).push(e)}
  const orderedGroups=[...groups.entries()].sort((a,b)=>{
