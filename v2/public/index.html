@@ -504,7 +504,7 @@ function renderNextCompetitions(){
    const days=daysUntil(e.startTime);
    const art=competitionCardAsset(e.competitionKey||"");
    const artHtml=art
-     ? '<div class="next-competition-art"><img class="nextCompetitionImage" src="'+esc(art)+'" alt="'+esc(e.competition)+'" loading="lazy"><span class="fallback-art" hidden>'+esc(initials(e.competition))+'</span></div>'
+     ? '<div class="next-competition-art"><img class="nextCompetitionImage" data-key="'+esc(e.competitionKey||"")+'" src="'+esc(art)+'" alt="'+esc(e.competition)+'" loading="lazy"><span class="fallback-art" hidden>'+esc(initials(e.competition))+'</span></div>'
      : '<div class="next-competition-art"><span class="fallback-art">'+esc(initials(e.competition))+'</span></div>';
    const countdown=days===0?"HOY":days===1?"FALTA 1 DÍA":"FALTAN "+days+" DÍAS";
    return '<article class="next-competition-card nextCompOpen" tabindex="0" role="button" data-comp="'+esc(e.competitionKey||"")+'" data-sport="'+esc(e.sportGroup||"Sport")+'">'+
@@ -518,7 +518,7 @@ function renderNextCompetitions(){
      '</div>'+
    '</article>';
  }).join(""):'<div class="empty"><strong>No upcoming competitions</strong></div>';
- $$(".nextCompetitionImage").forEach(img=>img.onerror=()=>{img.style.display="none";const fb=img.nextElementSibling;if(fb)fb.hidden=false});
+ $(".nextCompetitionImage").forEach(img=>img.onerror=()=>{if(!img.dataset.localFallback){img.dataset.localFallback="1";img.src="/api/competition-card/"+encodeURIComponent(img.dataset.key)+".svg";return}img.style.display="none";const fb=img.nextElementSibling;if(fb)fb.hidden=false});
  $$(".nextCompOpen").forEach(card=>{
    const open=()=>{setView("biggames");$("#competitionFilter").value=card.dataset.comp;state.range="30";render()};
    card.onclick=open;
