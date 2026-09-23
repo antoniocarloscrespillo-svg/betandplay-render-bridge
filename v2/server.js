@@ -649,25 +649,21 @@ function collectMarketObjects(node, out=[]) {
     return out;
   }
 
-  const outcomes = Array.isArray(node.outcomes) ? node.outcomes : null;
-  const marketName = node.name || node.market_name || node.label || node.key;
-  if (outcomes && marketName) out.push(node);
+  const outcomes=marketOutcomeList(node);
+  const marketName=node.name || node.market_name || node.marketName || node.label || node.key || node.market_key;
+  if(outcomes.length && marketName) out.push({...node,outcomes});
 
-  for (const value of Object.values(node)) {
+  for(const value of Object.values(node)) {
     if (value && typeof value === "object") collectMarketObjects(value,out);
   }
   return out;
 }
 
 function marketOutcomeToOdd(outcome) {
-  if (!outcome || outcome?.active === false) return null;
-  const raw = typeof outcome.odds === "number" ? outcome.odds
-    : typeof outcome.price === "number" ? outcome.price
-    : typeof outcome.value === "number" ? outcome.value
-    : null;
-  if (raw === null) return null;
-  const value = raw > 100 ? decimalOdd(raw) : String(raw);
-  const label = outcome.name || outcome.label || outcome.selection_name || outcome.key || "Selection";
+  if(!outcome || outcome?.active===false) return null;
+  const value=outcomeOddValue(outcome);
+  if(!value) return null;
+  const label=outcome.name || outcome.label || outcome.selection_name || outcome.selectionName || outcome.key || "Selection";
   return {label,value};
 }
 
@@ -695,7 +691,7 @@ function marketFamily(name="") {
 }
 
 function chooseSelectionFromMarket(market, family) {
-  const selections = (market.outcomes || [])
+  const selections = marketOutcomeList(market)
     .map(marketOutcomeToOdd)
     .filter(Boolean)
     .filter(o => {
