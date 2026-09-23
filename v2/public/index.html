@@ -176,7 +176,7 @@ function logo(url,name,cls){return '<span class="'+cls+'">'+(url?'<img src="'+es
 function teamLogo(e,name){const x=(e.teamLogos||[]).find(a=>a.name===name);return logo(x?.url,name,"team-logo")}
 function competitionLogo(e){return logo(e.competitionLogo,e.competition,"comp-logo")}
 function setView(id){$$(".navbtn").forEach(x=>x.classList.toggle("active",x.dataset.view===id));$$(".view").forEach(x=>x.classList.toggle("active",x.id===id));if((id==="biggames"||id==="nextcomps"||id==="studio")&&!state.events.length)loadEvents();if(id==="nextcomps")renderNextCompetitions();if(id==="studio")renderStudioComposer();if(id==="promotions")loadPromotions()}
-$(".navbtn").forEach(b=>b.onclick=()=>setView(b.dataset.view));
+$$(".navbtn").forEach(b=>b.onclick=()=>setView(b.dataset.view));
 $("#nextSort").onchange=renderNextCompetitions;
 
 function rangeOk(e){
@@ -208,7 +208,7 @@ function renderSportQuickFilters(sports){
  const root=$("#sportQuickFilters");if(!root)return;
  const current=$("#sportFilter")?.value||"all";
  root.innerHTML='<button class="sport-quick '+(current==="all"?"active":"")+'" data-sport-quick="all">All</button>'+sports.map(s=>'<button class="sport-quick '+(current===s?"active":"")+'" data-sport-quick="'+esc(s)+'">'+sportIcon(s)+' '+esc(s)+'</button>').join("");
- $("[data-sport-quick]").forEach(b=>b.onclick=()=>{const value=b.dataset.sportQuick;if([...$("#sportFilter").options].some(o=>o.value===value))$("#sportFilter").value=value;render();renderSportQuickFilters(sports)});
+ $$("[data-sport-quick]").forEach(b=>b.onclick=()=>{const value=b.dataset.sportQuick;if([...$("#sportFilter").options].some(o=>o.value===value))$("#sportFilter").value=value;render();renderSportQuickFilters(sports)});
 }
 function fillFilters(){
  const sportOrder=["Football","Ice Hockey","Basketball","American Football","Australian Rules","Rugby League","Rugby Union","Cricket","Motorsport","Tennis"];
