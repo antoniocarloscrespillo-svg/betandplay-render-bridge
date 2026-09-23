@@ -243,7 +243,7 @@ body{background:#071827}.hub-shell{min-height:100vh;display:grid;grid-template-c
 .next-comp-cards{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:22px!important;background:transparent!important;border:0!important;border-radius:0!important;overflow:visible!important;margin-top:4px!important}
 .next-competition-card{min-height:285px;background:#fff;border:1px solid #dbe5ee;border-radius:14px;overflow:hidden;display:flex;flex-direction:column;cursor:pointer;transition:.18s ease;box-shadow:0 7px 22px rgba(8,37,63,.07);text-align:left}
 .next-competition-card:hover{transform:translateY(-3px);border-color:#7eb8ea;box-shadow:0 13px 30px rgba(8,37,63,.13)}
-.next-competition-art{height:185px;background-image:url('/assets/competition-sprite.webp');background-size:400% 300%;background-repeat:no-repeat;background-color:#0a1b2d}
+.next-competition-art{height:185px;background:#0a1b2d;display:grid;place-items:center;overflow:hidden}
 .next-competition-art.fallback-art{display:grid;place-items:center;background-image:linear-gradient(145deg,#0a2949,#154b7c)!important;background-size:auto!important;color:#fff;font-size:28px;font-weight:800}
 .next-competition-info{padding:14px 16px 16px;background:#fff}
 .next-competition-name{font-size:13px;line-height:1.18;font-weight:780;color:#152d43;text-transform:uppercase;margin-bottom:11px}
@@ -482,17 +482,9 @@ function daysUntil(value){
  const t=Date.UTC(target.getUTCFullYear(),target.getUTCMonth(),target.getUTCDate());
  return Math.max(0,Math.ceil((t-today)/86400000));
 }
-const COMPETITION_ASSET_HOST="https://content-hub-assets-production.up.railway.app";
-const COMPETITION_ART_POS={
- ucl:[0,0],bundesliga:[1,0],premier:[2,0],laliga:[3,0],
- seriea:[0,1],ligue1:[1,1],europa:[2,1],conference:[3,1],
- facup:[0,2],coppa_italia:[1,2],dfbpokal:[2,2],carabao:[3,2]
-};
 function competitionCardAsset(key){
  const safe=String(key||"").toLowerCase().replace(/[^a-z0-9_]/g,"");
- const pos=COMPETITION_ART_POS[safe];if(!pos)return null;
- const xs=["0%","33.333%","66.667%","100%"],ys=["0%","50%","100%"];
- return {url:COMPETITION_ASSET_HOST+"/assets/competition-sprite.webp",position:xs[pos[0]]+" "+ys[pos[1]]};
+ return safe ? "/api/competition-card/"+encodeURIComponent(safe)+".svg" : null;
 }
 function renderNextCompetitions(){
  const root=$("#nextCompetitionList");if(!root)return;
@@ -511,7 +503,7 @@ function renderNextCompetitions(){
    const days=daysUntil(e.startTime);
    const art=competitionCardAsset(e.competitionKey||"");
    const artHtml=art
-     ? '<div class="next-competition-art hosted-art" style="background-image:url(&quot;'+esc(art.url)+'&quot;);background-size:400% 300%;background-position:'+esc(art.position)+';background-repeat:no-repeat" role="img" aria-label="'+esc(e.competition)+'"></div>'
+     ? '<div class="next-competition-art"><img class="nextCompetitionImage" src="'+esc(art)+'" alt="'+esc(e.competition)+'" loading="lazy"><span class="fallback-art" hidden>'+esc(initials(e.competition))+'</span></div>'
      : '<div class="next-competition-art"><span class="fallback-art">'+esc(initials(e.competition))+'</span></div>';
    const countdown=days===0?"HOY":days===1?"FALTA 1 DÍA":"FALTAN "+days+" DÍAS";
    return '<article class="next-competition-card nextCompOpen" tabindex="0" role="button" data-comp="'+esc(e.competitionKey||"")+'" data-sport="'+esc(e.sportGroup||"Sport")+'">'+
@@ -525,7 +517,8 @@ function renderNextCompetitions(){
      '</div>'+
    '</article>';
  }).join(""):'<div class="empty"><strong>No upcoming competitions</strong></div>';
- $$(".nextCompOpen").forEach(card=>{
+ $(".nextCompetitionImage").forEach(img=>img.onerror=()=>{img.style.display="none";const fb=img.nextElementSibling;if(fb)fb.hidden=false});
+ $(".nextCompOpen").forEach(card=>{
    const open=()=>{setView("biggames");$("#competitionFilter").value=card.dataset.comp;state.range="30";render()};
    card.onclick=open;
    card.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();open()}};
