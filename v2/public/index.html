@@ -369,6 +369,19 @@ body{background:#f4f7fb!important;color:#15233a!important}
 #lastUpdated{color:#8292a7!important}
 .empty,.error{background:#fff!important;border-color:#dce5ef!important;color:#74859b!important}.empty strong,.error strong{color:#22364f!important}
 
+
+/* User-provided competition artwork: 4x3 sprite */
+.competition-sprite-art{
+  background-image:url('/assets/competition-cards-user.webp')!important;
+  background-size:400% 300%!important;
+  background-repeat:no-repeat!important;
+  background-color:#07162a!important;
+}
+.home-next-cards .competition-sprite-art{
+  background-size:400% 300%!important;
+  background-repeat:no-repeat!important;
+}
+
 </style>
 </head>
 <body>
@@ -613,9 +626,15 @@ function daysUntil(value){
  const t=Date.UTC(target.getUTCFullYear(),target.getUTCMonth(),target.getUTCDate());
  return Math.max(0,Math.ceil((t-today)/86400000));
 }
+const COMPETITION_CARD_SPRITE={
+ ucl:[0,0],bundesliga:[1,0],premier:[2,0],laliga:[3,0],
+ seriea:[0,1],ligue1:[1,1],europa:[2,1],conference:[3,1],
+ facup:[0,2],coppa_italia:[1,2],dfbpokal:[2,2],carabao:[3,2]
+};
 function competitionCardAsset(key){
  const safe=String(key||"").toLowerCase().replace(/[^a-z0-9_]/g,"");
- return safe ? "/api/competition-card/"+encodeURIComponent(safe)+".svg" : null;
+ if(COMPETITION_CARD_SPRITE[safe]) return {type:"sprite",key:safe,pos:COMPETITION_CARD_SPRITE[safe]};
+ return safe ? {type:"fallback",url:"/api/competition-card/"+encodeURIComponent(safe)+".svg"} : null;
 }
 function renderNextCompetitions(){
  const root=$("#nextCompetitionList");if(!root)return;
@@ -633,9 +652,13 @@ function renderNextCompetitions(){
  root.innerHTML=rows.length?rows.map(e=>{
    const days=daysUntil(e.startTime);
    const art=competitionCardAsset(e.competitionKey||"");
-   const artHtml=art
-     ? '<div class="next-competition-art"><img class="nextCompetitionImage" src="'+esc(art)+'" alt="'+esc(e.competition)+'" loading="lazy"><span class="fallback-art" hidden>'+esc(initials(e.competition))+'</span></div>'
-     : '<div class="next-competition-art"><span class="fallback-art">'+esc(initials(e.competition))+'</span></div>';
+   let artHtml='<div class="next-competition-art"><span class="fallback-art">'+esc(initials(e.competition))+'</span></div>';
+   if(art?.type==="sprite"){
+     const x=[0,33.333,66.667,100][art.pos[0]],y=[0,50,100][art.pos[1]];
+     artHtml='<div class="next-competition-art competition-sprite-art" role="img" aria-label="'+esc(e.competition)+'" style="background-position:'+x+'% '+y+'%"></div>';
+   }else if(art?.type==="fallback"){
+     artHtml='<div class="next-competition-art"><img class="nextCompetitionImage" src="'+esc(art.url)+'" alt="'+esc(e.competition)+'" loading="lazy"><span class="fallback-art" hidden>'+esc(initials(e.competition))+'</span></div>';
+   }
    const countdown=days===0?"HOY":days===1?"FALTA 1 DÍA":"FALTAN "+days+" DÍAS";
    return '<article class="next-competition-card nextCompOpen" tabindex="0" role="button" data-comp="'+esc(e.competitionKey||"")+'" data-sport="'+esc(e.sportGroup||"Sport")+'">'+
      artHtml+
