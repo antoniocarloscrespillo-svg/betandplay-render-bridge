@@ -1190,13 +1190,23 @@ async function getEditorialEvents(days=30){
     deduped.set(String(match.id),event);
   }
 
-  const sportOrder=["Football","Ice Hockey","Basketball","American Football","Australian Rules","Rugby League","Rugby Union","Cricket","Motorsport","Tennis"];
-  return [...deduped.values()].sort((a,b)=>{
-    const sa=sportOrder.indexOf(a.sportGroup), sb=sportOrder.indexOf(b.sportGroup);
-    if(sa!==sb) return (sa<0?999:sa)-(sb<0?999:sb);
-    if(a.competitionPriority!==b.competitionPriority) return a.competitionPriority-b.competitionPriority;
-    return new Date(a.startTime||0)-new Date(b.startTime||0);
-  });
+  const events=[...deduped.values()];
+  const germanLogoFallback=new Map();
+  const missingGermanTeams=[...new Set(events
+    .filter(e=>e.sportGroup==="Football" && ["bundesliga","bundesliga2","dfbpokal"].includes(e.competitionKey))
+    .flatMap(e=>(e.teamLogos||[]).filter(x=>!x.url).map(x=>x.name))
+    .filter(Boolean))];
+  await Promise.all(missingGermanTeams.map(async name=>{
+    const url=await resolveEntityVisual(name,"team","German football club");
+    if(url) germanLogoFallback.set(name,url);
+  }));
+  for(const event of events){
+    if(!["bundesliga","bundesliga2","dfbpokal"].includes(event.competitionKey)) continue;
+    event.teamLogos=(event.teamLogos||[]).map(x=>x.url?x:{...x,url:germanLogoFallback.get(x.name)||""});
+    if(event.teamLogos.some(x=>x.url)) event.logoSource="sportsbook-v3+wikipedia";
+  }
+
+  return events.sort((a,b)=>new Date(a.startTime||0)-new Date(b.startTime||0));
 }
 
 async function getBigEvents(days=30) {
@@ -1523,6 +1533,51 @@ app.get("/api/match-markets/:id", async (req,res) => {
     res.json({ok:true,options,groups});
   } catch (error) {
     res.status(error?.status || 502).json({ok:false,error:String(error?.message || error)});
+  }
+});
+
+app.post("/api/content-builder", async (req,res) => {
+  const mode=String(req.body?.mode||"match");
+  const count=[1,3].includes(Number(req.body?.count))?Number(req.body.count):3;
+  const language=req.body?.language==="DE"?"DE":"EN";
+  const eventIds=Array.isArray(req.body?.eventIds)?req.body.eventIds.map(String):[];
+  const competitionKey=String(req.body?.competitionKey||"");
+  try{
+    const all=await getEditorialEvents(30);
+    let selected=eventIds.length ? all.filter(e=>eventIds.includes(String(e.id))) : [];
+    if(competitionKey) selected=all.filter(e=>e.competitionKey===competitionKey);
+    if(!selected.length && req.body?.matchId) selected=all.filter(e=>String(e.id)===String(req.body.matchId));
+    selected.sort((a,b)=>new Date(a.startTime)-new Date(b.startTime));
+    if(!selected.length) return res.status(400).json({ok:false,error:"no_events_selected"});
+
+    const competition=selected[0].competition;
+    const lex=language==="DE"
+      ? {next:"NÄCHSTE SPIELE",check:"JETZT BEI BETANDPLAY CHECKEN",combo:"KOMBI",info:"WETTBEWERBS-UPDATE"}
+      : {next:"UPCOMING FIXTURES",check:"CHECK IT ON BETANDPLAY",combo:"ACCA",info:"COMPETITION UPDATE"};
+    const line=e=>"• "+e.title+" · "+new Intl.DateTimeFormat("en-GB",{timeZone:"Europe/Malta",day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit",hour12:false}).format(new Date(e.startTime))+" CEST";
+    const copies=[];
+    for(let v=0;v<count;v++){
+      if(mode==="match"){
+        const e=selected[v%selected.length];
+        try{const markets=await fetchMatchMarkets(e.id);e.bettingOptions=chooseBettingOptions(markets)}catch{}
+        copies.push({contentType:"Match post",copy:buildVariantPost(e,v===0?"short":v===1?"aggressive":"long",{language,contentType:"Match Post"})});
+      }else if(mode==="competition_post"){
+        const items=selected.slice(v,Math.min(selected.length,v+5));
+        copies.push({contentType:"Competition post",copy:"🏆 "+competition+"\n\n"+lex.next+"\n"+items.map(line).join("\n")+"\n\n👉 "+lex.check});
+      }else if(mode==="team_combo"||mode==="competition_combo"){
+        const items=selected.slice(0,Math.min(5,selected.length));
+        const picks=items.map(e=>{const o=(e.odds||[])[v%(Math.max(1,(e.odds||[]).length))];return "• "+e.title+(o?" — "+o.label+" @ "+o.value:"")});
+        copies.push({contentType:mode==="team_combo"?"Team combo":"Competition combo",copy:"🔥 "+lex.combo+" · "+competition+"\n\n"+picks.join("\n")+"\n\n👉 "+lex.check});
+      }else if(mode==="competition_info"){
+        const items=selected.slice(0,6);
+        copies.push({contentType:"Competition info",copy:"ℹ️ "+lex.info+" · "+competition+"\n\n"+items.map(line).join("\n")+"\n\n"+(language==="DE"?"Alles Wichtige für die nächsten Spiele auf einen Blick.":"Everything you need for the next fixtures at a glance.")});
+      }else{
+        return res.status(400).json({ok:false,error:"invalid_content_mode"});
+      }
+    }
+    res.json({ok:true,variants:copies});
+  }catch(error){
+    res.status(error?.status||502).json({ok:false,error:String(error?.message||error)});
   }
 });
 
