@@ -981,32 +981,134 @@ async function getBigEvents(days=30) {
     .map(toBigEvent);
 }
 
-async function enrichBigEventsWithWikipedia(events) {
-  const uniqueTeams=[...new Set(events.flatMap(e=>e.teamNames||[]).filter(Boolean))];
-  const uniqueCompetitions=[...new Set(events.map(e=>e.competition).filter(Boolean))];
+function sofaSportKey(sportKey="") {
+  const key=String(sportKey||"").toLowerCase();
+  if(key==="soccer") return "football";
+  if(key==="basketball") return "basketball";
+  if(key==="tennis") return "tennis";
+  return key || "football";
+}
 
-  const teamMap=new Map();
-  const competitionMap=new Map();
+function normalizeSofaName(value="") {
+  return normalizeSearchText(value)
+    .replace(/\b(fc|cf|ac|ssc|afc|club|calcio|football|futbol|deportivo)\b/g," ")
+    .replace(/munchen/g,"munich")
+    .replace(/internazionale/g,"inter")
+    .replace(/paris saint germain/g,"psg")
+    .replace(/manchester utd/g,"manchester united")
+    .replace(/manchester city fc/g,"manchester city")
+    .replace(/tottenham hotspur/g,"tottenham")
+    .replace(/\s+/g," ")
+    .trim();
+}
 
-  await Promise.all(uniqueTeams.map(async name=>{
-    const event=events.find(e=>(e.teamNames||[]).includes(name));
-    const sport=(event?.sportKey||"").toLowerCase();
-    const context=sport==="soccer" ? "football club" : sport==="basketball" ? "basketball team" : sport==="tennis" ? "tennis player" : "";
-    teamMap.set(name,await resolveEntityVisual(name,"team",context));
+function nameSimilarity(a,b) {
+  const x=normalizeSofaName(a), y=normalizeSofaName(b);
+  if(!x||!y) return 0;
+  if(x===y) return 1;
+  if(x.includes(y)||y.includes(x)) return 0.9;
+  const xs=new Set(x.split(" ").filter(Boolean));
+  const ys=new Set(y.split(" ").filter(Boolean));
+  const common=[...xs].filter(t=>ys.has(t)).length;
+  const union=new Set([...xs,...ys]).size || 1;
+  return common/union;
+}
+
+async function sofascoreScheduledEvents(sportKey,dateKey) {
+  const cacheKey=("sofa-schedule|"+sportKey+"|"+dateKey).toLowerCase();
+  const hit=wikiImageCache.get(cacheKey);
+  if(hit && Date.now()-hit.createdAt < 6*60*60*1000) return hit.value || [];
+
+  try {
+    const sport=sofaSportKey(sportKey);
+    const url="https://api.sofascore.com/api/v1/sport/"+encodeURIComponent(sport)+"/scheduled-events/"+encodeURIComponent(dateKey);
+    const response=await fetch(url,{
+      headers:{
+        Accept:"application/json",
+        "User-Agent":"BetandplayContentHub/2.0"
+      }
+    });
+    if(!response.ok) return [];
+    const body=await response.json();
+    const events=Array.isArray(body?.events) ? body.events : [];
+    wikiImageCache.set(cacheKey,{createdAt:Date.now(),value:events});
+    return events;
+  } catch {
+    return [];
+  }
+}
+
+function bestSofascoreEvent(sourceEvent,candidates) {
+  const teams=(sourceEvent?.teamNames||[]).slice(0,2);
+  if(teams.length<2) return null;
+
+  let best=null;
+  let bestScore=0;
+
+  for(const candidate of candidates||[]) {
+    const home=candidate?.homeTeam?.name || "";
+    const away=candidate?.awayTeam?.name || "";
+    const direct=(nameSimilarity(teams[0],home)+nameSimilarity(teams[1],away))/2;
+    const reverse=(nameSimilarity(teams[0],away)+nameSimilarity(teams[1],home))/2;
+    const score=Math.max(direct,reverse);
+
+    if(score>bestScore){
+      bestScore=score;
+      best=candidate;
+    }
+  }
+
+  return bestScore>=0.72 ? best : null;
+}
+
+function sofascoreTeamImage(teamId) {
+  return teamId ? "https://img.sofascore.com/api/v1/team/"+encodeURIComponent(teamId)+"/image" : "";
+}
+
+function sofascoreTournamentImage(tournamentId) {
+  return tournamentId ? "https://api.sofascore.com/api/v1/unique-tournament/"+encodeURIComponent(tournamentId)+"/image/dark" : "";
+}
+
+async function enrichBigEventsWithSofascore(events) {
+  const scheduleKeys=[...new Set((events||[]).map(e=>{
+    const date=e?.startTime ? String(e.startTime).slice(0,10) : "";
+    return date && e?.sportKey ? e.sportKey+"|"+date : "";
+  }).filter(Boolean))];
+
+  const schedules=new Map();
+  await Promise.all(scheduleKeys.map(async key=>{
+    const [sportKey,date]=key.split("|");
+    schedules.set(key,await sofascoreScheduledEvents(sportKey,date));
   }));
 
-  await Promise.all(uniqueCompetitions.map(async name=>{
-    const event=events.find(e=>e.competition===name);
-    const sport=(event?.sportKey||"").toLowerCase();
-    const context=sport==="soccer" ? "football competition" : sport==="basketball" ? "basketball competition" : sport==="tennis" ? "tennis tournament" : "";
-    competitionMap.set(name,await resolveEntityVisual(name,"competition",context));
-  }));
+  return (events||[]).map(e=>{
+    const date=e?.startTime ? String(e.startTime).slice(0,10) : "";
+    const candidates=schedules.get((e?.sportKey||"")+"|"+date) || [];
+    const matched=bestSofascoreEvent(e,candidates);
 
-  return events.map(e=>({
-    ...e,
-    teamLogos:(e.teamNames||[]).map(name=>({name,url:teamMap.get(name)||""})),
-    competitionLogo:competitionMap.get(e.competition)||""
-  }));
+    if(!matched){
+      return {...e,teamLogos:(e.teamNames||[]).map(name=>({name,url:""})),competitionLogo:"",logoSource:"fallback"};
+    }
+
+    const sourceTeams=(e.teamNames||[]).slice(0,2);
+    const sofaTeams=[matched?.homeTeam,matched?.awayTeam].filter(Boolean);
+    const teamLogos=sourceTeams.map(name=>{
+      let bestTeam=null,best=0;
+      for(const t of sofaTeams){
+        const score=nameSimilarity(name,t?.name||"");
+        if(score>best){best=score;bestTeam=t;}
+      }
+      return {name,url:best>=0.65 ? sofascoreTeamImage(bestTeam?.id) : ""};
+    });
+
+    const uniqueTournament=matched?.tournament?.uniqueTournament || {};
+    return {
+      ...e,
+      teamLogos,
+      competitionLogo:sofascoreTournamentImage(uniqueTournament?.id),
+      logoSource:"sofascore"
+    };
+  });
 }
 
 function findBigEventById(events, matchId) {
@@ -1029,14 +1131,14 @@ app.get("/health", (_req, res) => {
 
 app.get("/api/big-events", async (_req, res) => {
   try {
-    const hit=cached("big-events-enriched");
+    const hit=cached("big-events-enriched-sofascore-v1");
     if(hit){
       res.set("Cache-Control","public, max-age=60");
       return res.json({ok:true,events:hit,cached:true});
     }
     const events = await getBigEvents(30);
-    const enriched = await enrichBigEventsWithWikipedia(events);
-    cache.set("big-events-enriched",{createdAt:Date.now(),value:enriched});
+    const enriched = await enrichBigEventsWithSofascore(events);
+    cache.set("big-events-enriched-sofascore-v1",{createdAt:Date.now(),value:enriched});
     res.set("Cache-Control","public, max-age=60");
     res.json({ok:true,events:enriched,cached:false});
   } catch (error) {
