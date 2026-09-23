@@ -26,6 +26,27 @@
 @media(max-width:780px){.app{padding:0 12px 40px}.topbar{margin:0 -12px;padding:0 14px}.brand span:last-child{display:none}.toolbar{top:58px;grid-template-columns:1fr 1fr}.toolbar .search{grid-column:1/-1}.today-strip{grid-template-columns:1fr 1fr}.today-main{grid-column:1/-1}.event{grid-template-columns:60px 1fr}.match{padding-right:8px}.odds{grid-column:1/-1;border-top:1px solid #17283b;padding:7px 9px}.actions{grid-column:1/-1;grid-row:auto;flex-direction:row;justify-content:flex-end;border-top:1px solid #17283b}.comphead{height:44px}.gen-controls{grid-template-columns:1fr}.modalback{padding:12px}.explore{grid-template-columns:1fr}.pagehead{padding-top:16px}.pagehead h1{font-size:23px}}
 @media(max-width:600px){.editorial-rail{grid-template-columns:1fr}.gen-controls{grid-template-columns:1fr}.today-strip{grid-template-columns:1fr 1fr}}
 @media(max-width:480px){.navbtn{padding:8px 9px;font-size:11px}.toolbar{grid-template-columns:1fr}.toolbar .search{grid-column:auto}.match{grid-template-columns:1fr 20px 1fr}.team{flex-direction:column;text-align:center;gap:4px}.team.away{flex-direction:column-reverse;text-align:center}.team-logo{width:34px;height:34px}.team-logo img{max-width:28px;max-height:28px}.actions .btn{flex:1}.quickbar{overflow:auto;flex-wrap:nowrap}.today-strip{grid-template-columns:1fr 1fr}.marketgrid{grid-template-columns:1fr}}
+
+/* Light editorial sportsbook theme */
+:root{--bg:#f3f7fc;--surface:#ffffff;--surface2:#f5f8fc;--surface3:#eaf2fb;--line:#d9e4f0;--text:#12243a;--muted:#6f8298;--green:#1677e8;--green2:#0d63c7;--blue:#1677e8;--shadow:0 16px 42px rgba(31,68,110,.10)}
+html{background:var(--bg);color:var(--text)}
+body{background:linear-gradient(180deg,#edf5ff 0,#f7f9fc 340px,#f3f7fc 100%);color:var(--text)}
+.topbar{background:rgba(255,255,255,.94);border-color:var(--line);box-shadow:0 4px 20px rgba(31,68,110,.06)}
+.navbtn.active,.navbtn:hover{background:#eaf3ff;color:#125fae}.brandmark{color:#fff}
+.toolbar{background:rgba(255,255,255,.96);border-color:var(--line);box-shadow:0 8px 28px rgba(31,68,110,.08)}
+.control{background:#fff;color:var(--text);border-color:#d4e0ed}.btn{background:#f4f8fc;color:#20364f;border-color:#d4e0ed}.btn:hover{background:#eaf3fd;border-color:#b9cee3}.btn.primary{background:#1677e8;border-color:#1677e8;color:#fff}.btn.primary:hover{background:#0f69d3}
+.chip{background:#fff;color:#63778e;border-color:#d5e1ed}.chip.active{background:#e8f3ff;border-color:#9fc8f2;color:#0e5fac}.activechip{background:#eef6ff;border-color:#c9def3;color:#355b80}
+.today-main,.stat,.rail,.comp,.post,.explore button,.searchrow{background:#fff;border-color:var(--line);box-shadow:0 4px 16px rgba(31,68,110,.04)}
+.railhead strong,.railname{color:#263d55}.comphead{background:#f7faff;border-color:var(--line)}.comp-logo,.team-logo{background:#fff;border-color:#d8e3ee;color:#56718d}
+.event{border-color:#e5edf5}.event:hover,.event.selected{background:#f1f7fe}.time{border-color:#e5edf5}.vs{color:#8da0b4}
+.odd{background:#f7faff;color:#17314c;border-color:#d4e2f0}.odd:hover{background:#eaf4ff;border-color:#9fc5eb}.odd span{color:#75899e}
+.empty,.error{background:#fff;border-color:#cad9e8}.empty strong,.error strong{color:var(--text)}
+.skeleton{border-color:#e5edf5;background:linear-gradient(90deg,#f4f7fa 20%,#e7eef5 38%,#f4f7fa 56%);background-size:220% 100%}
+.drawerback,.modalback{background:rgba(17,39,64,.35)}.drawer,.modal{background:#fff;border-color:var(--line);color:var(--text)}.drawerhead,.modalhead{border-color:var(--line)}
+.marketgroup{border-color:var(--line)}.marketgroup summary{background:#f6f9fc}.market{background:#f8fbfe;border-color:#d7e3ee}.market b{color:#126bc9}.drawer-loading div{background:#edf3f8}
+.seg{background:#f3f7fb}.seg button.active{background:#dfeeff;color:#155f9f}.postbody{color:#263c53}.editarea{background:#fff;color:#18314a;border-color:#cad9e8}
+.sports-shell{background:#f3f7fc!important}.sports-toolbar,.sports-datebar{background:#fff!important;border-color:#d9e4f0!important}.sports-event,.sports-comp{background:#fff!important;color:#12243a!important;border-color:#d9e4f0!important}
+.sports-hero{box-shadow:0 16px 36px rgba(21,65,111,.14)}
 </style>
 
 <style>
