@@ -387,6 +387,26 @@ function isWomensEvent(match) {
   return femaleMarkers.some(marker => text.includes(marker));
 }
 
+function isSyntheticEvent(match){
+  const tournament=match?.tournament||{};
+  const category=tournament?.category||{};
+  const competitors=competitorEntries(match);
+  const text=[
+    match?.name,match?.title,match?.slug,match?.type,
+    tournament?.name,tournament?.slug,
+    category?.name,category?.slug,
+    ...competitors.flatMap(x=>[x?.name,x?.slug])
+  ].filter(Boolean).join(" ").toLowerCase();
+
+  const markers=[
+    "simulated reality","simulation","virtual football","virtual soccer",
+    "esoccer","e-soccer","e soccer","cyber football","cyber soccer",
+    "srl","electronic league","electronic leagues",
+    "1st teams (goals)","2nd teams (goals)","teams (goals)"
+  ];
+  return markers.some(x=>text.includes(x));
+}
+
 function isBigEntityMatch(match, sportKey) {
   const names = BIG_ENTITIES[sportKey] || [];
   const haystack = [
@@ -637,7 +657,7 @@ async function getMatches({ start, end, tournamentKey = "all", excludeGermany = 
   const matches=responseRows(body);
 
   const filtered = matches
-    .filter(m => !isWomensEvent(m))
+    .filter(m => !isWomensEvent(m) && !isSyntheticEvent(m))
     .filter(m => m?.main_market?.outcomes?.length >= 2)
     .filter(m => matchesTournament(m, tournamentKey))
     .filter(m => !excludeGermany || tournamentKey === "bundesliga" || tournamentKey === "dfbpokal" || !isGermanMarket(m))
@@ -1488,7 +1508,7 @@ async function getEditorialEvents(days=30){
 
   const deduped=new Map();
   for(const match of matches){
-    if(!match?.id || isWomensEvent(match)) continue;
+    if(!match?.id || isWomensEvent(match) || isSyntheticEvent(match)) continue;
     const tournamentId=String(match?.tournament?.id||"");
     const def=defByTournament.get(tournamentId) || editorialCompetitionFor(match);
     if(!def) continue;
@@ -2535,6 +2555,7 @@ app.get("/api/search-matches", async (req, res) => {
     const raw=responseRows(body);
     const now=Date.now();
     const matches = stripWomensEvents(raw)
+      .filter(m=>!isSyntheticEvent(m))
       .filter(m => {
         const status=Number(m?.status);
         const t=new Date(m?.start_time||0).getTime();
