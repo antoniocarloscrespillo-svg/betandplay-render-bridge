@@ -234,6 +234,25 @@ body{background:#071827}.hub-shell{min-height:100vh;display:grid;grid-template-c
 .workspace-titlebar{margin:18px 0 10px}.workspace-titlebar h1{font-size:21px}.toolbar{top:74px}.summary-grid{grid-template-columns:1.35fr repeat(3,.55fr)}#events{gap:10px}.comp{border-radius:8px}.comphead{min-height:42px}.event{min-height:62px;grid-template-columns:62px minmax(300px,1.35fr) minmax(240px,.8fr) auto}.time b{font-size:13px}.match{padding:6px 11px}.team{font-size:11px}.team-logo{width:29px;height:29px}.team-logo img{max-width:27px;max-height:27px}.odd{height:35px}.odd b{font-size:11px}.actions .btn{min-height:29px}.comphead,.today-main,.next-sport-head,.studio-creator-grid,.drawerhead,.modalhead{background:#0a2b4c}
 @media(max-width:1350px){.hub-shell{grid-template-columns:68px minmax(0,1fr)}.context-panel{display:none}}@media(max-width:800px){.hub-shell{display:block}.side-rail{position:sticky;top:0;height:auto;display:block;padding:0;background:#08213a}.rail-brand{display:none}.rail-nav{display:flex;flex-direction:row;margin:0;gap:0;overflow:auto}.side-rail .navbtn{width:auto;min-width:86px;height:50px;border-radius:0;margin:0;padding:0 10px}.side-rail .navbtn.active{box-shadow:none;background:#10385e}.app{padding:0 12px 36px}.topbar{margin:0 -12px;padding:0 12px}}
 
+
+/* ===== Next by Competition cards ===== */
+.next-competition-page{max-width:1500px!important;padding-bottom:36px}
+.next-page-head{padding:28px 2px 18px!important;margin:0!important;border:0!important}
+.next-page-head h1{font-size:30px!important;font-weight:780!important;letter-spacing:-.6px!important;color:#102f4b!important}
+.next-page-head p{font-size:12px!important;color:#72879b!important;margin-top:5px!important}
+.next-comp-cards{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:22px!important;background:transparent!important;border:0!important;border-radius:0!important;overflow:visible!important;margin-top:4px!important}
+.next-competition-card{min-height:330px;background:#fff;border:1px solid #dbe5ee;border-radius:16px;padding:28px 22px 24px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;text-align:center;cursor:pointer;transition:.18s ease;box-shadow:0 7px 22px rgba(8,37,63,.07)}
+.next-competition-card:hover{transform:translateY(-3px);border-color:#9ec8ec;box-shadow:0 13px 30px rgba(8,37,63,.12)}
+.next-competition-logo{width:150px;height:150px;display:grid;place-items:center;margin-bottom:17px}
+.next-competition-logo img{max-width:142px;max-height:142px;width:auto;height:auto;object-fit:contain}
+.next-competition-logo .fallback{width:112px;height:112px;border-radius:28px;display:grid;place-items:center;background:#edf3f8;color:#456078;font-size:26px;font-weight:800}
+.next-competition-name{font-size:17px;line-height:1.18;font-weight:780;color:#101820;text-transform:uppercase;margin-bottom:14px}
+.next-competition-date{font-size:16px;line-height:1.2;color:#18212a;text-transform:uppercase;margin-bottom:8px}
+.next-competition-countdown{font-size:16px;line-height:1.2;color:#18212a;text-transform:uppercase}
+.next-competition-card[data-sport="Football"]{border-top:4px solid #147fe4}.next-competition-card[data-sport="Tennis"]{border-top:4px solid #37a66d}.next-competition-card[data-sport="Basketball"]{border-top:4px solid #e47b26}.next-competition-card[data-sport="Ice Hockey"]{border-top:4px solid #6d83d8}.next-competition-card[data-sport="American Football"]{border-top:4px solid #ad6a34}.next-competition-card[data-sport="Cricket"]{border-top:4px solid #aa4d91}.next-competition-card[data-sport="Motorsport"]{border-top:4px solid #d84444}
+@media(max-width:1200px){.next-comp-cards{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+@media(max-width:720px){.next-comp-cards{grid-template-columns:1fr!important;gap:12px!important}.next-competition-card{min-height:260px;padding:22px 18px}.next-competition-logo{width:120px;height:120px}.next-competition-logo img{max-width:114px;max-height:114px}}
+
 </style>
 </head>
 <body>
@@ -272,7 +291,7 @@ body{background:#071827}.hub-shell{min-height:100vh;display:grid;grid-template-c
   <div id="events"><div class="comp"><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div></div></div>
   <div class="updated" id="lastUpdated" style="margin:8px 2px;color:var(--muted);font-size:10px">Live odds</div>
 </section>
-<section id="nextcomps" class="view"><div class="studio next-competition-page"><div class="next-page-head"><div><h1>Next Games</h1><p>Next event from every competition</p></div><div class="next-sort"><label for="nextSort">Order by</label><select id="nextSort" class="control"><option value="date">Date</option><option value="sport">Sport priority</option></select></div></div><div id="nextCompetitionList" class="next-comp-list"></div></div></section><section id="studio" class="view">
+<section id="nextcomps" class="view"><div class="studio next-competition-page"><div class="next-page-head"><div><h1>Next by Competition</h1><p>Próxima fecha de las principales competiciones</p></div></div><div id="nextCompetitionList" class="next-comp-list next-comp-cards"></div></div></section><section id="studio" class="view">
   <div class="studio studio-direct">
     <div class="studio-direct-head">
       <div><div class="eyebrow">Create content</div><h1>Content Studio</h1><p>Choose the format, select the event or competition, and generate Telegram-ready content.</p></div>
@@ -342,7 +361,7 @@ function teamLogo(e,name){const x=(e.teamLogos||[]).find(a=>a.name===name);retur
 function competitionLogo(e){return logo(e.competitionLogo,e.competition,"comp-logo")}
 function setView(id){$$(".navbtn").forEach(x=>x.classList.toggle("active",x.dataset.view===id));$$(".view").forEach(x=>x.classList.toggle("active",x.id===id));if((id==="biggames"||id==="nextcomps"||id==="studio")&&!state.events.length)loadEvents();if(id==="nextcomps")renderNextCompetitions();if(id==="studio")renderStudioComposer();if(id==="promotions")loadPromotions()}
 $$(".navbtn").forEach(b=>b.onclick=()=>setView(b.dataset.view));
-$("#nextSort").onchange=renderNextCompetitions;
+
 
 function rangeOk(e){
  const k=localDate(e.startTime), now=Date.now(), t=new Date(e.startTime).getTime();
@@ -442,30 +461,50 @@ function editorialRail(list){
  const block=(title,items)=>'<div class="rail"><div class="railhead"><strong>'+title+'</strong><span>'+items.length+'</span></div>'+(items.length?items.map(e=>'<div class="railitem"><span class="railtime">'+esc(timeLabel(e.startTime))+'</span><span class="railname">'+esc(e.title)+'</span></div>').join(""):'<div class="railitem"><span class="railname" style="color:var(--muted)">No events</span></div>')+'</div>';
  $("#editorialRail").innerHTML=block("NOW",nowItems)+block("NEXT",nextItems)+block("TONIGHT",tonightItems);
 }
+function nextCompetitionDateLabel(value){
+ const d=new Date(value);if(Number.isNaN(d.getTime()))return "";
+ return new Intl.DateTimeFormat("es-ES",{timeZone:"Europe/Malta",day:"2-digit",month:"long"}).format(d).toUpperCase();
+}
+function daysUntil(value){
+ const now=new Date();
+ const target=new Date(value);
+ if(Number.isNaN(target.getTime()))return null;
+ const today=Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate());
+ const t=Date.UTC(target.getUTCFullYear(),target.getUTCMonth(),target.getUTCDate());
+ return Math.max(0,Math.ceil((t-today)/86400000));
+}
 function renderNextCompetitions(){
  const root=$("#nextCompetitionList");if(!root)return;
  const now=Date.now(),by=new Map();
- const sportOrder=["Football","Basketball","Ice Hockey","American Football","Tennis","Cricket","Rugby Union","Rugby League","Australian Rules","Motorsport"];
  for(const e of state.events){
-   const t=new Date(e.startTime).getTime();if(!Number.isFinite(t)||t<now)continue;
+   const t=new Date(e.startTime).getTime();
+   if(!Number.isFinite(t)||t<now)continue;
    const key=e.competitionKey||e.competition;
    if(!by.has(key)||t<new Date(by.get(key).startTime).getTime())by.set(key,e);
  }
- let rows=[...by.values()];
- const mode=$("#nextSort")?.value||"date";
- if(mode==="sport"){
-   rows.sort((a,b)=>{
-     const ai=sportOrder.indexOf(a.sportGroup),bi=sportOrder.indexOf(b.sportGroup);
-     const ap=ai<0?999:ai,bp=bi<0?999:bi;
-     return ap-bp || Number(a.competitionPriority||999)-Number(b.competitionPriority||999) || new Date(a.startTime)-new Date(b.startTime);
-   });
- }else{
-   rows.sort((a,b)=>new Date(a.startTime)-new Date(b.startTime)||Number(a.competitionPriority||999)-Number(b.competitionPriority||999));
- }
- const groups=new Map();
- for(const e of rows){const sport=e.sportGroup||"Other";if(!groups.has(sport))groups.set(sport,[]);groups.get(sport).push(e)}
- root.innerHTML=rows.length?[...groups.entries()].map(([sport,items])=>'<section class="next-sport-group"><header class="next-sport-head"><strong>'+sportIcon(sport)+' '+esc(sport)+'</strong><span>'+items.length+' competition'+(items.length===1?"":"s")+'</span></header>'+items.map(e=>'<article class="next-comp">'+competitionLogo(e)+'<div class="comp-title">'+esc(e.competition)+'</div><div class="fixture">'+esc(e.title)+'</div><div class="when"><b>'+esc(compactDateLabel(e.startTime))+'</b>'+esc(timeLabel(e.startTime))+' CEST</div><button class="btn nextCompOpen" data-comp="'+esc(e.competitionKey||"")+'">View</button></article>').join("")+'</section>').join(""):'<div class="empty"><strong>No upcoming competitions</strong></div>';
- $$(".nextCompOpen").forEach(b=>b.onclick=()=>{setView("biggames");$("#competitionFilter").value=b.dataset.comp;state.range="30";render()});
+ const rows=[...by.values()].sort((a,b)=>
+   Number(a.competitionPriority||999)-Number(b.competitionPriority||999) ||
+   new Date(a.startTime)-new Date(b.startTime)
+ );
+ root.innerHTML=rows.length?rows.map(e=>{
+   const days=daysUntil(e.startTime);
+   const logo=e.competitionLogo
+     ? '<img class="nextCompetitionImage" src="'+esc(e.competitionLogo)+'" alt="'+esc(e.competition)+'" loading="lazy"><span class="fallback" hidden>'+initials(e.competition)+'</span>'
+     : '<span class="fallback">'+initials(e.competition)+'</span>';
+   const countdown=days===0?"HOY":days===1?"FALTA 1 DÍA":"FALTAN "+days+" DÍAS";
+   return '<article class="next-competition-card nextCompOpen" tabindex="0" role="button" data-comp="'+esc(e.competitionKey||"")+'" data-sport="'+esc(e.sportGroup||"Sport")+'">'+
+     '<div class="next-competition-logo">'+logo+'</div>'+
+     '<div class="next-competition-name">'+esc(e.competition)+'</div>'+
+     '<div class="next-competition-date">'+esc(nextCompetitionDateLabel(e.startTime))+'</div>'+
+     '<div class="next-competition-countdown">'+esc(countdown)+'</div>'+
+   '</article>';
+ }).join(""):'<div class="empty"><strong>No upcoming competitions</strong></div>';
+ $$(".nextCompetitionImage").forEach(img=>img.onerror=()=>{img.style.display="none";const fb=img.nextElementSibling;if(fb)fb.hidden=false});
+ $$(".nextCompOpen").forEach(card=>{
+   const open=()=>{setView("biggames");$("#competitionFilter").value=card.dataset.comp;state.range="30";render()};
+   card.onclick=open;
+   card.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();open()}};
+ });
 }
 function eventRow(e){
  const teams=(e.teamNames||[]).slice(0,2),h=teams[0],a=teams[1],od=(e.odds||[]).slice(0,3);
