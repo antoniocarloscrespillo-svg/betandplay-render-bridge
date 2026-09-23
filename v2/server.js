@@ -1483,6 +1483,7 @@ app.get("/api/promotions", async (_req,res) => {
   const payload={items,sources:settled.map(({type,ok,status,meta})=>({type,ok,status,meta}))};
   setCached(key,payload);
   res.set("Cache-Control","public, max-age=60");
+  console.info("[qa] promotions",{count:items.length,sources:payload.sources});
   res.json({ok:true,cached:false,...payload});
 });
 
@@ -1491,11 +1492,13 @@ app.get("/api/big-events", async (_req, res) => {
     const hit=cached("editorial-events-v2");
     if(hit){
       res.set("Cache-Control","public, max-age=60");
+      console.info("[qa] big-events",{count:hit.length,competitions:new Set(hit.map(e=>e.competition)).size,sports:new Set(hit.map(e=>e.sportGroup)).size,cached:true});
       return res.json({ok:true,events:hit,cached:true});
     }
     const events = await getEditorialEvents(30);
     cache.set("editorial-events-v2",{createdAt:Date.now(),value:events});
     res.set("Cache-Control","public, max-age=60");
+    console.info("[qa] big-events",{count:events.length,competitions:new Set(events.map(e=>e.competition)).size,sports:new Set(events.map(e=>e.sportGroup)).size,cached:false});
     res.json({ok:true,events,cached:false});
   } catch (error) {
     res.status(error?.status || 502).json({ok:false,error:String(error?.message || error)});
