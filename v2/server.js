@@ -8,6 +8,8 @@ app.use(express.json({ limit: "64kb" }));
 
 const PORT = Number(process.env.PORT || 10000);
 const UPSTREAM = process.env.SPORTSBOOK_API_BASE || "https://www.betandplay.com/sportsbook/api/v2";
+const UPSTREAM_V3 = process.env.SPORTSBOOK_API_BASE_V3 || UPSTREAM.replace(/\/v2\/?$/,"/v3");
+const SPORTSBOOK_ORIGIN = (()=>{ try { return new URL(UPSTREAM).origin; } catch { return "https://www.betandplay.com"; } })();
 const REQUEST_TIMEOUT_MS = Number(process.env.REQUEST_TIMEOUT_MS || 12000);
 const CACHE_TTL_MS = Number(process.env.CACHE_TTL_MS || 120000);
 
@@ -167,8 +169,8 @@ function isBigEntityMatch(match, sportKey) {
   const names = BIG_ENTITIES[sportKey] || [];
   const haystack = [
     match?.name,
-    match?.competitors?.home?.name,
-    match?.competitors?.away?.name,
+    competitorBySide(match,"home")?.name,
+    competitorBySide(match,"away")?.name,
     ...(Array.isArray(match?.competitors) ? match.competitors.map(c=>c?.name) : [])
   ].filter(Boolean).join(" ").toLowerCase();
 
@@ -306,7 +308,7 @@ async function getMatches({ start, end, tournamentKey = "all", excludeGermany = 
   const hit = cached(key);
   if (hit) return hit;
 
-  const url = new URL(UPSTREAM + "/matches");
+  const url = new URL(UPSTREAM_V3 + "/matches");
   url.searchParams.set("type", "match");
   url.searchParams.set("sport_key", sportKey);
   url.searchParams.set("bettable", "true");
@@ -505,24 +507,53 @@ async function fetchMatchMarkets(matchId) {
   return collectMarketObjects(body,[]);
 }
 
+function sportsbookLogoUrl(raw="") {
+  const value=String(raw||"").trim();
+  if(!value) return "";
+  if(/^https?:\/\//i.test(value)) return value;
+  if(value.startsWith("/")) return SPORTSBOOK_ORIGIN + value;
+  return SPORTSBOOK_ORIGIN + "/" + value.replace(/^\/+/, "");
+}
+
+function competitorEntries(match) {
+  if(Array.isArray(match?.competitors)) return match.competitors.filter(Boolean);
+  return [match?.competitors?.home,match?.competitors?.away].filter(Boolean);
+}
+
+function competitorBySide(match,side) {
+  if(match?.competitors?.[side]) return match.competitors[side];
+  const list=competitorEntries(match);
+  if(side==="home") return list.find(c=>/home/i.test(String(c?.type||c?.side||c?.qualifier||""))) || list[0] || null;
+  return list.find(c=>/away/i.test(String(c?.type||c?.side||c?.qualifier||""))) || list[1] || null;
+}
+
+function extractOfficialLogo(entity) {
+  return sportsbookLogoUrl(entity?.logo || entity?.logo_url || entity?.image || entity?.image_url || "");
+}
+
 function toBigEvent(match) {
   const post = toPost(match);
   const category = match?.tournament?.category || {};
+  const home=competitorBySide(match,"home");
+  const away=competitorBySide(match,"away");
+  const teamNames=[home?.name,away?.name].filter(Boolean);
   return {
     ...post,
     country: category?.country_code || category?.name || "",
     tournamentId: match?.tournament?.id || null,
-    teamNames: [
-      match?.competitors?.home?.name,
-      match?.competitors?.away?.name,
-      ...(Array.isArray(match?.competitors) ? match.competitors.map(c=>c?.name) : [])
-    ].filter(Boolean)
+    teamNames,
+    teamLogos: [
+      home?.name ? {name:home.name,url:extractOfficialLogo(home)} : null,
+      away?.name ? {name:away.name,url:extractOfficialLogo(away)} : null
+    ].filter(Boolean),
+    competitionLogo: extractOfficialLogo(match?.tournament),
+    logoSource:"sportsbook-v3"
   };
 }
 
 function toPost(match) {
-  const home = match?.competitors?.home?.name || "Home";
-  const away = match?.competitors?.away?.name || "Away";
+  const home = competitorBySide(match,"home")?.name || "Home";
+  const away = competitorBySide(match,"away")?.name || "Away";
   const competition = match?.tournament?.name || "Football";
   const time = match?.start_time
     ? new Intl.DateTimeFormat("en-GB", {
@@ -1205,18 +1236,56 @@ app.get("/api/bonuses", async (_req,res) => {
   });
 });
 
+function normalizePromotionItem(type,item) {
+  const details=item?.details && typeof item.details==="object" ? item.details : item || {};
+  const id=details.uuid || details.id || item?.uuid || item?.id || "";
+  const name=details.name || details.title || details.label || item?.name || item?.title || type.replace(/_/g," ");
+  const status=details.status || item?.status || "";
+  const expiresAt=details.expires_at || details.expired_at || details.valid_to || details.end_at || details.end_time || item?.expires_at || item?.valid_to || "";
+  const startsAt=details.starts_at || details.valid_from || details.start_at || details.start_time || item?.starts_at || item?.valid_from || "";
+  return {type,id,name,status,startsAt,expiresAt,details};
+}
+
+app.get("/api/promotions", async (_req,res) => {
+  const key="public-promotions-v1";
+  const hit=cached(key);
+  if(hit) return res.json({ok:true,cached:true,...hit});
+
+  const sources=[
+    {type:"comboboost",url:UPSTREAM+"/bonuses/comboboosts?available=true&limit=50"},
+    {type:"hunting",url:UPSTREAM+"/bonuses/huntings?available=true&limit=50"},
+    {type:"lootbox",url:UPSTREAM+"/bonuses/lootboxes?available=true&limit=50"},
+    {type:"daycombo",url:UPSTREAM+"/bonuses/day-combos"}
+  ];
+
+  const settled=await Promise.all(sources.map(async source=>{
+    try{
+      const body=await fetchJson(source.url);
+      const rows=Array.isArray(body?.data) ? body.data : Array.isArray(body) ? body : Array.isArray(body?.bonuses) ? body.bonuses : [];
+      return {type:source.type,ok:true,items:rows.map(item=>normalizePromotionItem(source.type,item)),meta:body?.snapshot?{snapshot:body.snapshot,isChanged:body?.is_changed}:undefined};
+    }catch(error){
+      return {type:source.type,ok:false,status:error?.status||502,items:[]};
+    }
+  }));
+
+  const items=settled.flatMap(x=>x.items);
+  const payload={items,sources:settled.map(({type,ok,status,meta})=>({type,ok,status,meta}))};
+  setCached(key,payload);
+  res.set("Cache-Control","public, max-age=60");
+  res.json({ok:true,cached:false,...payload});
+});
+
 app.get("/api/big-events", async (_req, res) => {
   try {
-    const hit=cached("big-events-enriched-sofascore-v1");
+    const hit=cached("big-events-sportsbook-v3");
     if(hit){
       res.set("Cache-Control","public, max-age=60");
       return res.json({ok:true,events:hit,cached:true});
     }
     const events = await getBigEvents(30);
-    const enriched = await enrichBigEventsWithSofascore(events);
-    cache.set("big-events-enriched-sofascore-v1",{createdAt:Date.now(),value:enriched});
+    cache.set("big-events-sportsbook-v3",{createdAt:Date.now(),value:events});
     res.set("Cache-Control","public, max-age=60");
-    res.json({ok:true,events:enriched,cached:false});
+    res.json({ok:true,events,cached:false});
   } catch (error) {
     res.status(error?.status || 502).json({ok:false,error:String(error?.message || error)});
   }
@@ -1326,22 +1395,19 @@ app.get("/api/search-matches", async (req, res) => {
   const end = new Date(start.getTime() + 45 * 24 * 60 * 60 * 1000);
 
   try {
-    const sports = ["soccer","tennis"];
-    const batches = await Promise.all(sports.map(sportKey =>
-      getMatches({
-        start:start.toISOString(),
-        end:end.toISOString(),
-        tournamentKey:"all",
-        excludeGermany:false,
-        sportKey
-      })
-    ));
-
-    const matches = stripWomensEvents(batches.flat())
+    const url=new URL(UPSTREAM_V3+"/search");
+    url.searchParams.set("query",String(req.query.q||""));
+    const body=await fetchJson(url);
+    const raw=Array.isArray(body) ? body : Array.isArray(body?.data) ? body.data : [];
+    const matches = stripWomensEvents(raw)
       .filter(m => matchSearchHaystack(m).includes(q))
+      .filter(m => {
+        const t=new Date(m?.start_time||0).getTime();
+        return Number.isFinite(t) && t>=start.getTime() && t<=end.getTime();
+      })
       .sort((a,b)=>new Date(a?.start_time||0)-new Date(b?.start_time||0))
       .slice(0,20)
-      .map(toPost);
+      .map(toBigEvent);
 
     res.set("Cache-Control","no-store");
     res.json({ok:true,matches});
