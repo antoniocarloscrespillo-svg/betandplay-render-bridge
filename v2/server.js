@@ -2247,7 +2247,32 @@ function selectComboPick(event,strategy,usedFamilies,legIndex){
 function buildComboLegs(items,variant=0){
   const strategies=["balanced","goals","results"];
   const strategy=strategies[variant%strategies.length];
-  const rotated=[...items.slice(variant),...items.slice(0,variant)];
+
+  // Round-robin competitions first, so a multi-competition ACCA does not
+  // accidentally fill every leg from the same tournament.
+  const grouped=new Map();
+  for(const e of items){
+    const key=String(e?.competitionKey || e?.competition || "other");
+    if(!grouped.has(key)) grouped.set(key,[]);
+    grouped.get(key).push(e);
+  }
+  for(const rows of grouped.values()) rows.sort((a,b)=>new Date(a.startTime)-new Date(b.startTime));
+  const keys=[...grouped.keys()];
+  const rotatedKeys=[...keys.slice(variant%Math.max(1,keys.length)),...keys.slice(0,variant%Math.max(1,keys.length))];
+  const diverse=[];
+  let depth=0;
+  while(diverse.length<items.length){
+    let added=false;
+    for(const key of rotatedKeys){
+      const e=grouped.get(key)?.[depth];
+      if(e){diverse.push(e);added=true;}
+    }
+    if(!added) break;
+    depth++;
+  }
+  const shift=variant%Math.max(1,diverse.length);
+  const rotated=[...diverse.slice(shift),...diverse.slice(0,shift)];
+
   const usedFamilies=new Set();
   const legs=[];
   const usedMatches=new Set();
@@ -2259,7 +2284,7 @@ function buildComboLegs(items,variant=0){
     if(!pick) continue;
     usedMatches.add(String(e.id));
     usedFamilies.add(pick.family);
-    legs.push({...pick,eventId:String(e.id)});
+    legs.push({...pick,eventId:String(e.id),competition:e.competition});
   }
 
   if(legs.length<3){
@@ -2269,7 +2294,7 @@ function buildComboLegs(items,variant=0){
       const pick=comboCandidates(e).sort((a,b)=>Math.abs(a.odd-1.7)-Math.abs(b.odd-1.7))[0];
       if(!pick) continue;
       usedMatches.add(String(e.id));
-      legs.push({...pick,eventId:String(e.id)});
+      legs.push({...pick,eventId:String(e.id),competition:e.competition});
     }
   }
   return {strategy,legs};
