@@ -1670,12 +1670,15 @@ async function enrichBigEventsWithSofascore(events) {
     const matched=bestSofascoreEvent(e,candidates);
 
     if(!matched){
-      return {...e,teamLogos:(e.teamNames||[]).map(name=>({name,url:""})),competitionLogo:"",logoSource:"fallback"};
+      return e;
     }
 
     const sourceTeams=(e.teamNames||[]).slice(0,2);
     const sofaTeams=[matched?.homeTeam,matched?.awayTeam].filter(Boolean);
+    const existingByName=new Map((e.teamLogos||[]).map(x=>[x.name,x.url||""]));
     const teamLogos=sourceTeams.map(name=>{
+      const existing=existingByName.get(name);
+      if(existing) return {name,url:existing};
       let bestTeam=null,best=0;
       for(const t of sofaTeams){
         const score=nameSimilarity(name,t?.name||"");
@@ -1685,11 +1688,12 @@ async function enrichBigEventsWithSofascore(events) {
     });
 
     const uniqueTournament=matched?.tournament?.uniqueTournament || {};
+    const competitionLogo=e.competitionLogo || sofascoreTournamentImage(uniqueTournament?.id);
     return {
       ...e,
       teamLogos,
-      competitionLogo:sofascoreTournamentImage(uniqueTournament?.id),
-      logoSource:"sofascore"
+      competitionLogo,
+      logoSource:(e.logoSource||"sportsbook-v3")+"+sofascore"
     };
   });
 }
@@ -1957,9 +1961,11 @@ async function warmEditorialEvents(){
   if(hit) return hit;
   if(editorialEventsWarmPromise) return editorialEventsWarmPromise;
   editorialEventsWarmPromise=getEditorialEvents(30)
-    .then(events=>{
-      cache.set("editorial-events-v2",{createdAt:Date.now(),value:events});
-      return events;
+    .then(async events=>{
+      let enriched=events;
+      try{enriched=await enrichBigEventsWithSofascore(events)}catch{}
+      cache.set("editorial-events-v2",{createdAt:Date.now(),value:enriched});
+      return enriched;
     })
     .finally(()=>{editorialEventsWarmPromise=null});
   return editorialEventsWarmPromise;
