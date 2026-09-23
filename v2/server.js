@@ -1206,6 +1206,19 @@ async function getEditorialEvents(days=30){
     if(event.teamLogos.some(x=>x.url)) event.logoSource="sportsbook-v3+wikipedia";
   }
 
+  const competitionFallback=new Map();
+  const missingCompetitions=[...new Map(events.filter(e=>!e.competitionLogo).map(e=>[e.competitionKey,e.competition])).entries()];
+  await Promise.all(missingCompetitions.map(async ([key,label])=>{
+    const url=await resolveEntityVisual(label,"competition","sports competition");
+    if(url) competitionFallback.set(key,url);
+  }));
+  for(const event of events){
+    if(!event.competitionLogo && competitionFallback.has(event.competitionKey)){
+      event.competitionLogo=competitionFallback.get(event.competitionKey);
+      event.logoSource=(event.logoSource||"sportsbook-v3")+"+wikipedia";
+    }
+  }
+
   return events.sort((a,b)=>new Date(a.startTime||0)-new Date(b.startTime||0));
 }
 
@@ -1536,43 +1549,112 @@ app.get("/api/match-markets/:id", async (req,res) => {
   }
 });
 
+
+function editorialDateTime(e,language="EN"){
+  const locale=language==="DE"?"de-DE":"en-GB";
+  return new Intl.DateTimeFormat(locale,{timeZone:"Europe/Malta",weekday:"short",day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit",hour12:false}).format(new Date(e.startTime))+" CEST";
+}
+function copywriterMatchPost(e,variant=0,language="EN"){
+  const odds=(e.odds||[]).slice(0,3);
+  const oddsText=odds.map(o=>"• "+o.label+" — "+o.value).join("\n");
+  const enOpen=[
+    "🔥 "+e.title+" takes centre stage in the "+e.competition+".",
+    "⚽ One to watch: "+e.title+". A big "+e.competition+" fixture is coming up.",
+    "👀 "+e.title+" is on the Betandplay radar. Ready for this "+e.competition+" clash?"
+  ];
+  const deOpen=[
+    "🔥 "+e.title+" steht in der "+e.competition+" im Mittelpunkt.",
+    "⚽ Ein Spiel, das Du im Blick haben solltest: "+e.title+".",
+    "👀 "+e.title+" steht bei Betandplay auf dem Programm. Bereit für dieses "+e.competition+"-Duell?"
+  ];
+  const open=(language==="DE"?deOpen:enOpen)[variant%3];
+  const cta=language==="DE"?"👉 Checke alle Quoten und Märkte bei Betandplay.":"👉 Check the full market and all available odds on Betandplay.";
+  const label=language==="DE"?"Aktuelle Hauptquoten":"Main odds";
+  return open+"\n\n⏰ "+editorialDateTime(e,language)+"\n\n"+(oddsText?label+":\n"+oddsText+"\n\n":"")+cta;
+}
+function copywriterCompetitionPost(competition,items,variant=0,language="EN"){
+  const games=items.slice(0,variant===2?6:4);
+  const lines=games.map(e=>"• "+e.title+" · "+editorialDateTime(e,language));
+  if(language==="DE"){
+    const opens=[
+      "🏆 "+competition+" ist zurück — und die nächsten Duelle stehen bereits fest.",
+      "🔥 Der Blick richtet sich auf die "+competition+". Das sind die nächsten Spiele, die Du kennen solltest.",
+      "👀 Was steht als Nächstes in der "+competition+" an? Hier kommt Dein schneller Überblick."
+    ];
+    return opens[variant%3]+"\n\n"+lines.join("\n")+"\n\n👉 Favoriten wählen, Quoten checken und die Action bei Betandplay verfolgen.";
+  }
+  const opens=[
+    "🏆 "+competition+" is back on the agenda — and the next fixtures are already taking shape.",
+    "🔥 All eyes on the "+competition+". These are the next games worth having on your radar.",
+    "👀 What's next in the "+competition+"? Here's the quick fixture rundown."
+  ];
+  return opens[variant%3]+"\n\n"+lines.join("\n")+"\n\n👉 Pick your favourites, check the latest odds and follow the action on Betandplay.";
+}
+function copywriterCombo(items,variant=0,language="EN",label="ACCA"){
+  const selected=items.slice(0,Math.min(5,items.length));
+  const picks=selected.map((e,i)=>{
+    const options=(e.odds||[]).filter(o=>o?.value);
+    const o=options.length?options[(variant+i)%options.length]:null;
+    return "• "+e.title+(o?" — "+o.label+" @ "+o.value:"");
+  });
+  if(language==="DE"){
+    const opens=["🔥 KOMBI-IDEe DES TAGES","🎯 DEINE NÄCHSTE KOMBI?","⚡ KOMBI AUF DEM RADAR"];
+    return opens[variant%3]+"\n\n"+picks.join("\n")+"\n\n👉 Alle Quoten vor der Abgabe noch einmal bei Betandplay checken.";
+  }
+  const opens=["🔥 TODAY'S ACCA IDEA","🎯 ONE FOR THE BETSLIP?","⚡ ACCA ON THE RADAR"];
+  return opens[variant%3]+"\n\n"+picks.join("\n")+"\n\n👉 Check every price on Betandplay before placing your bet.";
+}
+function copywriterCompetitionInfo(competition,items,variant=0,language="EN"){
+  const first=items[0], last=items[Math.min(items.length-1,5)];
+  const fixtures=items.slice(0,5).map(e=>"• "+e.title+" · "+editorialDateTime(e,language)).join("\n");
+  if(language==="DE"){
+    const intro=["ℹ️ "+competition+" — DEIN SCHNELLER ÜBERBLICK","🏆 "+competition+" IM FOKUS","📅 WAS KOMMT ALS NÄCHSTES IN DER "+competition.toUpperCase()+"?"][variant%3];
+    return intro+"\n\n"+fixtures+"\n\n"+(first&&last?"Von "+editorialDateTime(first,language)+" bis "+editorialDateTime(last,language)+" ist einiges geboten. ":"")+"👉 Alle Spiele und Märkte findest Du bei Betandplay.";
+  }
+  const intro=["ℹ️ "+competition+" — YOUR QUICK GUIDE","🏆 "+competition+" IN FOCUS","📅 WHAT'S NEXT IN THE "+competition.toUpperCase()+"?"][variant%3];
+  return intro+"\n\n"+fixtures+"\n\n"+(first&&last?"From "+editorialDateTime(first,language)+" through "+editorialDateTime(last,language)+", there's plenty coming up. ":"")+"👉 Find every fixture and market on Betandplay.";
+}
+
 app.post("/api/content-builder", async (req,res) => {
   const mode=String(req.body?.mode||"match");
-  const count=[1,3].includes(Number(req.body?.count))?Number(req.body.count):3;
+  const count=[1,3].includes(Number(req.body?.count))?Number(req.body.count):1;
   const language=req.body?.language==="DE"?"DE":"EN";
   const eventIds=Array.isArray(req.body?.eventIds)?req.body.eventIds.map(String):[];
-  const competitionKey=String(req.body?.competitionKey||"");
+  const competitionKeys=Array.isArray(req.body?.competitionKeys)?req.body.competitionKeys.map(String).filter(Boolean):[];
   try{
     const all=await getEditorialEvents(30);
-    let selected=eventIds.length ? all.filter(e=>eventIds.includes(String(e.id))) : [];
-    if(competitionKey) selected=all.filter(e=>e.competitionKey===competitionKey);
-    if(!selected.length && req.body?.matchId) selected=all.filter(e=>String(e.id)===String(req.body.matchId));
+    let selected=[];
+    if(mode==="match"){
+      selected=all.filter(e=>eventIds.includes(String(e.id))).slice(0,1);
+    }else if(mode==="competition_post"||mode==="competition_info"){
+      selected=all.filter(e=>competitionKeys.includes(String(e.competitionKey)));
+    }else if(mode==="combo"){
+      const byEvents=all.filter(e=>eventIds.includes(String(e.id)));
+      const byCompetitions=all.filter(e=>competitionKeys.includes(String(e.competitionKey)));
+      const map=new Map([...byEvents,...byCompetitions].map(e=>[String(e.id),e]));
+      selected=[...map.values()];
+    }else{
+      return res.status(400).json({ok:false,error:"invalid_content_mode"});
+    }
     selected.sort((a,b)=>new Date(a.startTime)-new Date(b.startTime));
-    if(!selected.length) return res.status(400).json({ok:false,error:"no_events_selected"});
+    if(!selected.length) return res.status(400).json({ok:false,error:"nothing_selected"});
 
-    const competition=selected[0].competition;
-    const lex=language==="DE"
-      ? {next:"NÄCHSTE SPIELE",check:"JETZT BEI BETANDPLAY CHECKEN",combo:"KOMBI",info:"WETTBEWERBS-UPDATE"}
-      : {next:"UPCOMING FIXTURES",check:"CHECK IT ON BETANDPLAY",combo:"ACCA",info:"COMPETITION UPDATE"};
-    const line=e=>"• "+e.title+" · "+new Intl.DateTimeFormat("en-GB",{timeZone:"Europe/Malta",day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit",hour12:false}).format(new Date(e.startTime))+" CEST";
     const copies=[];
     for(let v=0;v<count;v++){
       if(mode==="match"){
-        const e=selected[v%selected.length];
+        const e={...selected[0]};
         try{const markets=await fetchMatchMarkets(e.id);e.bettingOptions=chooseBettingOptions(markets)}catch{}
-        copies.push({contentType:"Match post",copy:buildVariantPost(e,v===0?"short":v===1?"aggressive":"long",{language,contentType:"Match Post"})});
+        copies.push({contentType:"Match post",copy:copywriterMatchPost(e,v,language)});
       }else if(mode==="competition_post"){
-        const items=selected.slice(v,Math.min(selected.length,v+5));
-        copies.push({contentType:"Competition post",copy:"🏆 "+competition+"\n\n"+lex.next+"\n"+items.map(line).join("\n")+"\n\n👉 "+lex.check});
-      }else if(mode==="team_combo"||mode==="competition_combo"){
-        const items=selected.slice(0,Math.min(5,selected.length));
-        const picks=items.map(e=>{const o=(e.odds||[])[v%(Math.max(1,(e.odds||[]).length))];return "• "+e.title+(o?" — "+o.label+" @ "+o.value:"")});
-        copies.push({contentType:mode==="team_combo"?"Team combo":"Competition combo",copy:"🔥 "+lex.combo+" · "+competition+"\n\n"+picks.join("\n")+"\n\n👉 "+lex.check});
+        const comp=competitionKeys[0];
+        const items=selected.filter(e=>e.competitionKey===comp);
+        copies.push({contentType:"Competition post",copy:copywriterCompetitionPost(items[0]?.competition||"Competition",items,v,language)});
       }else if(mode==="competition_info"){
-        const items=selected.slice(0,6);
-        copies.push({contentType:"Competition info",copy:"ℹ️ "+lex.info+" · "+competition+"\n\n"+items.map(line).join("\n")+"\n\n"+(language==="DE"?"Alles Wichtige für die nächsten Spiele auf einen Blick.":"Everything you need for the next fixtures at a glance.")});
-      }else{
-        return res.status(400).json({ok:false,error:"invalid_content_mode"});
+        const comp=competitionKeys[0];
+        const items=selected.filter(e=>e.competitionKey===comp);
+        copies.push({contentType:"Competition information",copy:copywriterCompetitionInfo(items[0]?.competition||"Competition",items,v,language)});
+      }else if(mode==="combo"){
+        copies.push({contentType:"Combo",copy:copywriterCombo(selected,v,language)});
       }
     }
     res.json({ok:true,variants:copies});
