@@ -1632,6 +1632,7 @@ app.get("/api/search-matches", async (req, res) => {
       .map(toBigEvent);
 
     res.set("Cache-Control","no-store");
+    console.info("[qa] search-matches",{q:String(req.query.q||""),count:matches.length});
     res.json({ok:true,matches});
   } catch (error) {
     res.status(error?.status || 502).json({ok:false,error:String(error?.message || error)});
