@@ -578,6 +578,18 @@ async function fetchJson(url) {
   }
 }
 
+function responseRows(body){
+  if(Array.isArray(body)) return body;
+  if(Array.isArray(body?.data)) return body.data;
+  if(Array.isArray(body?.matches)) return body.matches;
+  if(Array.isArray(body?.items)) return body.items;
+  if(Array.isArray(body?.results)) return body.results;
+  if(Array.isArray(body?.data?.matches)) return body.data.matches;
+  if(Array.isArray(body?.data?.items)) return body.data.items;
+  if(Array.isArray(body?.data?.results)) return body.data.results;
+  return [];
+}
+
 async function fetchJsonWithTimeout(url, timeoutMs=5000) {
   const controller=new AbortController();
   const timer=setTimeout(()=>controller.abort(),timeoutMs);
@@ -621,7 +633,7 @@ async function getMatches({ start, end, tournamentKey = "all", excludeGermany = 
   url.searchParams.set("limit", "100");
 
   const body = await fetchJson(url);
-  const matches = Array.isArray(body?.data) ? body.data : [];
+  const matches=responseRows(body);
 
   const filtered = matches
     .filter(m => !isWomensEvent(m))
@@ -1386,7 +1398,7 @@ async function getAvailableTournaments(start,end){
     url.searchParams.set("limit","100");
     url.searchParams.set("page",String(page));
     const body=await fetchJson(url);
-    const data=Array.isArray(body?.data) ? body.data : Array.isArray(body) ? body : [];
+    const data=responseRows(body);
     rows.push(...data);
 
     const totalPages=Number(body?.pagination?.total_pages || body?.pagination?.pages || 0);
@@ -1416,7 +1428,7 @@ async function getMatchesForTournamentIds(ids,start,end){
   for(let page=1;page<=3;page++){
     url.searchParams.set("page",String(page));
     const body=await fetchJson(url);
-    const data=Array.isArray(body?.data) ? body.data : [];
+    const data=responseRows(body);
     rows.push(...data);
     const totalPages=Number(body?.pagination?.total_pages || body?.pagination?.pages || 0);
     if((totalPages && page>=totalPages) || data.length<100) break;
@@ -2453,7 +2465,7 @@ app.get("/api/search-matches", async (req, res) => {
     const url=new URL(UPSTREAM_V3+"/search");
     url.searchParams.set("q",String(req.query.q||""));
     const body=await fetchJson(url);
-    const raw=Array.isArray(body) ? body : Array.isArray(body?.data) ? body.data : [];
+    const raw=responseRows(body);
     const now=Date.now();
     const matches = stripWomensEvents(raw)
       .filter(m => {
