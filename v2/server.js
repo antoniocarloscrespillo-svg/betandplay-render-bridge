@@ -1433,6 +1433,7 @@ app.get("/api/search-matches", async (req, res) => {
   try {
     const url=new URL(UPSTREAM_V3+"/search");
     url.searchParams.set("q",String(req.query.q||""));
+    url.searchParams.set("only_events_name","true");
     const body=await fetchJson(url);
     const raw=Array.isArray(body) ? body : Array.isArray(body?.data) ? body.data : [];
     const matches = stripWomensEvents(raw)
