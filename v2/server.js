@@ -1172,6 +1172,39 @@ app.get("/health", (_req, res) => {
   });
 });
 
+app.get("/api/bonuses", async (_req,res) => {
+  const key="sportsbook-bonuses";
+  const hit=cached(key);
+  if(hit){
+    res.set("Cache-Control","public, max-age=60");
+    return res.json({ok:true,cached:true,data:hit});
+  }
+
+  const urls=[
+    UPSTREAM + "/bonuses/",
+    UPSTREAM + "/bonuses"
+  ];
+
+  let lastError=null;
+  for(const url of urls){
+    try{
+      const body=await fetchJson(url);
+      setCached(key,body);
+      res.set("Cache-Control","public, max-age=60");
+      return res.json({ok:true,cached:false,data:body});
+    }catch(error){
+      lastError=error;
+    }
+  }
+
+  res.status(lastError?.status || 502).json({
+    ok:false,
+    error:"bonuses_unavailable",
+    status:lastError?.status || 502,
+    details:typeof lastError?.body==="string" ? lastError.body.slice(0,300) : lastError?.body || null
+  });
+});
+
 app.get("/api/big-events", async (_req, res) => {
   try {
     const hit=cached("big-events-enriched-sofascore-v1");
