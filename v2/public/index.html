@@ -65,8 +65,8 @@ button{cursor:pointer}
 .event{display:grid;grid-template-columns:78px minmax(330px,1.35fr) minmax(280px,.9fr) auto;align-items:center;min-height:70px;border-bottom:1px solid #e8eef5;transition:.14s;background:#fff}
 .event:last-child{border-bottom:0}.event:hover,.event.selected{background:#f6faff}
 .time{height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;border-right:1px solid #e8eef5}.time .date{font-size:9px;font-weight:900;letter-spacing:.45px;color:#72879b;margin-bottom:2px}.time b{font-size:14px;color:#193958}.time small{font-size:9px;color:#8b9cae;margin-top:2px}
-.match{display:grid;grid-template-columns:minmax(0,1fr) 24px minmax(0,1fr);align-items:center;gap:8px;padding:8px 14px}.team{display:flex;align-items:center;gap:8px;min-width:0;font-size:13px;font-weight:900;color:#20384f}.team.away{justify-content:flex-end;text-align:right}.teamname{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.vs{font-size:9px;color:#95a5b5;text-align:center;font-weight:900}
-.odds{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:8px 12px}.odd{height:40px;border:1px solid #d7e3ef;background:#f8fbfe;color:#193753;border-radius:8px;display:flex;align-items:center;justify-content:space-between;padding:0 9px}.odd span{font-size:9px;color:#8193a5}.odd b{font-size:13px}.odd:hover{background:#edf6ff;border-color:#a8c9e9}
+.match{display:grid;grid-template-columns:minmax(0,1fr) 24px minmax(0,1fr);align-items:center;gap:8px;padding:8px 14px}.team{display:flex;align-items:center;gap:8px;min-width:0;font-size:13px;font-weight:900;color:#20384f}.team.away{justify-content:flex-end;text-align:right}.teamname{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.vs{font-size:9px;color:#95a5b5;text-align:center;font-weight:900}.generic-match{display:flex;grid-template-columns:1fr}.generic-title{font-size:13px;font-weight:900;color:#20384f;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.no-odds{pointer-events:none}
+.odds{display:grid;grid-template-columns:repeat(auto-fit,minmax(82px,1fr));gap:6px;padding:8px 12px}.odd{height:40px;border:1px solid #d7e3ef;background:#f8fbfe;color:#193753;border-radius:8px;display:flex;align-items:center;justify-content:space-between;padding:0 9px}.odd span{font-size:9px;color:#8193a5}.odd b{font-size:13px}.odd:hover{background:#edf6ff;border-color:#a8c9e9}
 .actions{display:flex;align-items:center;gap:6px;padding:8px 12px}.actions .btn{font-size:11px;white-space:nowrap}.editorial{font-size:9px;color:#9c6715;background:#fff4dc;border:1px solid #f0d7a4;padding:3px 6px;border-radius:999px}
 .empty,.error{border:1px dashed #cbd9e6;border-radius:14px;padding:34px;text-align:center;background:#fff;color:var(--muted)}.empty strong,.error strong{display:block;color:var(--text);font-size:15px;margin-bottom:5px}.error{border-color:#efc5c5;background:#fffafa}
 .skeleton{height:70px;border-bottom:1px solid #e8eef5;background:linear-gradient(90deg,#f5f8fb 20%,#eaf0f6 38%,#f5f8fb 56%);background-size:220% 100%;animation:shimmer 1.2s infinite}@keyframes shimmer{to{background-position:-220% 0}}
@@ -145,7 +145,7 @@ button{cursor:pointer}
 <button id="generateSelected" class="btn primary">Generate 3 posts →</button>
 </div><div id="generated"></div></div></section></div>
 <script>
-const state={events:[],range:"30",selected:null,lastSuccess:null};
+const state={events:[],searchEvents:new Map(),range:"30",selected:null,lastSuccess:null};
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const esc=v=>String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const initials=n=>String(n||"").split(/\s+/).filter(Boolean).map(x=>x[0]).join("").slice(0,3).toUpperCase();
@@ -155,6 +155,8 @@ const timeLabel=iso=>new Intl.DateTimeFormat("en-GB",{timeZone:"Europe/Malta",ho
 const compactDateLabel=iso=>new Intl.DateTimeFormat("en-GB",{timeZone:"Europe/Malta",day:"2-digit",month:"short"}).format(new Date(iso)).toUpperCase();
 const todayKey=()=>localDate(new Date().toISOString());
 const tomorrowKey=()=>{const d=new Date();d.setDate(d.getDate()+1);return localDate(d.toISOString())};
+window.addEventListener("error",e=>{console.error("[ui-error]",e.error||e.message);const n=document.querySelector("#lastUpdated");if(n)n.textContent="Interface error · reload the page";});
+window.addEventListener("unhandledrejection",e=>{console.error("[ui-rejection]",e.reason);const n=document.querySelector("#lastUpdated");if(n)n.textContent="Request error · try again";});
 async function apiFetch(url,options={},timeoutMs=12000){
   const controller=new AbortController();
   const timer=setTimeout(()=>controller.abort(),timeoutMs);
@@ -176,8 +178,10 @@ $$(".navbtn").forEach(b=>b.onclick=()=>setView(b.dataset.view));
 const heroSportBound=true;
 $$("[data-hero-sport]").forEach(b=>b.onclick=()=>{
   const sport=b.dataset.heroSport;
+  const exists=[...$("#sportFilter").options].some(o=>o.value===sport);
+  if(!exists)return;
   $("#sportFilter").value=sport;
-  $$("[data-hero-sport]").forEach(x=>x.classList.toggle("active",x===b));
+  $("[data-hero-sport]").forEach(x=>x.classList.toggle("active",x===b));
   render();
 });
 
@@ -262,9 +266,17 @@ function editorialRail(list){
  $("#editorialRail").innerHTML=block("NOW",nowItems)+block("NEXT",nextItems)+block("TONIGHT",tonightItems);
 }
 function eventRow(e){
- const teams=(e.teamNames||[]).slice(0,2),h=teams[0]||e.title.split(" vs ")[0],a=teams[1]||e.title.split(" vs ")[1],od=(e.odds||[]).slice(0,3);const soon=new Date(e.startTime)-Date.now()>0&&new Date(e.startTime)-Date.now()<90*60000;
- return '<article class="event" tabindex="0" data-event="'+esc(e.id)+'"><div class="time"><span class="date">'+esc(compactDateLabel(e.startTime))+'</span><b>'+esc(timeLabel(e.startTime))+'</b><small>CEST</small></div><div class="match"><button class="team filterTeam" data-team="'+esc(h)+'" aria-label="Filter '+esc(h)+'">'+teamLogo(e,h)+'<span class="teamname">'+esc(h)+'</span></button><span class="vs">VS</span><button class="team away filterTeam" data-team="'+esc(a)+'" aria-label="Filter '+esc(a)+'"><span class="teamname">'+esc(a)+'</span>'+teamLogo(e,a)+'</button></div><div class="odds">'+[0,1,2].map((i)=>'<button class="odd" aria-label="Odd '+(i===0?"1":i===1?"X":"2")+' '+esc(od[i]?.value||"unavailable")+'"><span>'+(i===0?"1":i===1?"X":"2")+'</span><b>'+esc(od[i]?.value||"—")+'</b></button>').join("")+'</div><div class="actions">'+(soon?'<span class="editorial">⚡ Soon</span>':'')+'<button class="btn markets" data-id="'+esc(e.id)+'">View Markets</button><button class="btn primary create" data-id="'+esc(e.id)+'">Create Content →</button></div></article>';
+ const teams=(e.teamNames||[]).slice(0,2),h=teams[0],a=teams[1],od=(e.odds||[]).slice(0,3);
+ const soon=new Date(e.startTime)-Date.now()>0&&new Date(e.startTime)-Date.now()<90*60000;
+ const matchBlock=e.isHeadToHead!==false&&h&&a
+   ? '<div class="match"><button class="team filterTeam" data-team="'+esc(h)+'" aria-label="Filter '+esc(h)+'">'+teamLogo(e,h)+'<span class="teamname">'+esc(h)+'</span></button><span class="vs">VS</span><button class="team away filterTeam" data-team="'+esc(a)+'" aria-label="Filter '+esc(a)+'"><span class="teamname">'+esc(a)+'</span>'+teamLogo(e,a)+'</button></div>'
+   : '<div class="match generic-match"><span class="generic-title">'+esc(e.title||e.competition)+'</span></div>';
+ const oddsBlock=od.length
+   ? od.map(o=>'<button class="odd" aria-label="'+esc((o.label||"Selection")+" "+(o.value||""))+'"><span>'+esc(o.label||"Selection")+'</span><b>'+esc(o.value||"—")+'</b></button>').join("")
+   : '<div class="odd no-odds"><span>Odds</span><b>—</b></div>';
+ return '<article class="event" tabindex="0" data-event="'+esc(e.id)+'"><div class="time"><span class="date">'+esc(compactDateLabel(e.startTime))+'</span><b>'+esc(timeLabel(e.startTime))+'</b><small>CEST</small></div>'+matchBlock+'<div class="odds">'+oddsBlock+'</div><div class="actions">'+(soon?'<span class="editorial">⚡ Soon</span>':'')+'<button class="btn markets" data-id="'+esc(e.id)+'">View Markets</button><button class="btn primary create" data-id="'+esc(e.id)+'">Create Content →</button></div></article>';
 }
+
 function render(){
  const list=filtered();activeChips();todaySummary(list);editorialRail(list);
  if(!list.length){$("#events").innerHTML='<div class="empty"><strong>No matches found</strong>Try removing some filters.<br><button class="btn primary" style="margin-top:12px" id="emptyReset">Reset filters</button></div>';$("#emptyReset").onclick=reset;return}
@@ -291,7 +303,7 @@ $("#resetFilters").onclick=reset;["search","competitionSearch","sportFilter","co
   render();
 }));$$("[data-range]").forEach(b=>b.onclick=()=>{state.range=b.dataset.range;$$("[data-range]").forEach(x=>x.classList.toggle("active",x===b));render()});
 
-function eventById(id){return state.events.find(e=>String(e.id)===String(id))}
+function eventById(id){return state.events.find(e=>String(e.id)===String(id)) || state.searchEvents.get(String(id))}
 function openDrawer(back){back.classList.add("open");back.setAttribute("aria-hidden","false")}
 function closeDrawer(back){back.classList.remove("open");back.setAttribute("aria-hidden","true")}
 async function openMarkets(id){
@@ -314,8 +326,8 @@ $("#generateSelected").onclick=async()=>{
  finally{b.disabled=false;b.textContent="Generate 3 posts →"}
 };
 function bindPosts(vars){$("#collapseAll").onclick=()=>$$(".post").forEach(x=>x.classList.add("collapsed"));$("#expandAll").onclick=()=>$$(".post").forEach(x=>x.classList.remove("collapsed"));$$(".collapsePost").forEach(b=>b.onclick=()=>{const p=b.closest(".post");p.classList.toggle("collapsed");b.textContent=p.classList.contains("collapsed")?"Expand":"Collapse"});$$(".copyPost").forEach((b,i)=>b.onclick=async()=>{const body=b.closest(".post").querySelector(".postbody");await navigator.clipboard.writeText(body.textContent);const old=b.textContent;b.textContent="✓ Copied";setTimeout(()=>b.textContent=old,1200)});$$(".editPost").forEach((b,i)=>b.onclick=()=>{const p=b.closest(".post"),body=p.querySelector(".postbody");if(body.querySelector("textarea"))return;const t=document.createElement("textarea");t.className="editarea";t.value=body.textContent;body.textContent="";body.appendChild(t);t.focus();b.textContent="Done";b.onclick=()=>{body.textContent=t.value;b.textContent="Edit";bindPosts(vars)}})}
-async function studioSearch(){const q=$("#studioSearch").value.trim();if(q.length<2){$("#studioResults").innerHTML='<div class="empty"><strong>Start typing</strong>Enter at least 2 characters.</div>';return}$("#studioResults").innerHTML='<div class="skeleton"></div>';try{const r=await apiFetch("/api/search-matches?q="+encodeURIComponent(q),{cache:"no-store"},12000),d=await r.json();const m=d.matches||[];$("#studioResults").innerHTML=m.length?m.map(x=>'<div class="searchrow"><div><b>'+esc(x.title)+'</b><span>'+esc(x.competition)+' · '+esc(x.time)+'</span></div><button class="btn primary studioCreate" data-id="'+esc(x.id)+'">Create Content →</button></div>').join(""):'<div class="empty"><strong>No upcoming matches found</strong>Try another team or competition.</div>';$$(".studioCreate").forEach(b=>b.onclick=()=>{let e=eventById(b.dataset.id);if(!e){e=m.find(x=>String(x.id)===b.dataset.id);state.events.push(e)}openCreate(b.dataset.id)})}catch{$("#studioResults").innerHTML='<div class="error"><strong>Search unavailable</strong>Try again.</div>'}}
-$("#studioSearchBtn").onclick=studioSearch;$("#studioSearch").onkeydown=e=>{if(e.key==="Enter")studioSearch()};$$("[data-explore]").forEach(b=>b.onclick=()=>{setView("biggames");$("#sportFilter").value=b.dataset.explore;state.range="30";$$("[data-range]").forEach(x=>x.classList.toggle("active",x.dataset.range==="30"));render()});
+async function studioSearch(){const q=$("#studioSearch").value.trim();if(q.length<2){$("#studioResults").innerHTML='<div class="empty"><strong>Start typing</strong>Enter at least 2 characters.</div>';return}$("#studioResults").innerHTML='<div class="skeleton"></div>';try{const r=await apiFetch("/api/search-matches?q="+encodeURIComponent(q),{cache:"no-store"},12000),d=await r.json();const m=d.matches||[];state.searchEvents=new Map(m.map(x=>[String(x.id),x]));$("#studioResults").innerHTML=m.length?m.map(x=>'<div class="searchrow"><div><b>'+esc(x.title)+'</b><span>'+esc(x.competition)+' · '+esc(x.time)+'</span></div><button class="btn primary studioCreate" data-id="'+esc(x.id)+'">Create Content →</button></div>').join(""):'<div class="empty"><strong>No upcoming matches found</strong>Try another team or competition.</div>';$(".studioCreate").forEach(b=>b.onclick=()=>openCreate(b.dataset.id))}catch{$("#studioResults").innerHTML='<div class="error"><strong>Search unavailable</strong>Try again.</div>'}}
+$("#studioSearchBtn").onclick=studioSearch;$("#studioSearch").onkeydown=e=>{if(e.key==="Enter")studioSearch()};$("[data-explore]").forEach(b=>b.onclick=()=>{setView("biggames");const sport=b.dataset.explore;if([...$("#sportFilter").options].some(o=>o.value===sport))$("#sportFilter").value=sport;state.range="30";$("[data-range]").forEach(x=>x.classList.toggle("active",x.dataset.range==="30"));render()});
 
 function promoDate(v){if(!v)return "";const d=new Date(v);if(Number.isNaN(d.getTime()))return String(v);return new Intl.DateTimeFormat("en-GB",{timeZone:"Europe/Malta",day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"}).format(d)}
 function promotionCard(p){const status=p.status?'<div><b>Status:</b> '+esc(p.status)+'</div>':'';const start=p.startsAt?'<div><b>Starts:</b> '+esc(promoDate(p.startsAt))+'</div>':'';const end=p.expiresAt?'<div><b>Ends:</b> '+esc(promoDate(p.expiresAt))+'</div>':'';return '<article class="promo-card"><span class="promo-type">'+esc(p.type)+'</span><h3>'+esc(p.name||"Promotion")+'</h3><div class="promo-meta">'+status+start+end+(p.id?'<div><b>ID:</b> '+esc(p.id)+'</div>':'')+'</div><div class="promo-source">Source: SOFTSWISS Sportsbook API</div></article>'}
