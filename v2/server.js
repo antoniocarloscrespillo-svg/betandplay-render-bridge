@@ -37,6 +37,56 @@ const TEAM_VISUAL_ALIASES = {
   "bayern munich":"FC Bayern Munich",
   "bayern münchen":"FC Bayern Munich",
   "borussia dortmund":"Borussia Dortmund",
+  "bayer leverkusen":"Bayer 04 Leverkusen",
+  "bayer 04 leverkusen":"Bayer 04 Leverkusen",
+  "rb leipzig":"RB Leipzig",
+  "rbl":"RB Leipzig",
+  "eintracht frankfurt":"Eintracht Frankfurt",
+  "vfb stuttgart":"VfB Stuttgart",
+  "stuttgart":"VfB Stuttgart",
+  "sc freiburg":"SC Freiburg",
+  "freiburg":"SC Freiburg",
+  "1899 hoffenheim":"TSG 1899 Hoffenheim",
+  "tsg hoffenheim":"TSG 1899 Hoffenheim",
+  "hoffenheim":"TSG 1899 Hoffenheim",
+  "werder bremen":"SV Werder Bremen",
+  "bremen":"SV Werder Bremen",
+  "vfl wolfsburg":"VfL Wolfsburg",
+  "wolfsburg":"VfL Wolfsburg",
+  "borussia monchengladbach":"Borussia Mönchengladbach",
+  "borussia mönchengladbach":"Borussia Mönchengladbach",
+  "monchengladbach":"Borussia Mönchengladbach",
+  "mönchengladbach":"Borussia Mönchengladbach",
+  "mainz":"1. FSV Mainz 05",
+  "mainz 05":"1. FSV Mainz 05",
+  "1. fsv mainz 05":"1. FSV Mainz 05",
+  "fc augsburg":"FC Augsburg",
+  "augsburg":"FC Augsburg",
+  "union berlin":"1. FC Union Berlin",
+  "1. fc union berlin":"1. FC Union Berlin",
+  "fc st pauli":"FC St. Pauli",
+  "st pauli":"FC St. Pauli",
+  "heidenheim":"1. FC Heidenheim",
+  "1. fc heidenheim":"1. FC Heidenheim",
+  "holstein kiel":"Holstein Kiel",
+  "1. fc koln":"1. FC Köln",
+  "1. fc köln":"1. FC Köln",
+  "koln":"1. FC Köln",
+  "köln":"1. FC Köln",
+  "hamburger sv":"Hamburger SV",
+  "hamburg":"Hamburger SV",
+  "hertha berlin":"Hertha BSC",
+  "hertha bsc":"Hertha BSC",
+  "schalke 04":"FC Schalke 04",
+  "fc schalke 04":"FC Schalke 04",
+  "hannover 96":"Hannover 96",
+  "fortuna dusseldorf":"Fortuna Düsseldorf",
+  "fortuna düsseldorf":"Fortuna Düsseldorf",
+  "karlsruher sc":"Karlsruher SC",
+  "nurnberg":"1. FC Nürnberg",
+  "nürnberg":"1. FC Nürnberg",
+  "1. fc nurnberg":"1. FC Nürnberg",
+  "1. fc nürnberg":"1. FC Nürnberg",
   "inter milan":"Inter Milan",
   "internazionale":"Inter Milan",
   "ac milan":"AC Milan",
@@ -53,6 +103,9 @@ const COMPETITION_VISUAL_ALIASES = {
   "uefa conference league":"UEFA Conference League",
   "premier league":"Premier League",
   "bundesliga":"Bundesliga",
+  "2. bundesliga":"2. Bundesliga",
+  "dfb-pokal":"DFB-Pokal",
+  "dfb pokal":"DFB-Pokal",
   "serie a":"Serie A",
   "laliga":"La Liga",
   "la liga":"La Liga",
@@ -266,83 +319,113 @@ function visualAlias(label, kind="team") {
     : (TEAM_VISUAL_ALIASES[key] || label);
 }
 
-async function commonsLogoThumbnail(label, kind="team") {
+async function wikiPageEntityId(label, kind="team", context="") {
   const canonical=visualAlias(label,kind);
-  const key=("commons|"+kind+"|"+canonical).toLowerCase();
-  const hit=wikiImageCache.get(key);
-  if(hit && Date.now()-hit.createdAt < 24*60*60*1000) return hit.url;
+  const useGermanWiki=kind==="team" && /german|deutsch|bundesliga|dfb/i.test(context||"");
+  const host=useGermanWiki ? "https://de.wikipedia.org/w/api.php" : "https://en.wikipedia.org/w/api.php";
+  const cacheKey=("wikidata-entity-v2|"+host+"|"+kind+"|"+canonical).toLowerCase();
+  const hit=wikiImageCache.get(cacheKey);
+  if(hit && Date.now()-hit.createdAt < 7*24*60*60*1000) return hit.entityId || "";
 
-  try {
-    const url=new URL("https://commons.wikimedia.org/w/api.php");
+  async function entityFromTitle(title){
+    const url=new URL(host);
     url.searchParams.set("action","query");
     url.searchParams.set("format","json");
     url.searchParams.set("formatversion","2");
-    url.searchParams.set("generator","search");
-    url.searchParams.set("gsrnamespace","6");
-    url.searchParams.set("gsrlimit","6");
-    url.searchParams.set("gsrsearch",canonical+" logo");
-    url.searchParams.set("prop","imageinfo");
-    url.searchParams.set("iiprop","url");
-    url.searchParams.set("iiurlwidth","180");
-
-    const response=await fetch(url,{
-      headers:{Accept:"application/json","User-Agent":"BetandplayContentHub/2.0 (sports dashboard)"}
-    });
+    url.searchParams.set("titles",title);
+    url.searchParams.set("prop","pageprops");
+    const response=await fetch(url,{headers:{Accept:"application/json","User-Agent":"BetandplayContentHub/2.0"}});
     if(!response.ok) return "";
-
     const body=await response.json();
-    const pages=Array.isArray(body?.query?.pages) ? body.query.pages : [];
-    const logoPage=pages.find(p=>/logo|crest|badge|emblem/i.test(String(p?.title||""))) || pages[0];
-    const info=logoPage?.imageinfo?.[0];
-    const thumb=info?.thumburl || info?.url || "";
-    wikiImageCache.set(key,{createdAt:Date.now(),url:thumb});
-    return thumb;
-  } catch {
+    return body?.query?.pages?.[0]?.pageprops?.wikibase_item || "";
+  }
+
+  try{
+    let entityId=await entityFromTitle(canonical);
+    if(!entityId){
+      const searchUrl=new URL(host);
+      searchUrl.searchParams.set("action","query");
+      searchUrl.searchParams.set("format","json");
+      searchUrl.searchParams.set("formatversion","2");
+      searchUrl.searchParams.set("list","search");
+      searchUrl.searchParams.set("srlimit","5");
+      const qualifier=kind==="team"
+        ? (useGermanWiki ? " Fußballverein" : " football club")
+        : " sports competition";
+      searchUrl.searchParams.set("srsearch",canonical+qualifier);
+      const response=await fetch(searchUrl,{headers:{Accept:"application/json","User-Agent":"BetandplayContentHub/2.0"}});
+      if(response.ok){
+        const body=await response.json();
+        const results=Array.isArray(body?.query?.search)?body.query.search:[];
+        for(const candidate of results){
+          const title=String(candidate?.title||"");
+          if(!title) continue;
+          entityId=await entityFromTitle(title);
+          if(entityId) break;
+        }
+      }
+    }
+    wikiImageCache.set(cacheKey,{createdAt:Date.now(),entityId});
+    return entityId;
+  }catch{
     return "";
   }
 }
 
-async function wikipediaThumbnail(label, context="") {
-  const key=(label+"|"+context).toLowerCase();
-  const hit=wikiImageCache.get(key);
-  if(hit && Date.now()-hit.createdAt < 24*60*60*1000) return hit.url;
-
-  try {
-    const url=new URL("https://en.wikipedia.org/w/api.php");
-    url.searchParams.set("action","query");
-    url.searchParams.set("format","json");
-    url.searchParams.set("formatversion","2");
-    url.searchParams.set("generator","search");
-    url.searchParams.set("gsrsearch",[label,context].filter(Boolean).join(" "));
-    url.searchParams.set("gsrlimit","1");
-    url.searchParams.set("prop","pageimages");
-    url.searchParams.set("piprop","thumbnail");
-    url.searchParams.set("pithumbsize","160");
-    url.searchParams.set("pilicense","any");
-
-    const response=await fetch(url,{
-      headers:{
-        Accept:"application/json",
-        "User-Agent":"BetandplayContentHub/2.0 (sports dashboard)"
-      }
+async function wikidataLogoFilename(entityId){
+  if(!entityId) return "";
+  const cacheKey=("wikidata-p154-v2|"+entityId).toLowerCase();
+  const hit=wikiImageCache.get(cacheKey);
+  if(hit && Date.now()-hit.createdAt < 7*24*60*60*1000) return hit.filename || "";
+  try{
+    const response=await fetch("https://www.wikidata.org/wiki/Special:EntityData/"+encodeURIComponent(entityId)+".json",{
+      headers:{Accept:"application/json","User-Agent":"BetandplayContentHub/2.0"}
     });
     if(!response.ok) return "";
     const body=await response.json();
-    const page=body?.query?.pages?.[0];
-    const thumb=page?.thumbnail?.source || "";
-    wikiImageCache.set(key,{createdAt:Date.now(),url:thumb});
-    return thumb;
-  } catch {
+    const entity=body?.entities?.[entityId];
+    const claims=Array.isArray(entity?.claims?.P154)?entity.claims.P154:[];
+    const preferred=claims.find(c=>c?.rank==="preferred") || claims.find(c=>c?.rank!=="deprecated") || claims[0];
+    const filename=preferred?.mainsnak?.datavalue?.value || "";
+    wikiImageCache.set(cacheKey,{createdAt:Date.now(),filename});
+    return typeof filename==="string" ? filename : "";
+  }catch{
+    return "";
+  }
+}
+
+async function commonsFileThumbnail(filename){
+  if(!filename) return "";
+  const cacheKey=("commons-file-v2|"+filename).toLowerCase();
+  const hit=wikiImageCache.get(cacheKey);
+  if(hit && Date.now()-hit.createdAt < 7*24*60*60*1000) return hit.url || "";
+  try{
+    const url=new URL("https://commons.wikimedia.org/w/api.php");
+    url.searchParams.set("action","query");
+    url.searchParams.set("format","json");
+    url.searchParams.set("formatversion","2");
+    url.searchParams.set("titles","File:"+filename);
+    url.searchParams.set("prop","imageinfo");
+    url.searchParams.set("iiprop","url");
+    url.searchParams.set("iiurlwidth","200");
+    const response=await fetch(url,{headers:{Accept:"application/json","User-Agent":"BetandplayContentHub/2.0"}});
+    if(!response.ok) return "";
+    const body=await response.json();
+    const info=body?.query?.pages?.[0]?.imageinfo?.[0];
+    const out=info?.thumburl || info?.url || "";
+    wikiImageCache.set(cacheKey,{createdAt:Date.now(),url:out});
+    return out;
+  }catch{
     return "";
   }
 }
 
 async function resolveEntityVisual(label, kind="team", context="") {
-  const logo=await commonsLogoThumbnail(label,kind);
-  if(logo) return logo;
-
-  const canonical=visualAlias(label,kind);
-  return wikipediaThumbnail(canonical,context);
+  const entityId=await wikiPageEntityId(label,kind,context);
+  if(!entityId) return "";
+  const filename=await wikidataLogoFilename(entityId);
+  if(!filename) return "";
+  return commonsFileThumbnail(filename);
 }
 
 async function fetchJson(url) {
