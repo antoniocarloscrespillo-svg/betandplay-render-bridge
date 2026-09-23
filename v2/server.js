@@ -1,5 +1,6 @@
 import express from "express";
 import path from "node:path";
+import fs from "node:fs";
 import { fileURLToPath } from "node:url";
 
 const app = express();
@@ -2575,7 +2576,45 @@ app.get("*", (_req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
+async function runStartupDiagnostics(){
+  try{
+    const events=await warmEditorialEvents();
+    const sample=events[0]||null;
+    const imagePath=path.join(__dirname,"public","assets","competition-cards-user-v2.jpg");
+    const summary={
+      events:events.length,
+      imageAsset:fs.existsSync(imagePath),
+      sample:sample?{
+        id:sample.id,
+        title:sample.title,
+        teamNames:sample.teamNames,
+        odds:sample.odds,
+        startTime:sample.startTime,
+        competitionKey:sample.competitionKey
+      }:null
+    };
+
+    if(events.length>=3){
+      const comboEvents=events.slice(0,6).map(e=>({...e}));
+      await Promise.all(comboEvents.map(async e=>{
+        try{
+          const markets=await fetchMatchMarkets(e.id);
+          e.bettingOptions=chooseBettingOptions(markets);
+        }catch{}
+      }));
+      const tests=[0,1,2].map(v=>copywriterCombo(comboEvents,v,"EN"));
+      summary.comboVariants=tests.map(x=>({
+        lines:String(x).split("\n").filter(Boolean).length,
+        preview:String(x).split("\n").filter(Boolean).slice(0,3).join(" | ")
+      }));
+    }
+    console.log("[startup-diagnostic] "+JSON.stringify(summary));
+  }catch(error){
+    console.error("[startup-diagnostic-error]",String(error?.message||error));
+  }
+}
+
 app.listen(PORT, "0.0.0.0", () => {
   console.log("Betandplay Content Hub V2 listening on port " + PORT);
-  setTimeout(()=>warmEditorialEvents().catch(()=>{}),50);
+  setTimeout(()=>runStartupDiagnostics(),80);
 });
