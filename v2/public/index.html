@@ -483,9 +483,16 @@ function daysUntil(value){
  return Math.max(0,Math.ceil((t-today)/86400000));
 }
 const COMPETITION_ASSET_HOST="https://content-hub-assets-production.up.railway.app";
+const COMPETITION_ART_POS={
+ ucl:[0,0],bundesliga:[1,0],premier:[2,0],laliga:[3,0],
+ seriea:[0,1],ligue1:[1,1],europa:[2,1],conference:[3,1],
+ facup:[0,2],coppa_italia:[1,2],dfbpokal:[2,2],carabao:[3,2]
+};
 function competitionCardAsset(key){
  const safe=String(key||"").toLowerCase().replace(/[^a-z0-9_]/g,"");
- return safe?COMPETITION_ASSET_HOST+"/competitions/"+encodeURIComponent(safe)+".svg":null;
+ const pos=COMPETITION_ART_POS[safe];if(!pos)return null;
+ const xs=["0%","33.333%","66.667%","100%"],ys=["0%","50%","100%"];
+ return {url:COMPETITION_ASSET_HOST+"/assets/competition-sprite.webp",position:xs[pos[0]]+" "+ys[pos[1]]};
 }
 function renderNextCompetitions(){
  const root=$("#nextCompetitionList");if(!root)return;
@@ -504,7 +511,7 @@ function renderNextCompetitions(){
    const days=daysUntil(e.startTime);
    const art=competitionCardAsset(e.competitionKey||"");
    const artHtml=art
-     ? '<div class="next-competition-art"><img class="nextCompetitionImage" data-key="'+esc(e.competitionKey||"")+'" src="'+esc(art)+'" alt="'+esc(e.competition)+'" loading="lazy"><span class="fallback-art" hidden>'+esc(initials(e.competition))+'</span></div>'
+     ? '<div class="next-competition-art hosted-art" style="background-image:url(&quot;'+esc(art.url)+'&quot;);background-size:400% 300%;background-position:'+esc(art.position)+';background-repeat:no-repeat" role="img" aria-label="'+esc(e.competition)+'"></div>'
      : '<div class="next-competition-art"><span class="fallback-art">'+esc(initials(e.competition))+'</span></div>';
    const countdown=days===0?"HOY":days===1?"FALTA 1 DÍA":"FALTAN "+days+" DÍAS";
    return '<article class="next-competition-card nextCompOpen" tabindex="0" role="button" data-comp="'+esc(e.competitionKey||"")+'" data-sport="'+esc(e.sportGroup||"Sport")+'">'+
@@ -518,7 +525,6 @@ function renderNextCompetitions(){
      '</div>'+
    '</article>';
  }).join(""):'<div class="empty"><strong>No upcoming competitions</strong></div>';
- $(".nextCompetitionImage").forEach(img=>img.onerror=()=>{if(!img.dataset.localFallback){img.dataset.localFallback="1";img.src="/api/competition-card/"+encodeURIComponent(img.dataset.key)+".svg";return}img.style.display="none";const fb=img.nextElementSibling;if(fb)fb.hidden=false});
  $$(".nextCompOpen").forEach(card=>{
    const open=()=>{setView("biggames");$("#competitionFilter").value=card.dataset.comp;state.range="30";render()};
    card.onclick=open;
