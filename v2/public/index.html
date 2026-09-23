@@ -344,7 +344,14 @@ async function openMarkets(id){
 $(".closeDrawer").onclick=()=>closeDrawer($("#marketBack"));$("#marketBack").onclick=e=>{if(e.target===e.currentTarget)closeDrawer(e.currentTarget)};
 
 function saveRecent(e){try{const arr=JSON.parse(localStorage.getItem("bnp_recent_events")||"[]").filter(x=>String(x.id)!==String(e.id));arr.unshift({id:e.id,title:e.title,competition:e.competition,time:e.time,startTime:e.startTime,sportKey:e.sportKey,teamNames:e.teamNames||[]});localStorage.setItem("bnp_recent_events",JSON.stringify(arr.slice(0,5)))}catch{}}
-function renderRecent(){let arr=[];try{arr=JSON.parse(localStorage.getItem("bnp_recent_events")||"[]")}catch{}$("#recentWrap").style.display=arr.length?"block":"none";$("#recentList").innerHTML=arr.map(x=>'<div class="searchrow"><div><b>'+esc(x.title)+'</b><span>'+esc(x.competition)+' · '+esc(x.time||"")+'</span></div><button class="btn recentCreate" data-id="'+esc(x.id)+'">Create Content →</button></div>').join("");$$(".recentCreate").forEach(b=>b.onclick=()=>{let e=eventById(b.dataset.id);if(e)openCreate(e.id)})}
+function renderRecent(){
+ const wrap=$("#recentWrap"),list=$("#recentList");
+ if(!wrap||!list)return;
+ let arr=[];try{arr=JSON.parse(localStorage.getItem("bnp_recent_events")||"[]")}catch{}
+ wrap.style.display=arr.length?"block":"none";
+ list.innerHTML=arr.map(x=>'<div class="searchrow"><div><b>'+esc(x.title)+'</b><span>'+esc(x.competition)+' · '+esc(x.time||"")+'</span></div><button class="btn recentCreate" data-id="'+esc(x.id)+'">Create Content →</button></div>').join("");
+ $(".recentCreate").forEach(b=>b.onclick=()=>{let e=eventById(b.dataset.id);if(e)openCreate(e.id)})
+}
 function availableCompetitions(){
  const map=new Map();
  for(const e of state.events){if(!e.competitionKey)continue;if(!map.has(e.competitionKey))map.set(e.competitionKey,{key:e.competitionKey,label:e.competition,sport:e.sportGroup,next:e.startTime})}
