@@ -814,10 +814,21 @@ function normalizeMarketsForDrawer(markets) {
 }
 
 async function fetchMatchMarkets(matchId) {
-  const url = new URL(UPSTREAM + "/matches/" + encodeURIComponent(matchId) + "/markets");
-  url.searchParams.set("limit","200");
-  const body = await fetchJson(url);
-  return collectMarketObjects(body,[]);
+  const bases=[UPSTREAM,UPSTREAM_V3];
+  let lastError=null;
+  for(const base of bases){
+    try{
+      const url=new URL(base+"/matches/"+encodeURIComponent(matchId)+"/markets");
+      url.searchParams.set("limit","200");
+      const body=await fetchJson(url);
+      const rows=collectMarketObjects(body,[]);
+      if(rows.length) return rows;
+    }catch(error){
+      lastError=error;
+    }
+  }
+  if(lastError) throw lastError;
+  return [];
 }
 
 function sportsbookLogoUrl(raw="") {
