@@ -87,6 +87,81 @@ const BIG_ENTITIES = {
   ]
 };
 
+const EDITORIAL_COMPETITIONS = [
+  {key:"champions",label:"UEFA Champions League",sport:"Football",priority:1,aliases:["uefa champions league","champions league"]},
+  {key:"premier",label:"Premier League",sport:"Football",priority:2,aliases:["premier league"]},
+  {key:"bundesliga",label:"Bundesliga",sport:"Football",priority:3,aliases:["bundesliga"],excludeAliases:["2. bundesliga","2 bundesliga"]},
+  {key:"bundesliga2",label:"2. Bundesliga",sport:"Football",priority:4,aliases:["2. bundesliga","2 bundesliga","bundesliga 2"]},
+  {key:"seriea",label:"Serie A",sport:"Football",priority:5,aliases:["serie a"]},
+  {key:"laliga",label:"LaLiga",sport:"Football",priority:6,aliases:["laliga","la liga","primera division"]},
+  {key:"europa",label:"UEFA Europa League",sport:"Football",priority:7,aliases:["uefa europa league","europa league"]},
+  {key:"conference",label:"UEFA Conference League",sport:"Football",priority:8,aliases:["uefa conference league","conference league","europa conference league"]},
+  {key:"ligue1",label:"Ligue 1",sport:"Football",priority:9,aliases:["ligue 1"]},
+  {key:"facup",label:"FA Cup",sport:"Football",priority:10,aliases:["fa cup"]},
+  {key:"carabao",label:"Carabao Cup",sport:"Football",priority:11,aliases:["carabao cup","efl cup","league cup"]},
+  {key:"dfbpokal",label:"DFB-Pokal",sport:"Football",priority:12,aliases:["dfb-pokal","dfb pokal"]},
+  {key:"coppa_italia",label:"Coppa Italia",sport:"Football",priority:13,aliases:["coppa italia"]},
+  {key:"copa_del_rey",label:"Copa del Rey",sport:"Football",priority:14,aliases:["copa del rey"]},
+  {key:"eredivisie",label:"Eredivisie",sport:"Football",priority:15,aliases:["eredivisie"]},
+  {key:"primeira_liga",label:"Primeira Liga",sport:"Football",priority:16,aliases:["primeira liga","liga portugal"]},
+  {key:"saudi_pro",label:"Saudi Pro League",sport:"Football",priority:17,aliases:["saudi pro league","saudi professional league"]},
+  {key:"nations",label:"UEFA Nations League",sport:"Football",priority:18,aliases:["uefa nations league","nations league"]},
+  {key:"world_cup",label:"World Cup",sport:"Football",priority:19,aliases:["fifa world cup","world cup"],excludeAliases:["qualifier","qualification","women"]},
+  {key:"world_cup_qual",label:"World Cup Qualifiers",sport:"Football",priority:20,aliases:["world cup qualification","world cup qualifiers","world cup qualifier"]},
+  {key:"euro",label:"UEFA Euro",sport:"Football",priority:21,aliases:["uefa euro","european championship"],excludeAliases:["qualification","qualifier"]},
+  {key:"euro_qual",label:"Euro Qualifiers",sport:"Football",priority:22,aliases:["euro qualification","euro qualifiers","european championship qualification"]},
+
+  {key:"nhl",label:"NHL",sport:"Ice Hockey",priority:1,aliases:["nhl","national hockey league"]},
+  {key:"nba",label:"NBA",sport:"Basketball",priority:1,aliases:["nba","national basketball association"]},
+  {key:"nfl",label:"NFL",sport:"American Football",priority:1,aliases:["nfl","national football league"]},
+  {key:"afl",label:"AFL",sport:"Australian Rules",priority:1,aliases:["afl","australian football league"]},
+  {key:"nrl",label:"NRL",sport:"Rugby League",priority:1,aliases:["nrl","national rugby league"]},
+  {key:"ipl",label:"IPL",sport:"Cricket",priority:1,aliases:["indian premier league","ipl"]},
+  {key:"cricket_intl",label:"International Cricket",sport:"Cricket",priority:2,aliases:["international","test series","odi","t20 international","world cup"]},
+  {key:"six_nations",label:"Six Nations",sport:"Rugby Union",priority:1,aliases:["six nations"]},
+  {key:"rugby_world_cup",label:"Rugby World Cup",sport:"Rugby Union",priority:2,aliases:["rugby world cup","world cup"]},
+  {key:"formula1",label:"Formula 1",sport:"Motorsport",priority:1,aliases:["formula 1","formula one","f1"]},
+  {key:"australianopen",label:"Australian Open",sport:"Tennis",priority:1,aliases:["australian open"]},
+  {key:"rolandgarros",label:"Roland Garros",sport:"Tennis",priority:2,aliases:["roland garros","french open"]},
+  {key:"wimbledon",label:"Wimbledon",sport:"Tennis",priority:3,aliases:["wimbledon"]},
+  {key:"usopen",label:"US Open",sport:"Tennis",priority:4,aliases:["us open"]},
+  {key:"masters1000",label:"ATP Masters 1000",sport:"Tennis",priority:5,aliases:["masters 1000","atp masters","indian wells","miami open","monte carlo masters","madrid open","italian open","canadian open","cincinnati open","shanghai masters","paris masters"]}
+];
+
+function normalizedCompetitionText(value=""){
+  return normalizeSearchText(value).replace(/[._-]+/g," ").replace(/\s+/g," ").trim();
+}
+
+function editorialCompetitionFor(match){
+  const tournamentName=normalizedCompetitionText(match?.tournament?.name || "");
+  const categoryName=normalizedCompetitionText(match?.tournament?.category?.name || "");
+  const sportName=normalizedCompetitionText(match?.tournament?.sport?.name || match?.sport?.name || "");
+  const sportKey=normalizedCompetitionText(match?.tournament?.sport?.key || match?.sport?.key || "");
+  const haystack=[tournamentName,categoryName].filter(Boolean).join(" ");
+
+  const sportMatches=(def)=>{
+    const wanted=normalizedCompetitionText(def.sport);
+    if(def.sport==="Football") return /soccer|football/.test(sportName+" "+sportKey) && !/american|australian/.test(sportName+" "+sportKey);
+    if(def.sport==="Ice Hockey") return /ice hockey|hockey/.test(sportName+" "+sportKey);
+    if(def.sport==="Basketball") return /basketball/.test(sportName+" "+sportKey);
+    if(def.sport==="American Football") return /american football/.test(sportName+" "+sportKey);
+    if(def.sport==="Australian Rules") return /australian|aussie rules/.test(sportName+" "+sportKey);
+    if(def.sport==="Rugby League") return /rugby league/.test(sportName+" "+sportKey);
+    if(def.sport==="Rugby Union") return /rugby union/.test(sportName+" "+sportKey) || (/rugby/.test(sportName+" "+sportKey) && !/league/.test(sportName+" "+sportKey));
+    if(def.sport==="Cricket") return /cricket/.test(sportName+" "+sportKey);
+    if(def.sport==="Motorsport") return /motor|formula|racing/.test(sportName+" "+sportKey);
+    if(def.sport==="Tennis") return /tennis/.test(sportName+" "+sportKey);
+    return (sportName+" "+sportKey).includes(wanted);
+  };
+
+  for(const def of EDITORIAL_COMPETITIONS){
+    if(!sportMatches(def)) continue;
+    if((def.excludeAliases||[]).some(a=>haystack.includes(normalizedCompetitionText(a)))) continue;
+    if(def.aliases.some(a=>haystack.includes(normalizedCompetitionText(a)))) return def;
+  }
+  return null;
+}
+
 const TOURNAMENT_ALIASES = {
   all: [],
   champions: ["uefa champions league", "champions league"],
@@ -1012,6 +1087,75 @@ async function getReportMatches(days) {
   });
 }
 
+async function getAvailableSports(start,end){
+  const key="available-sports|"+String(start).slice(0,10)+"|"+String(end).slice(0,10);
+  const hit=cached(key);
+  if(hit) return hit;
+  const url=new URL(UPSTREAM+"/sports");
+  url.searchParams.set("start_from",start);
+  url.searchParams.set("start_to",end);
+  url.searchParams.set("match_status","0");
+  const body=await fetchJson(url);
+  const rows=Array.isArray(body?.data) ? body.data : Array.isArray(body) ? body : [];
+  const sports=rows.map(x=>({
+    id:x?.id,
+    name:x?.name || "",
+    key:x?.key || "",
+    raw:x
+  })).filter(x=>x.key);
+  setCached(key,sports);
+  return sports;
+}
+
+async function getEditorialEvents(days=30){
+  const start=new Date();
+  const endLimit=new Date(start.getTime()+days*24*60*60*1000);
+  const sports=await getAvailableSports(start.toISOString(),endLimit.toISOString());
+
+  const chunks=[];
+  for(const sport of sports){
+    let cursor=new Date(start);
+    while(cursor<endLimit){
+      const chunkEnd=new Date(Math.min(cursor.getTime()+5*24*60*60*1000,endLimit.getTime()));
+      try{
+        const batch=await getMatches({
+          start:cursor.toISOString(),
+          end:chunkEnd.toISOString(),
+          tournamentKey:"all",
+          excludeGermany:false,
+          sportKey:sport.key
+        });
+        for(const match of batch){
+          const def=editorialCompetitionFor(match);
+          if(def) chunks.push({match,def});
+        }
+      }catch{}
+      cursor=new Date(chunkEnd.getTime()+1000);
+    }
+  }
+
+  const deduped=new Map();
+  for(const item of chunks){
+    const id=String(item.match?.id||"");
+    if(!id) continue;
+    const event=toBigEvent(item.match);
+    event.competitionKey=item.def.key;
+    event.competition=item.def.label;
+    event.competitionPriority=item.def.priority;
+    event.sportGroup=item.def.sport;
+    event.sportKey=String(item.match?.tournament?.sport?.key || item.match?.sport?.key || event.sportKey || "");
+    deduped.set(id,event);
+  }
+
+  return [...deduped.values()].sort((a,b)=>{
+    const sportOrder=["Football","Ice Hockey","Basketball","American Football","Australian Rules","Rugby League","Rugby Union","Cricket","Motorsport","Tennis"];
+    const sa=sportOrder.indexOf(a.sportGroup), sb=sportOrder.indexOf(b.sportGroup);
+    if(sa!==sb) return (sa<0?999:sa)-(sb<0?999:sb);
+    if(a.competitionPriority!==b.competitionPriority) return a.competitionPriority-b.competitionPriority;
+    return new Date(a.startTime||0)-new Date(b.startTime||0);
+  });
+}
+
 async function getBigEvents(days=30) {
   const start = new Date();
   const endLimit = new Date(start.getTime() + days * 24 * 60 * 60 * 1000);
@@ -1306,13 +1450,13 @@ app.get("/api/promotions", async (_req,res) => {
 
 app.get("/api/big-events", async (_req, res) => {
   try {
-    const hit=cached("big-events-sportsbook-v3");
+    const hit=cached("editorial-events-v2");
     if(hit){
       res.set("Cache-Control","public, max-age=60");
       return res.json({ok:true,events:hit,cached:true});
     }
-    const events = await getBigEvents(30);
-    cache.set("big-events-sportsbook-v3",{createdAt:Date.now(),value:events});
+    const events = await getEditorialEvents(30);
+    cache.set("editorial-events-v2",{createdAt:Date.now(),value:events});
     res.set("Cache-Control","public, max-age=60");
     res.json({ok:true,events,cached:false});
   } catch (error) {
@@ -1337,7 +1481,7 @@ app.post("/api/generate-variants", async (req,res) => {
   if(!matchId) return res.status(400).json({ok:false,error:"match_id_required"});
 
   try {
-    const events=await getBigEvents(30);
+    const events=await getEditorialEvents(30);
     let event=findBigEventById(events,matchId);
     if(!event){
       try{
