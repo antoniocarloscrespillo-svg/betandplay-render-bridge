@@ -95,6 +95,64 @@ const TEAM_VISUAL_ALIASES = {
   "psg":"Paris Saint-Germain FC"
 };
 
+const LOCAL_WIKI_FILE_LOGOS = {
+  team: {
+    "fc bayern munich": {host:"https://es.wikipedia.org/w/api.php", file:"FC Bayern München logo (2024).svg"},
+    "bayern munich": {host:"https://es.wikipedia.org/w/api.php", file:"FC Bayern München logo (2024).svg"},
+    "bayern münchen": {host:"https://es.wikipedia.org/w/api.php", file:"FC Bayern München logo (2024).svg"}
+  },
+  competition: {}
+};
+
+const EXACT_WIKI_ARTICLES = {
+  team: {
+    "fc bayern munich": {host:"https://de.wikipedia.org/w/api.php", title:"FC Bayern München"},
+    "bayern munich": {host:"https://de.wikipedia.org/w/api.php", title:"FC Bayern München"},
+    "bayern münchen": {host:"https://de.wikipedia.org/w/api.php", title:"FC Bayern München"},
+    "borussia dortmund": {host:"https://de.wikipedia.org/w/api.php", title:"Borussia Dortmund"},
+    "bayer 04 leverkusen": {host:"https://de.wikipedia.org/w/api.php", title:"Bayer 04 Leverkusen"},
+    "rb leipzig": {host:"https://de.wikipedia.org/w/api.php", title:"RB Leipzig"},
+    "eintracht frankfurt": {host:"https://de.wikipedia.org/w/api.php", title:"Eintracht Frankfurt"},
+    "vfb stuttgart": {host:"https://de.wikipedia.org/w/api.php", title:"VfB Stuttgart"},
+    "sc freiburg": {host:"https://de.wikipedia.org/w/api.php", title:"SC Freiburg"},
+    "tsg 1899 hoffenheim": {host:"https://de.wikipedia.org/w/api.php", title:"TSG 1899 Hoffenheim"},
+    "sv werder bremen": {host:"https://de.wikipedia.org/w/api.php", title:"Werder Bremen"},
+    "vfl wolfsburg": {host:"https://de.wikipedia.org/w/api.php", title:"VfL Wolfsburg"},
+    "borussia mönchengladbach": {host:"https://de.wikipedia.org/w/api.php", title:"Borussia Mönchengladbach"},
+    "1. fsv mainz 05": {host:"https://de.wikipedia.org/w/api.php", title:"1. FSV Mainz 05"},
+    "fc augsburg": {host:"https://de.wikipedia.org/w/api.php", title:"FC Augsburg"},
+    "1. fc union berlin": {host:"https://de.wikipedia.org/w/api.php", title:"1. FC Union Berlin"},
+    "fc st. pauli": {host:"https://de.wikipedia.org/w/api.php", title:"FC St. Pauli"},
+    "1. fc heidenheim": {host:"https://de.wikipedia.org/w/api.php", title:"1. FC Heidenheim"},
+    "holstein kiel": {host:"https://de.wikipedia.org/w/api.php", title:"Holstein Kiel"},
+    "1. fc köln": {host:"https://de.wikipedia.org/w/api.php", title:"1. FC Köln"},
+    "hamburger sv": {host:"https://de.wikipedia.org/w/api.php", title:"Hamburger SV"},
+    "hertha bsc": {host:"https://de.wikipedia.org/w/api.php", title:"Hertha BSC"},
+    "fc schalke 04": {host:"https://de.wikipedia.org/w/api.php", title:"FC Schalke 04"},
+    "hannover 96": {host:"https://de.wikipedia.org/w/api.php", title:"Hannover 96"},
+    "fortuna düsseldorf": {host:"https://de.wikipedia.org/w/api.php", title:"Fortuna Düsseldorf"},
+    "karlsruher sc": {host:"https://de.wikipedia.org/w/api.php", title:"Karlsruher SC"},
+    "1. fc nürnberg": {host:"https://de.wikipedia.org/w/api.php", title:"1. FC Nürnberg"}
+  },
+  competition: {
+    "uefa champions league": {host:"https://en.wikipedia.org/w/api.php", title:"UEFA Champions League"},
+    "uefa europa league": {host:"https://en.wikipedia.org/w/api.php", title:"UEFA Europa League"},
+    "uefa conference league": {host:"https://en.wikipedia.org/w/api.php", title:"UEFA Conference League"},
+    "premier league": {host:"https://en.wikipedia.org/w/api.php", title:"Premier League"},
+    "bundesliga": {host:"https://de.wikipedia.org/w/api.php", title:"Fußball-Bundesliga"},
+    "2. bundesliga": {host:"https://de.wikipedia.org/w/api.php", title:"2. Fußball-Bundesliga"},
+    "dfb-pokal": {host:"https://de.wikipedia.org/w/api.php", title:"DFB-Pokal"},
+    "serie a": {host:"https://en.wikipedia.org/w/api.php", title:"Serie A"},
+    "la liga": {host:"https://en.wikipedia.org/w/api.php", title:"La Liga"},
+    "ligue 1": {host:"https://en.wikipedia.org/w/api.php", title:"Ligue 1"},
+    "fa cup": {host:"https://en.wikipedia.org/w/api.php", title:"FA Cup"},
+    "efl cup": {host:"https://en.wikipedia.org/w/api.php", title:"EFL Cup"},
+    "copa del rey": {host:"https://en.wikipedia.org/w/api.php", title:"Copa del Rey"},
+    "coppa italia": {host:"https://en.wikipedia.org/w/api.php", title:"Coppa Italia"},
+    "uefa nations league": {host:"https://en.wikipedia.org/w/api.php", title:"UEFA Nations League"}
+  }
+};
+
 const COMPETITION_VISUAL_ALIASES = {
   "uefa champions league":"UEFA Champions League",
   "champions league":"UEFA Champions League",
@@ -319,15 +377,64 @@ function visualAlias(label, kind="team") {
     : (TEAM_VISUAL_ALIASES[key] || label);
 }
 
+async function localWikiFileThumbnail(host, filename){
+  if(!host||!filename) return "";
+  const key=("local-wiki-file-v1|"+host+"|"+filename).toLowerCase();
+  const hit=wikiImageCache.get(key);
+  if(hit && Date.now()-hit.createdAt<7*24*60*60*1000) return hit.url||"";
+  try{
+    const url=new URL(host);
+    url.searchParams.set("action","query");
+    url.searchParams.set("format","json");
+    url.searchParams.set("formatversion","2");
+    url.searchParams.set("titles","File:"+filename);
+    url.searchParams.set("prop","imageinfo");
+    url.searchParams.set("iiprop","url");
+    url.searchParams.set("iiurlwidth","220");
+    const response=await fetch(url,{headers:{Accept:"application/json","User-Agent":"BetandplayContentHub/2.0"}});
+    if(!response.ok) return "";
+    const body=await response.json();
+    const info=body?.query?.pages?.[0]?.imageinfo?.[0];
+    const out=info?.thumburl||info?.url||"";
+    wikiImageCache.set(key,{createdAt:Date.now(),url:out});
+    return out;
+  }catch{return ""}
+}
+
+async function exactWikiArticleThumbnail(host,title){
+  if(!host||!title) return "";
+  const key=("exact-wiki-pageimage-v1|"+host+"|"+title).toLowerCase();
+  const hit=wikiImageCache.get(key);
+  if(hit&&Date.now()-hit.createdAt<7*24*60*60*1000) return hit.url||"";
+  try{
+    const url=new URL(host);
+    url.searchParams.set("action","query");
+    url.searchParams.set("format","json");
+    url.searchParams.set("formatversion","2");
+    url.searchParams.set("titles",title);
+    url.searchParams.set("prop","pageimages");
+    url.searchParams.set("piprop","thumbnail");
+    url.searchParams.set("pithumbsize","220");
+    url.searchParams.set("pilicense","any");
+    const response=await fetch(url,{headers:{Accept:"application/json","User-Agent":"BetandplayContentHub/2.0"}});
+    if(!response.ok) return "";
+    const body=await response.json();
+    const out=body?.query?.pages?.[0]?.thumbnail?.source||"";
+    wikiImageCache.set(key,{createdAt:Date.now(),url:out});
+    return out;
+  }catch{return ""}
+}
+
 async function wikiPageEntityId(label, kind="team", context="") {
   const canonical=visualAlias(label,kind);
+  const exact=EXACT_WIKI_ARTICLES[kind]?.[String(canonical||"").toLowerCase()] || EXACT_WIKI_ARTICLES[kind]?.[String(label||"").toLowerCase()];
   const useGermanWiki=kind==="team" && /german|deutsch|bundesliga|dfb/i.test(context||"");
-  const host=useGermanWiki ? "https://de.wikipedia.org/w/api.php" : "https://en.wikipedia.org/w/api.php";
-  const cacheKey=("wikidata-entity-v2|"+host+"|"+kind+"|"+canonical).toLowerCase();
+  const host=exact?.host || (useGermanWiki ? "https://de.wikipedia.org/w/api.php" : "https://en.wikipedia.org/w/api.php");
+  const title=exact?.title || canonical;
+  const cacheKey=("wikidata-entity-v3|"+host+"|"+kind+"|"+title).toLowerCase();
   const hit=wikiImageCache.get(cacheKey);
   if(hit && Date.now()-hit.createdAt < 7*24*60*60*1000) return hit.entityId || "";
-
-  async function entityFromTitle(title){
+  try{
     const url=new URL(host);
     url.searchParams.set("action","query");
     url.searchParams.set("format","json");
@@ -337,66 +444,32 @@ async function wikiPageEntityId(label, kind="team", context="") {
     const response=await fetch(url,{headers:{Accept:"application/json","User-Agent":"BetandplayContentHub/2.0"}});
     if(!response.ok) return "";
     const body=await response.json();
-    return body?.query?.pages?.[0]?.pageprops?.wikibase_item || "";
-  }
-
-  try{
-    let entityId=await entityFromTitle(canonical);
-    if(!entityId){
-      const searchUrl=new URL(host);
-      searchUrl.searchParams.set("action","query");
-      searchUrl.searchParams.set("format","json");
-      searchUrl.searchParams.set("formatversion","2");
-      searchUrl.searchParams.set("list","search");
-      searchUrl.searchParams.set("srlimit","5");
-      const qualifier=kind==="team"
-        ? (useGermanWiki ? " Fußballverein" : " football club")
-        : " sports competition";
-      searchUrl.searchParams.set("srsearch",canonical+qualifier);
-      const response=await fetch(searchUrl,{headers:{Accept:"application/json","User-Agent":"BetandplayContentHub/2.0"}});
-      if(response.ok){
-        const body=await response.json();
-        const results=Array.isArray(body?.query?.search)?body.query.search:[];
-        for(const candidate of results){
-          const title=String(candidate?.title||"");
-          if(!title) continue;
-          entityId=await entityFromTitle(title);
-          if(entityId) break;
-        }
-      }
-    }
+    const entityId=body?.query?.pages?.[0]?.pageprops?.wikibase_item || "";
     wikiImageCache.set(cacheKey,{createdAt:Date.now(),entityId});
     return entityId;
-  }catch{
-    return "";
-  }
+  }catch{return ""}
 }
 
 async function wikidataLogoFilename(entityId){
   if(!entityId) return "";
-  const cacheKey=("wikidata-p154-v2|"+entityId).toLowerCase();
+  const cacheKey=("wikidata-p154-v3|"+entityId).toLowerCase();
   const hit=wikiImageCache.get(cacheKey);
   if(hit && Date.now()-hit.createdAt < 7*24*60*60*1000) return hit.filename || "";
   try{
-    const response=await fetch("https://www.wikidata.org/wiki/Special:EntityData/"+encodeURIComponent(entityId)+".json",{
-      headers:{Accept:"application/json","User-Agent":"BetandplayContentHub/2.0"}
-    });
+    const response=await fetch("https://www.wikidata.org/wiki/Special:EntityData/"+encodeURIComponent(entityId)+".json",{headers:{Accept:"application/json","User-Agent":"BetandplayContentHub/2.0"}});
     if(!response.ok) return "";
     const body=await response.json();
-    const entity=body?.entities?.[entityId];
-    const claims=Array.isArray(entity?.claims?.P154)?entity.claims.P154:[];
+    const claims=Array.isArray(body?.entities?.[entityId]?.claims?.P154)?body.entities[entityId].claims.P154:[];
     const preferred=claims.find(c=>c?.rank==="preferred") || claims.find(c=>c?.rank!=="deprecated") || claims[0];
     const filename=preferred?.mainsnak?.datavalue?.value || "";
     wikiImageCache.set(cacheKey,{createdAt:Date.now(),filename});
-    return typeof filename==="string" ? filename : "";
-  }catch{
-    return "";
-  }
+    return typeof filename==="string"?filename:"";
+  }catch{return ""}
 }
 
 async function commonsFileThumbnail(filename){
   if(!filename) return "";
-  const cacheKey=("commons-file-v2|"+filename).toLowerCase();
+  const cacheKey=("commons-file-v3|"+filename).toLowerCase();
   const hit=wikiImageCache.get(cacheKey);
   if(hit && Date.now()-hit.createdAt < 7*24*60*60*1000) return hit.url || "";
   try{
@@ -407,24 +480,33 @@ async function commonsFileThumbnail(filename){
     url.searchParams.set("titles","File:"+filename);
     url.searchParams.set("prop","imageinfo");
     url.searchParams.set("iiprop","url");
-    url.searchParams.set("iiurlwidth","200");
+    url.searchParams.set("iiurlwidth","220");
     const response=await fetch(url,{headers:{Accept:"application/json","User-Agent":"BetandplayContentHub/2.0"}});
     if(!response.ok) return "";
     const body=await response.json();
     const info=body?.query?.pages?.[0]?.imageinfo?.[0];
-    const out=info?.thumburl || info?.url || "";
+    const out=info?.thumburl||info?.url||"";
     wikiImageCache.set(cacheKey,{createdAt:Date.now(),url:out});
     return out;
-  }catch{
-    return "";
-  }
+  }catch{return ""}
 }
 
-async function resolveEntityVisual(label, kind="team", context="") {
+async function resolveEntityVisual(label,kind="team",context=""){
+  const canonical=visualAlias(label,kind);
+  const local=LOCAL_WIKI_FILE_LOGOS[kind]?.[String(canonical||"").toLowerCase()] || LOCAL_WIKI_FILE_LOGOS[kind]?.[String(label||"").toLowerCase()];
+  if(local){
+    const url=await localWikiFileThumbnail(local.host,local.file);
+    if(url)return url;
+  }
+  const exact=EXACT_WIKI_ARTICLES[kind]?.[String(canonical||"").toLowerCase()] || EXACT_WIKI_ARTICLES[kind]?.[String(label||"").toLowerCase()];
+  if(exact){
+    const url=await exactWikiArticleThumbnail(exact.host,exact.title);
+    if(url)return url;
+  }
   const entityId=await wikiPageEntityId(label,kind,context);
-  if(!entityId) return "";
+  if(!entityId)return "";
   const filename=await wikidataLogoFilename(entityId);
-  if(!filename) return "";
+  if(!filename)return "";
   return commonsFileThumbnail(filename);
 }
 
