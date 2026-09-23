@@ -200,22 +200,22 @@ const BIG_ENTITIES = {
 
 const EDITORIAL_COMPETITIONS = [
   {key:"champions",label:"UEFA Champions League",sport:"Football",priority:1,aliases:["uefa champions league","champions league"]},
-  {key:"premier",label:"Premier League",sport:"Football",priority:2,aliases:["premier league"]},
-  {key:"bundesliga",label:"Bundesliga",sport:"Football",priority:3,aliases:["bundesliga"],excludeAliases:["2. bundesliga","2 bundesliga"]},
-  {key:"bundesliga2",label:"2. Bundesliga",sport:"Football",priority:4,aliases:["2. bundesliga","2 bundesliga","bundesliga 2"]},
-  {key:"seriea",label:"Serie A",sport:"Football",priority:5,aliases:["serie a"]},
-  {key:"laliga",label:"LaLiga",sport:"Football",priority:6,aliases:["laliga","la liga","primera division"]},
+  {key:"premier",label:"Premier League",sport:"Football",priority:2,aliases:["premier league"],countryNames:["england"],countryCodes:["GB","ENG"]},
+  {key:"bundesliga",label:"Bundesliga",sport:"Football",priority:3,aliases:["bundesliga"],excludeAliases:["2. bundesliga","2 bundesliga"],countryNames:["germany"],countryCodes:["DE","DEU"]},
+  {key:"bundesliga2",label:"2. Bundesliga",sport:"Football",priority:4,aliases:["2. bundesliga","2 bundesliga","bundesliga 2"],countryNames:["germany"],countryCodes:["DE","DEU"]},
+  {key:"seriea",label:"Serie A",sport:"Football",priority:5,aliases:["serie a"],countryNames:["italy"],countryCodes:["IT","ITA"]},
+  {key:"laliga",label:"LaLiga",sport:"Football",priority:6,aliases:["laliga","la liga","primera division"],countryNames:["spain"],countryCodes:["ES","ESP"]},
   {key:"europa",label:"UEFA Europa League",sport:"Football",priority:7,aliases:["uefa europa league","europa league"]},
   {key:"conference",label:"UEFA Conference League",sport:"Football",priority:8,aliases:["uefa conference league","conference league","europa conference league"]},
-  {key:"ligue1",label:"Ligue 1",sport:"Football",priority:9,aliases:["ligue 1"]},
-  {key:"facup",label:"FA Cup",sport:"Football",priority:10,aliases:["fa cup"]},
-  {key:"carabao",label:"Carabao Cup",sport:"Football",priority:11,aliases:["carabao cup","efl cup","league cup"]},
-  {key:"dfbpokal",label:"DFB-Pokal",sport:"Football",priority:12,aliases:["dfb-pokal","dfb pokal"]},
-  {key:"coppa_italia",label:"Coppa Italia",sport:"Football",priority:13,aliases:["coppa italia"]},
-  {key:"copa_del_rey",label:"Copa del Rey",sport:"Football",priority:14,aliases:["copa del rey"]},
-  {key:"eredivisie",label:"Eredivisie",sport:"Football",priority:15,aliases:["eredivisie"]},
-  {key:"primeira_liga",label:"Primeira Liga",sport:"Football",priority:16,aliases:["primeira liga","liga portugal"]},
-  {key:"saudi_pro",label:"Saudi Pro League",sport:"Football",priority:17,aliases:["saudi pro league","saudi professional league"]},
+  {key:"ligue1",label:"Ligue 1",sport:"Football",priority:9,aliases:["ligue 1"],countryNames:["france"],countryCodes:["FR","FRA"]},
+  {key:"facup",label:"FA Cup",sport:"Football",priority:10,aliases:["fa cup"],countryNames:["england"],countryCodes:["GB","ENG"]},
+  {key:"carabao",label:"Carabao Cup",sport:"Football",priority:11,aliases:["carabao cup","efl cup","league cup"],countryNames:["england"],countryCodes:["GB","ENG"]},
+  {key:"dfbpokal",label:"DFB-Pokal",sport:"Football",priority:12,aliases:["dfb-pokal","dfb pokal"],countryNames:["germany"],countryCodes:["DE","DEU"]},
+  {key:"coppa_italia",label:"Coppa Italia",sport:"Football",priority:13,aliases:["coppa italia"],countryNames:["italy"],countryCodes:["IT","ITA"]},
+  {key:"copa_del_rey",label:"Copa del Rey",sport:"Football",priority:14,aliases:["copa del rey"],countryNames:["spain"],countryCodes:["ES","ESP"]},
+  {key:"eredivisie",label:"Eredivisie",sport:"Football",priority:15,aliases:["eredivisie"],countryNames:["netherlands","holland"],countryCodes:["NL","NLD"]},
+  {key:"primeira_liga",label:"Primeira Liga",sport:"Football",priority:16,aliases:["primeira liga","liga portugal"],countryNames:["portugal"],countryCodes:["PT","PRT"]},
+  {key:"saudi_pro",label:"Saudi Pro League",sport:"Football",priority:17,aliases:["saudi pro league","saudi professional league"],countryNames:["saudi arabia"],countryCodes:["SA","SAU"]},
   {key:"nations",label:"UEFA Nations League",sport:"Football",priority:18,aliases:["uefa nations league","nations league"]},
   {key:"world_cup",label:"World Cup",sport:"Football",priority:19,aliases:["fifa world cup","world cup"],excludeAliases:["qualifier","qualification","women"]},
   {key:"world_cup_qual",label:"World Cup Qualifiers",sport:"Football",priority:20,aliases:["world cup qualification","world cup qualifiers","world cup qualifier"]},
@@ -250,6 +250,20 @@ function editorialCompetitionFor(match){
   const sportKey=normalizedCompetitionText(match?.tournament?.sport?.key || match?.sport?.key || "");
   const haystack=[tournamentName,categoryName].filter(Boolean).join(" ");
 
+  const categoryCountryCode=String(match?.tournament?.category?.country_code || match?.tournament?.category?.countryCode || "").trim().toUpperCase();
+  const countryMatches=(def)=>{
+    const names=(def.countryNames||[]).map(normalizedCompetitionText);
+    const codes=(def.countryCodes||[]).map(x=>String(x).toUpperCase());
+    if(!names.length&&!codes.length) return true;
+
+    // Prefer the API category name because generic country codes such as GB can cover
+    // multiple football associations. Only fall back to the code when the name is absent.
+    if(categoryName){
+      return names.some(name=>categoryName===name || categoryName.startsWith(name+" ") || categoryName.includes(" "+name+" "));
+    }
+    return Boolean(categoryCountryCode && codes.includes(categoryCountryCode));
+  };
+
   const sportMatches=(def)=>{
     const wanted=normalizedCompetitionText(def.sport);
     if(def.sport==="Football") return /soccer|football/.test(sportName+" "+sportKey) && !/american|australian/.test(sportName+" "+sportKey);
@@ -267,8 +281,9 @@ function editorialCompetitionFor(match){
 
   for(const def of EDITORIAL_COMPETITIONS){
     if(!sportMatches(def)) continue;
+    if(!countryMatches(def)) continue;
     if((def.excludeAliases||[]).some(a=>haystack.includes(normalizedCompetitionText(a)))) continue;
-    if(def.aliases.some(a=>haystack.includes(normalizedCompetitionText(a)))) return def;
+    if(def.aliases.some(a=>tournamentName.includes(normalizedCompetitionText(a)))) return def;
   }
   return null;
 }
