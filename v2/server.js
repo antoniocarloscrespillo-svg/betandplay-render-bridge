@@ -1645,18 +1645,138 @@ app.get("/api/bonuses", async (_req,res) => {
   });
 });
 
+const KNOWN_PROMOTION_CONFIGS = {
+  comboboost_2026_2: {
+    bonusKey:"Comboboost 2026_2",
+    type:"comboboost",
+    names:[
+      "تعزيز الكومبو الرياضي المتعدد",
+      "Mega Kombi-Sport Boost",
+      "Multi-Sport Combo Boost",
+      "Super Combo Multi-Sport",
+      "Kombi Boost Deluxe"
+    ],
+    localizedNames:[
+      {locale:"AR",name:"تعزيز الكومبو الرياضي المتعدد"},
+      {locale:"DE",name:"Mega Kombi-Sport Boost"},
+      {locale:"DE-AT",name:"Mega Kombi-Sport Boost"},
+      {locale:"DE-CH",name:"Mega Kombi-Sport Boost"},
+      {locale:"EN",name:"Multi-Sport Combo Boost"},
+      {locale:"EN-AR",name:"Multi-Sport Combo Boost"},
+      {locale:"EN-AU",name:"Multi-Sport Combo Boost"},
+      {locale:"EN-CA",name:"Multi-Sport Combo Boost"},
+      {locale:"EN-IE",name:"Multi-Sport Combo Boost"},
+      {locale:"EN-IN",name:"Multi-Sport Combo Boost"},
+      {locale:"EN-NZ",name:"Multi-Sport Combo Boost"},
+      {locale:"FI",name:"Multi-Sport Combo Boost"},
+      {locale:"IT",name:"Super Combo Multi-Sport"},
+      {locale:"NO",name:"Kombi Boost Deluxe"}
+    ],
+    showToUnauthorized:true,
+    minOutcomeOdds:1.5,
+    minBetOdds:7.6,
+    ranges:[
+      [5,1.05],[6,1.07],[7,1.10],[8,1.15],[9,1.20],[10,1.25],[11,1.30],[12,1.35],[13,1.40],[14,1.45],
+      [15,1.50],[16,1.55],[17,1.60],[18,1.65],[19,1.70],[20,1.75],[21,1.80],[22,1.85],[23,1.90],[24,1.95],[25,2.00]
+    ].map(([minCount,bonusOdds])=>({minCount,maxCount:minCount,bonusOdds})),
+    usage:{
+      sportTypes:"All sport types",
+      sports:"All sports",
+      categories:"All categories",
+      tournaments:"All tournaments",
+      events:"All events",
+      countries:"All countries",
+      eventStatus:"All statuses",
+      markets:"All markets"
+    },
+    issuePeriod:{from:"2026-09-02T11:08:00",to:"2026-12-31T23:59:00"},
+    validityPeriod:{from:"2026-09-02T11:08:00",to:"2026-12-31T23:59:00"},
+    issueTrigger:"Player staying/entering in group",
+    issueTo:"Exclude 1 group SB Bonus Abuser"
+  }
+};
+
+function normalizePromoName(value=""){
+  return String(value||"").toLowerCase().replace(/\([^)]*\)/g,"").replace(/[-–—_/]+/g," ").replace(/\s+/g," ").trim();
+}
+
+function knownPromotionConfig(type,name,details){
+  if(type!=="comboboost") return null;
+  const n=normalizePromoName(name);
+  const candidates=Object.values(KNOWN_PROMOTION_CONFIGS).filter(x=>x.type===type);
+  for(const cfg of candidates){
+    if(cfg.names.some(alias=>n.includes(normalizePromoName(alias))||normalizePromoName(alias).includes(n))) return cfg;
+  }
+  const minOddsRaw=Number(details?.min_odds||0);
+  const ranges=Array.isArray(details?.ranges)?details.ranges:[];
+  const looksLikeKnown=minOddsRaw===7600 && ranges.some(r=>Number(r?.min_count)===5 && Number(r?.bonus_odds)===1050);
+  return looksLikeKnown ? KNOWN_PROMOTION_CONFIGS.comboboost_2026_2 : null;
+}
+
+function apiOdds(value){
+  const n=Number(value);
+  if(!Number.isFinite(n)) return null;
+  return n>=1000 ? Number((n/1000).toFixed(3)) : n;
+}
+
+function normalizeComboboostBusiness(details,known){
+  const apiRanges=(Array.isArray(details?.ranges)?details.ranges:[]).map(r=>({
+    minCount:Number(r?.min_count||0)||null,
+    maxCount:Number(r?.max_count||0)||null,
+    bonusOdds:apiOdds(r?.bonus_odds)
+  })).filter(r=>r.minCount||r.maxCount||r.bonusOdds);
+  const eventConditions=Array.isArray(details?.event_conditions)?details.event_conditions:[];
+  const allScope=eventConditions.length===0 || eventConditions.every(c=>!c?.sport&&!c?.category&&!c?.tournament&&!c?.event&&!c?.sport_type);
+  return {
+    bonusKey:known?.bonusKey || details?.bonus_key || details?.key || "",
+    localizedNames:known?.localizedNames || [],
+    visibleWithoutLogin:known?.showToUnauthorized ?? true,
+    minOutcomeOdds:known?.minOutcomeOdds ?? details?.min_outcome_odds ?? details?.minimum_outcome_odds ?? null,
+    minBetOdds:apiOdds(details?.min_odds) ?? known?.minBetOdds ?? null,
+    ranges:apiRanges.length?apiRanges:(known?.ranges||[]),
+    usage:known?.usage || {
+      sportTypes:allScope?"All sport types":"Restricted",
+      sports:allScope?"All sports":"Restricted",
+      categories:allScope?"All categories":"Restricted",
+      tournaments:allScope?"All tournaments":"Restricted",
+      events:allScope?"All events":"Restricted",
+      countries:Array.isArray(details?.country_codes)&&details.country_codes.length?details.country_codes.join(", "):"All countries",
+      eventStatus:"All statuses",
+      markets:"All markets"
+    },
+    issuePeriod:known?.issuePeriod || null,
+    validityPeriod:{
+      from:details?.issued?.valid_from || known?.validityPeriod?.from || null,
+      to:details?.valid_to || details?.issued?.expired_at || known?.validityPeriod?.to || null
+    },
+    issueTrigger:known?.issueTrigger || details?.trigger_key || "",
+    issueTo:known?.issueTo || "",
+    api:{
+      id:details?.id||"",
+      status:details?.status||"",
+      onlyVerified:details?.only_verified ?? null,
+      triggerKey:details?.trigger_key||"",
+      usesCount:details?.uses_count ?? null,
+      countryCodes:Array.isArray(details?.country_codes)?details.country_codes:[],
+      eventConditions
+    }
+  };
+}
+
 function normalizePromotionItem(type,item) {
   const details=item?.details && typeof item.details==="object" ? item.details : item || {};
   const id=details.uuid || details.id || item?.uuid || item?.id || "";
   const name=details.name || details.title || details.label || item?.name || item?.title || type.replace(/_/g," ");
   const status=details.status || item?.status || "";
   const expiresAt=details.expires_at || details.expired_at || details.valid_to || details.end_at || details.end_time || item?.expires_at || item?.valid_to || "";
-  const startsAt=details.starts_at || details.valid_from || details.start_at || details.start_time || item?.starts_at || item?.valid_from || "";
-  return {type,id,name,status,startsAt,expiresAt,details};
+  const startsAt=details.starts_at || details.valid_from || details.issued?.valid_from || details.start_at || details.start_time || item?.starts_at || item?.valid_from || "";
+  const known=knownPromotionConfig(type,name,details);
+  const business=type==="comboboost" ? normalizeComboboostBusiness(details,known) : null;
+  return {type,id,name,status,startsAt,expiresAt,details,business,linkedConfig:Boolean(known)};
 }
 
 app.get("/api/promotions", async (_req,res) => {
-  const key="public-promotions-v1";
+  const key="public-promotions-v2";
   const hit=cached(key);
   if(hit) return res.json({ok:true,cached:true,...hit});
 
