@@ -829,7 +829,21 @@ $("#generateSelected").onclick=async()=>{
  finally{btn.disabled=false;btn.textContent="Generate "+count+" post"+(count===1?"":"s")+" →"}
 };
 
-function bindPosts(vars){const collapseAll=$("#collapseAll"),expandAll=$("#expandAll");if(collapseAll)collapseAll.onclick=()=>$$(".post").forEach(x=>x.classList.add("collapsed"));if(expandAll)expandAll.onclick=()=>$$(".post").forEach(x=>x.classList.remove("collapsed"));$$(".collapsePost").forEach(b=>b.onclick=()=>{const p=b.closest(".post");p.classList.toggle("collapsed");b.textContent=p.classList.contains("collapsed")?"Expand":"Collapse"});$$(".copyPost").forEach((b,i)=>b.onclick=async()=>{const body=b.closest(".post").querySelector(".postbody");await navigator.clipboard.writeText(body.textContent);const old=b.textContent;b.textContent="✓ Copied";setTimeout(()=>b.textContent=old,1200)});$$(".editPost").forEach((b,i)=>b.onclick=()=>{const p=b.closest(".post"),body=p.querySelector(".postbody");if(body.querySelector("textarea"))return;const t=document.createElement("textarea");t.className="editarea";t.value=body.textContent;body.textContent="";body.appendChild(t);t.focus();b.textContent="Done";b.onclick=()=>{body.textContent=t.value;b.textContent="Edit";bindPosts(vars)}})}
+function bindPosts(vars){
+ const collapseAll=$("#collapseAll"),expandAll=$("#expandAll");
+ if(collapseAll)collapseAll.onclick=()=>$$(".post").forEach(x=>x.classList.add("collapsed"));
+ if(expandAll)expandAll.onclick=()=>$$(".post").forEach(x=>x.classList.remove("collapsed"));
+ $$(".collapsePost").forEach(b=>b.onclick=()=>{const p=b.closest(".post");p.classList.toggle("collapsed");b.textContent=p.classList.contains("collapsed")?"Expand":"Collapse"});
+ $$(".copyPost").forEach(b=>b.onclick=async()=>{
+   const body=b.closest(".post").querySelector(".postbody"),txt=body.textContent;
+   try{await navigator.clipboard.writeText(txt)}
+   catch{
+     const t=document.createElement("textarea");t.value=txt;t.style.position="fixed";t.style.opacity="0";document.body.appendChild(t);t.select();document.execCommand("copy");t.remove();
+   }
+   const old=b.textContent;b.textContent="✓ Copied";setTimeout(()=>b.textContent=old,1200);
+ });
+ $$(".editPost").forEach(b=>b.onclick=()=>{const p=b.closest(".post"),body=p.querySelector(".postbody");if(body.querySelector("textarea"))return;const t=document.createElement("textarea");t.className="editarea";t.value=body.textContent;body.textContent="";body.appendChild(t);t.focus();b.textContent="Done";b.onclick=()=>{body.textContent=t.value;b.textContent="Edit";bindPosts(vars)}});
+}
 function studioCompetitionChoices(){
  return availableCompetitions();
 }
@@ -871,7 +885,7 @@ $("#studioGenerate").onclick=async()=>{
  try{
   const r=await apiFetch("/api/content-builder",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({mode,count,language,eventIds,competitionKeys})},20000),d=await r.json();
   if(!r.ok)throw new Error(d.error||"generation_error");
-  $("#studioGenerated").innerHTML='<div class="generated"><div class="genbar"><h3>Generated content</h3></div>'+(d.variants||[]).map(postCard).join("")+'</div>';
+  $("#studioGenerated").innerHTML='<div class="generated"><div class="genbar"><h3>Generated content</h3><div><button class="btn" id="collapseAll">Collapse all</button> <button class="btn" id="expandAll">Expand all</button></div></div>'+(d.variants||[]).map(postCard).join("")+'</div>';
   bindPosts(d.variants||[]);
  }catch(err){$("#studioGenerated").innerHTML='<div class="error"><strong>Could not generate content</strong>'+esc(err.message)+'</div>'}
  finally{btn.disabled=false;btn.textContent="Generate "+count+" post"+(count===1?"":"s")+" →"}
