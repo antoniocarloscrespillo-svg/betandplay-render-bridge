@@ -1418,21 +1418,32 @@ function chunkArray(items,size){
 }
 
 async function getMatchesForTournamentIds(ids,start,end){
-  const url=new URL(UPSTREAM_V3+"/matches");
-  url.searchParams.set("bettable","true");
-  url.searchParams.set("start_from",start);
-  url.searchParams.set("start_to",end);
-  url.searchParams.set("limit","100");
-  for(const id of ids) url.searchParams.append("tournament_id",String(id));
+  const fetchIds=async targetIds=>{
+    const url=new URL(UPSTREAM_V3+"/matches");
+    url.searchParams.set("bettable","true");
+    url.searchParams.set("start_from",start);
+    url.searchParams.set("start_to",end);
+    url.searchParams.set("limit","100");
+    for(const id of targetIds) url.searchParams.append("tournament_id",String(id));
 
-  const rows=[];
-  for(let page=1;page<=3;page++){
-    url.searchParams.set("page",String(page));
-    const body=await fetchJson(url);
-    const data=responseRows(body);
-    rows.push(...data);
-    const totalPages=Number(body?.pagination?.total_pages || body?.pagination?.pages || 0);
-    if((totalPages && page>=totalPages) || data.length<100) break;
+    const rows=[];
+    for(let page=1;page<=3;page++){
+      url.searchParams.set("page",String(page));
+      const body=await fetchJson(url);
+      const data=responseRows(body);
+      rows.push(...data);
+      const totalPages=Number(body?.pagination?.total_pages || body?.pagination?.pages || 0);
+      if((totalPages && page>=totalPages) || data.length<100) break;
+    }
+    return rows;
+  };
+
+  let rows=await fetchIds(ids);
+  // Some sportsbook deployments only honour one tournament_id per request.
+  // If a batched query unexpectedly returns nothing, retry per tournament.
+  if(!rows.length && ids.length>1){
+    const settled=await Promise.allSettled(ids.map(id=>fetchIds([id])));
+    rows=settled.flatMap(x=>x.status==="fulfilled"?x.value:[]);
   }
   return rows;
 }
