@@ -747,10 +747,13 @@ function homeEventRow(e){
 function render(){
  const list=filtered();activeChips();
  try{renderNextCompetitions()}catch(err){console.error("[next-competitions]",err);const root=$("#nextCompetitionList");if(root)root.innerHTML='<div class="error"><strong>Competition cards unavailable</strong>Big Games is still available below.</div>'}
- const prioritized=[...list].sort((a,b)=>
-   Number(a.competitionPriority||999)-Number(b.competitionPriority||999) ||
-   new Date(a.startTime)-new Date(b.startTime)
- );
+ const sportPriority=["Football","Tennis","Basketball","Ice Hockey","American Football","Australian Rules","Rugby League","Rugby Union","Cricket","Motorsport"];
+ const prioritized=[...list].sort((a,b)=>{
+   const ar=sportPriority.indexOf(a.sportGroup),br=sportPriority.indexOf(b.sportGroup);
+   return (ar<0?999:ar)-(br<0?999:br) ||
+     Number(a.competitionPriority||999)-Number(b.competitionPriority||999) ||
+     new Date(a.startTime)-new Date(b.startTime);
+ });
  if(!prioritized.length){$("#events").innerHTML='<div class="empty"><strong>No matches found</strong>Try removing some filters.<br><button class="btn primary" style="margin-top:12px" id="emptyReset">Reset filters</button></div>';$("#emptyReset").onclick=reset;return}
  $("#events").innerHTML='<div class="home-table"><div class="home-table-head"><span>COMPETITION</span><span>TIME</span><span>MATCH</span><span>1 &nbsp;&nbsp;&nbsp; X &nbsp;&nbsp;&nbsp; 2</span><span></span></div>'+prioritized.slice(0,12).map(homeEventRow).join("")+'</div>';
  bindRows();
